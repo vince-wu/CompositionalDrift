@@ -276,7 +276,7 @@ class Application(Tk.Frame):
 				choices.append([count, weight])
 				count += 1
 			#Using weighted_choice, selects first monomer
-			startingMonomer = self.weighted_choice(choices)
+			startingMonomer = weighted_choice(choices)
 			#Uses up one monomer of the startingMonomer
 			monomerAmounts[startingMonomer - 1] -= 1
 			#startingPolymer becomes first monomer in polymer chain
@@ -297,7 +297,7 @@ class Application(Tk.Frame):
 					choices.append([polyCounter, chance])
 					polyCounter += 1
 				#Using weighted_choice, selects next monomer
-				nextMonomer = self.weighted_choice(choices)
+				nextMonomer = weighted_choice(choices)
 				#Reduces number of nextMonomer by 1, since it is being used up in reaction
 				monomerAmounts[nextMonomer - 1] -= 1
 				#Attaches next monomer to polymer chain
@@ -424,17 +424,17 @@ class Application(Tk.Frame):
 		msg.pack(side = Tk.TOP, pady = 5)
 		exitButton = Tk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
 		exitButton.pack(side = Tk.TOP, pady = 5)
-	#Takes in a list of tuple lists with item and weight, and returns a random item based on 
-	#weight
-	def weighted_choice(self, choices):
-	    total = sum(w for c, w in choices)
-	    r = random.uniform(0, total)
-	    upto = 0
-	    for c, w in choices:
-	        if upto + w >= r:
-	        	return c
-	        upto += w
-	    assert False, "Shouldn't get here"
+#Takes in a list of tuple lists with item and weight, and returns a random item based on 
+#weight
+def weighted_choice(choices):
+    total = sum(w for c, w in choices)
+    r = random.uniform(0, total)
+    upto = 0
+    for c, w in choices:
+        if upto + w >= r:
+        	return c
+        upto += w
+    assert False, "Shouldn't get here"
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
