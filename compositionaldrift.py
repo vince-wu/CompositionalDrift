@@ -232,10 +232,10 @@ class Application(Tk.Frame):
 			singleCoeffList = self.getCoefficients()
 			simTest = int(self.numSims.get())
 		except ValueError:
-			self.errorMessage("Please input valid parameters!")
+			errorMessage("Please input valid parameters!")
 			return
 		except notInEuropeError:
-			self.errorMessage("You are not in Europe!")
+			errorMessage("You are not in Europe!")
 			return
 		#destroys hideButton if necessary
 		if self.destroyHide:
@@ -415,15 +415,15 @@ class Application(Tk.Frame):
 					else:
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
-	#When called, makes a pop out error informing user of invalid inputs
-	def errorMessage(self, message):
-		top = Tk.Toplevel()
-		top.wm_title("Error")
-		top.geometry("%dx%d%+d%+d" % (220, 70, 250, 125))
-		msg = Tk.Message(master = top, text = message, width = 400)
-		msg.pack(side = Tk.TOP, pady = 5)
-		exitButton = Tk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
-		exitButton.pack(side = Tk.TOP, pady = 5)
+#When called, makes a pop out error informing user of invalid inputs
+def errorMessage(message):
+	top = Tk.Toplevel()
+	top.wm_title("Error")
+	top.geometry("%dx%d%+d%+d" % (220, 70, 250, 125))
+	msg = Tk.Message(master = top, text = message, width = 400)
+	msg.pack(side = Tk.TOP, pady = 5)
+	exitButton = Tk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
+	exitButton.pack(side = Tk.TOP, pady = 5)
 #Takes in a list of tuple lists with item and weight, and returns a random item based on 
 #weight
 def weighted_choice(choices):
