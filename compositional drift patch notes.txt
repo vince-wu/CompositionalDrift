@@ -1,0 +1,23 @@
+Compositional Drift Version History
+
+v1.0 (Release)
+- fully functional GUI simulating copolymer growth with Mayo-Lewis Equation
+and Monte Carlo method
+- Graph representation of all simulated polymers
+- Visualization of first (6-12) polymers
+v1.1 (First Round Bugfixing)
+- fixed major algorithm error with double rolling which gave preference
+to larger weight chances
+- fixed input error bug which caused program to crash
+- added Not in Europe exception
+TODO
+- decrease runtime
+- fix hide/ unhide bug
+- make it so graph and visualization canvas need not be destroyed every
+time, causing glitchy graphics when simulatating more than once when
+not on fullscreen
+- fix bug when back is pressed on fullscreen, should minimize
+- fix bug where if numsims <  numrows, crashes
+- increase input box size to 4
+***TODO
+- add dyad pattern recognization and plotting
