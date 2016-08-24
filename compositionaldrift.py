@@ -22,7 +22,9 @@ class Application(Tk.Frame):
 	def __init__(self, master = None):
 		Tk.Frame.__init__(self, master)
 		self.pack()
-		#GUI Widget Initiation
+		self.initialize()
+	#Initialization
+	def initialize(self):
 		#Creates the init screen
 		self.initScreen()
 		#Creates Input Widgets
@@ -32,7 +34,7 @@ class Application(Tk.Frame):
 		self.destroyCanvas = False
 		self.destroyHide = False
 	#Destroys unneccesary widgets
-	def destroy(self):
+	def destroyWidgets(self):
 		self.parentFrame.destroy()
 		self.visualizationFrame.destroy()
 		if self.destroyCanvas:
@@ -47,7 +49,7 @@ class Application(Tk.Frame):
 			#nonlocal numMonomers 
 			self.numMonomers = int(self.monomerCount.get())
 			#print(numMonomers) # debugging purposes
-			self.createMoreInputs(self.numMonomers) 
+			self.createMoreInputs() 
 		#Clears unneccesary widgets and creates more input widgets; called by enter()
 		def _quit():
 			root.quit()
@@ -74,14 +76,13 @@ class Application(Tk.Frame):
 		self.countConfirm = Tk.Button(master = self.inputFrame, text = "Enter",
 		 command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
 		self.countConfirm.pack(side = Tk.LEFT, padx = 5, pady = 5)
-	def createMoreInputs(self, numMonomers):
+	#Creates more input widgets based on numMonomers
+	def createMoreInputs(self):
 		#Destroys or edits current widgets
 		self.initFrame.destroy()
 		self.monomerCount.destroy()
-		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(numMonomers))
+		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(self.numMonomers))
 		self.countConfirm.destroy()
-		#sets a class instance varaible for numMonomers
-		self.numMonomers = numMonomers
 		#Commands
 		# Quit command: quits window
 		def _quit():
@@ -90,7 +91,7 @@ class Application(Tk.Frame):
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
 			#Destroys all neccesary widgets
-			self.destroy()
+			self.destroyWidgets()
 			#Re-Initiates
 			self.initScreen()
 			self.createInputWidgets()
@@ -147,7 +148,7 @@ class Application(Tk.Frame):
 		self.coefficientFrame = Tk.Frame(master = self.inputFrame)
 		self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
 		#While loop creating number of neccesary amount Entry boxes
-		while createCount < numMonomers:
+		while createCount < self.numMonomers:
 			#Label for inputAmount
 			monomerAmountFrame = Tk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
@@ -168,7 +169,7 @@ class Application(Tk.Frame):
 		#print("startingAmountList: ", self.startingAmountList) 
 		createCount2 = 0
 		#While loop creating number of neccesary coefficient Entry boxes
-		while createCount2 < numMonomers:
+		while createCount2 < self.numMonomers:
 			combinations = 0
 			#Appends to coefficient list a list containing coefficients for the polymer index
 			singleMonoCoeffList = []
@@ -176,7 +177,7 @@ class Application(Tk.Frame):
 			#Frame for Coefficients for Single Monomer
 			singleCoeffFrame = Tk.Frame(master = self.coefficientFrame)
 			singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-			while combinations < numMonomers:				
+			while combinations < self.numMonomers:				
 				#Label for inputAmount
 				coeffValFrame = Tk.Frame(master = singleCoeffFrame)
 				coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
@@ -184,7 +185,7 @@ class Application(Tk.Frame):
 				 + "-" + str(combinations + 1) + " Constant:" )
 				inputCoeffLabel.pack(side = Tk.LEFT)
 				#Entry for inputAmount
-				inputCoeff = Tk.Entry(master = coeffValFrame, width = 3)
+				inputCoeff = Tk.Entry(master = coeffValFrame, width = 4)
 				inputCoeff.pack(side = Tk.LEFT, padx = 5)
 				#Setting Default Coefficient to 1
 				coeff = Tk.IntVar()
@@ -242,11 +243,11 @@ class Application(Tk.Frame):
 		#destroys hideButton if necessary
 		if self.destroyHide:
 			self.hideButton.destroy()
-		self.destroyHide = True
-		#hideButton creation
-		self.hideButton = Tk.Button(master = self.buttonFrame, bg = "pale turquoise", activebackground = "light slate blue",
+		#hideButton creation, _DEPRECATED_
+		"""self.hideButton = Tk.Button(master = self.buttonFrame, bg = "pale turquoise", activebackground = "light slate blue",
 			width = 27, text = "Hide Input Paramters", command = self.hideInputParams)
 		self.hideButton.pack(side = Tk.TOP, pady = 3)
+		self.destroyHide = True"""
 		#destroys canvas if necessary
 		if self.destroyCanvas:
 			self.canvas.get_tk_widget().destroy()
@@ -388,8 +389,6 @@ class Application(Tk.Frame):
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
-
-
 	#Converts an array of Tk.Entrys for numMonomers into an int array
 	def getMonomerAmounts(self):
 		numStartingAmtList = []
@@ -399,7 +398,6 @@ class Application(Tk.Frame):
 			else:
 				numStartingAmtList.append(int(entry.get()))
 		return numStartingAmtList
-
 	#Converts a 2D array of Tk.Entrys for coefficients into a 2D double array
 	def getCoefficients(self):
 		coeffList = []
