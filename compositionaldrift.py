@@ -31,16 +31,27 @@ class Application(Tk.Frame):
 		self.visualizationFrame = Tk.Frame(master = root)
 		self.destroyCanvas = False
 		self.destroyHide = False
+	#Destroys unneccesary widgets
+	def destroy(self):
+		self.parentFrame.destroy()
+		self.visualizationFrame.destroy()
+		if self.destroyCanvas:
+			self.canvas.get_tk_widget().destroy()
+			self.toolbar.destroy()
+		self.destroyCanvas = False
+		self.destroyHide = False
 	#Creates input widgets
 	def createInputWidgets(self):
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
-			nonlocal numMonomers 
-			numMonomers = int(self.monomerCount.get())
+			#nonlocal numMonomers 
+			self.numMonomers = int(self.monomerCount.get())
 			#print(numMonomers) # debugging purposes
-			createMoreInputs(self, numMonomers) 
-		#instance variable keeping track on number of monomers
-		numMonomers = 0 
+			self.createMoreInputs(self.numMonomers) 
+		#Clears unneccesary widgets and creates more input widgets; called by enter()
+		def _quit():
+			root.quit()
+			root.destroy()
 		#PlaceHolder parent inputFrame
 		self.parentFrame = Tk.Frame(master = root)
 		self.parentFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, pady = 3)
@@ -51,155 +62,146 @@ class Application(Tk.Frame):
 		self.buttonFrame = Tk.Frame(master = self.inputFrame)
 		self.buttonFrame.pack(side = Tk.LEFT, padx = 5)
 		#A frame for spinbox and label
-		self.countFrame = Tk.Frame(master = self.buttonFrame)
-		self.countFrame.pack(side = Tk.TOP, padx = 5, pady = 0)
+		countFrame = Tk.Frame(master = self.buttonFrame)
+		countFrame.pack(side = Tk.TOP, padx = 5, pady = 0)
 		#Label for spinbox
-		self.monomerCountLabel = Tk.Label(master = self.countFrame, text = "Number of Unique Monomers:")
+		self.monomerCountLabel = Tk.Label(master = countFrame, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#MonomerCount spinbox
-		self.monomerCount = Tk.Spinbox(master = self.countFrame, from_ = 1, to = 7, width = 2)
+		self.monomerCount = Tk.Spinbox(master = countFrame, from_ = 1, to = 7, width = 2)
 		self.monomerCount.pack(side = Tk.LEFT, padx = 5, pady = 0)
 		#countConfirm Button
 		self.countConfirm = Tk.Button(master = self.inputFrame, text = "Enter",
 		 command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
 		self.countConfirm.pack(side = Tk.LEFT, padx = 5, pady = 5)
-		#Clears unneccesary widgets and creates more input widgets; called by enter()
+	def createMoreInputs(self, numMonomers):
+		#Destroys or edits current widgets
+		self.initFrame.destroy()
+		self.monomerCount.destroy()
+		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(numMonomers))
+		self.countConfirm.destroy()
+		#sets a class instance varaible for numMonomers
+		self.numMonomers = numMonomers
+		#Commands
+		# Quit command: quits window
 		def _quit():
 			root.quit()
 			root.destroy()
-		def createMoreInputs(self, numMonomers):
-			#Destroys or edits current widgets
-			self.initFrame.destroy()
-			self.monomerCount.destroy()
-			self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(numMonomers))
-			self.countConfirm.destroy()
-			#sets a class instance varaible for numMonomers
-			self.numMonomers = numMonomers
-			#Commands
-			# Quit command: quits window
-			def _quit():
-				root.quit()
-				root.destroy()
-			# Back Command: goes back to numMonomers Entry
-			def back(self):
-				self.parentFrame.destroy()
-				self.visualizationFrame.destroy()
-				if self.destroyCanvas:
-					self.canvas.get_tk_widget().destroy()
-					self.toolbar.destroy()
-				self.initScreen()
-				self.createInputWidgets()
-				self.destroyCanvas = False
-				self.destroyHide = False
-			#Frame for numSimulations label and Entry
-			self.numSimsFrame = Tk.Frame(master = self.buttonFrame)
-			self.numSimsFrame.pack(side = Tk.TOP)
-			#Label for numSims Entry
-			self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:")
-			self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
-			#Entry for numSimulations
-			self.numSimulations = Tk.Entry(master = self.numSimsFrame, width = 5)
-			self.numSimulations.pack(side = Tk.LEFT, padx = 3, pady = 3)
-			#Setting number of simulations to 1000
-			self.numSims = Tk.IntVar()
-			self.numSimulations["textvariable"] = self.numSims
-			self.numSims.set(1000)
-			#Frame for numPolyToShow SpinBox
-			self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
-			self.numPolyToShowFrame.pack(side = Tk.TOP)
-			#Label for numPolyToShow spinbox
-			self.numPolyToShowLabel = Tk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
-			self.numPolyToShowLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
-			#numPolyToShow spinbox
-			self.numPolyToShowBox = Tk.Spinbox(master = self.numPolyToShowFrame, from_ = 1, to = 12, width = 2)
-			self.numPolyToShowBox.pack(side = Tk.LEFT, padx = 5, pady = 0)
-			#Setting numPolyToShow to 6
-			self.numPolyToShow = Tk.IntVar()
-			self.numPolyToShowBox["textvariable"] = self.numPolyToShow
-			self.numPolyToShow.set(8)
-			#Frame for Back, Quit, and Simulate buttons
-			self.backSimFrame = Tk.Frame(master = self.buttonFrame)
-			self.backSimFrame.pack(side = Tk.TOP)
-			#A simulate button to simulate polymer formation
-			self.simulateButton = Tk.Button(master = self.backSimFrame, text = "Simulate", width = 7,
-			 command = self.simulate, bg = "light blue", activebackground = "light slate blue")
-			self.simulateButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
-			#A back button to enter a diff number of monomers
-			self.backButton = Tk.Button(master = self.backSimFrame, text = "Back", width = 7,
-			 command = lambda:back(self), bg = "light blue", activebackground = "light slate blue")
-			self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
-			#Quit Button Widget
-			quitButton = Tk.Button(master = self.backSimFrame, text = "Quit",
-			 command = _quit, width = 7, bg = "light blue", activebackground = "light slate blue")
-			quitButton.pack(side = Tk.LEFT, padx = 6)
-			createCount = 0;
-			# A list of Tk.Entry objects for Monomer Amount
-			self.startingAmountList = [] 
-			# A 2D list of Tk.Entry objects for Coefficicients
-			self.coefficientList = [] 
-			#Frame for Monomer Amounts
-			self.amountFrame = Tk.Frame(master = self.inputFrame) 
-			self.amountFrame.pack(side = Tk.LEFT, padx = 5)
-			#Frame for Monomer Coefficients
-			self.coefficientFrame = Tk.Frame(master = self.inputFrame)
-			self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
-			#While loop creating number of neccesary amount Entry boxes
-			while createCount < numMonomers:
+		# Back Command: goes back to numMonomers Entry
+		def back(self):
+			#Destroys all neccesary widgets
+			self.destroy()
+			#Re-Initiates
+			self.initScreen()
+			self.createInputWidgets()
+		#Frame for numSimulations label and Entry
+		self.numSimsFrame = Tk.Frame(master = self.buttonFrame)
+		self.numSimsFrame.pack(side = Tk.TOP)
+		#Label for numSims Entry
+		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:")
+		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for numSimulations
+		self.numSimulations = Tk.Entry(master = self.numSimsFrame, width = 5)
+		self.numSimulations.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		#Setting number of simulations to 1000
+		self.numSims = Tk.IntVar()
+		self.numSimulations["textvariable"] = self.numSims
+		self.numSims.set(1000)
+		#Frame for numPolyToShow SpinBox
+		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
+		self.numPolyToShowFrame.pack(side = Tk.TOP)
+		#Label for numPolyToShow spinbox
+		self.numPolyToShowLabel = Tk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
+		self.numPolyToShowLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
+		#numPolyToShow spinbox
+		self.numPolyToShowBox = Tk.Spinbox(master = self.numPolyToShowFrame, from_ = 1, to = 12, width = 2)
+		self.numPolyToShowBox.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		#Setting numPolyToShow to 6
+		self.numPolyToShow = Tk.IntVar()
+		self.numPolyToShowBox["textvariable"] = self.numPolyToShow
+		self.numPolyToShow.set(8)
+		#Frame for Back, Quit, and Simulate buttons
+		self.backSimFrame = Tk.Frame(master = self.buttonFrame)
+		self.backSimFrame.pack(side = Tk.TOP)
+		#A simulate button to simulate polymer formation
+		self.simulateButton = Tk.Button(master = self.backSimFrame, text = "Simulate", width = 7,
+		 command = self.simulate, bg = "light blue", activebackground = "light slate blue")
+		self.simulateButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
+		#A back button to enter a diff number of monomers
+		self.backButton = Tk.Button(master = self.backSimFrame, text = "Back", width = 7,
+		 command = lambda:back(self), bg = "light blue", activebackground = "light slate blue")
+		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
+		#Quit Button Widget
+		quitButton = Tk.Button(master = self.backSimFrame, text = "Quit",
+		 command = _quit, width = 7, bg = "light blue", activebackground = "light slate blue")
+		quitButton.pack(side = Tk.LEFT, padx = 6)
+		createCount = 0;
+		# A list of Tk.Entry objects for Monomer Amount
+		self.startingAmountList = [] 
+		# A 2D list of Tk.Entry objects for Coefficicients
+		self.coefficientList = [] 
+		#Frame for Monomer Amounts
+		self.amountFrame = Tk.Frame(master = self.inputFrame) 
+		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
+		#Frame for Monomer Coefficients
+		self.coefficientFrame = Tk.Frame(master = self.inputFrame)
+		self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
+		#While loop creating number of neccesary amount Entry boxes
+		while createCount < numMonomers:
+			#Label for inputAmount
+			monomerAmountFrame = Tk.Frame(master = self.amountFrame)
+			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+			inputAmountLabel = Tk.Label(master = monomerAmountFrame, text = "     Monomer " 
+				+ str(createCount + 1) + " Amount:")
+			inputAmountLabel.pack(side = Tk.LEFT)
+			#Entry for inputAmount
+			inputAmount = Tk.Entry(master = monomerAmountFrame, width = 5)
+			inputAmount.pack(side = Tk.LEFT, padx = 5)
+			#Setting Default Value to 20
+			amount = Tk.IntVar()
+			inputAmount["textvariable"] = amount
+			amount.set(20)
+			#Add Tk.Entry object to startingAmountList
+			self.startingAmountList.append(inputAmount)
+			createCount += 1
+		#Debugging purposes
+		#print("startingAmountList: ", self.startingAmountList) 
+		createCount2 = 0
+		#While loop creating number of neccesary coefficient Entry boxes
+		while createCount2 < numMonomers:
+			combinations = 0
+			#Appends to coefficient list a list containing coefficients for the polymer index
+			singleMonoCoeffList = []
+			self.coefficientList.append(singleMonoCoeffList)
+			#Frame for Coefficients for Single Monomer
+			singleCoeffFrame = Tk.Frame(master = self.coefficientFrame)
+			singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
+			while combinations < numMonomers:				
 				#Label for inputAmount
-				monomerAmountFrame = Tk.Frame(master = self.amountFrame)
-				monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-				inputAmountLabel = Tk.Label(master = monomerAmountFrame, text = "     Monomer " 
-					+ str(createCount + 1) + " Amount:")
-				inputAmountLabel.pack(side = Tk.LEFT)
+				coeffValFrame = Tk.Frame(master = singleCoeffFrame)
+				coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+				inputCoeffLabel = Tk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+				 + "-" + str(combinations + 1) + " Constant:" )
+				inputCoeffLabel.pack(side = Tk.LEFT)
 				#Entry for inputAmount
-				inputAmount = Tk.Entry(master = monomerAmountFrame, width = 5)
-				inputAmount.pack(side = Tk.LEFT, padx = 5)
-				#Setting Default Value to 20
-				amount = Tk.IntVar()
-				inputAmount["textvariable"] = amount
-				amount.set(20)
-				#Add Tk.Entry object to startingAmountList
-				self.startingAmountList.append(inputAmount)
-				createCount += 1
-			#Debugging purposes
-			#print("startingAmountList: ", self.startingAmountList) 
-			createCount2 = 0
-			#While loop creating number of neccesary coefficient Entry boxes
-			while createCount2 < numMonomers:
-				combinations = 0
-				#Appends to coefficient list a list containing coefficients for the polymer index
-				singleMonoCoeffList = []
-				self.coefficientList.append(singleMonoCoeffList)
-				#Frame for Coefficients for Single Monomer
-				singleCoeffFrame = Tk.Frame(master = self.coefficientFrame)
-				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-				while combinations < numMonomers:				
-					#Label for inputAmount
-					coeffValFrame = Tk.Frame(master = singleCoeffFrame)
-					coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-					inputCoeffLabel = Tk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-					 + "-" + str(combinations + 1) + " Constant:" )
-					inputCoeffLabel.pack(side = Tk.LEFT)
-					#Entry for inputAmount
-					inputCoeff = Tk.Entry(master = coeffValFrame, width = 3)
-					inputCoeff.pack(side = Tk.LEFT, padx = 5)
-					#Setting Default Coefficient to 1
-					coeff = Tk.IntVar()
-					inputCoeff["textvariable"] = coeff
-					coeff.set(1)
-					#Add a Tk.Entry object to singleMonoCoeffList
-					singleMonoCoeffList.append(inputCoeff)
-					combinations += 1
-				createCount2 += 1
-			#Debugging Purposes: prints the 2D array which should store coefficients 	
-			#print("coefficientList: " , self.coefficientList)
-			#counter = 0
-			"""for coefflist in self.coefficientList:
-				print("list at index " + str(counter) + ": ", coefflist)
-				counter += 1"""
+				inputCoeff = Tk.Entry(master = coeffValFrame, width = 3)
+				inputCoeff.pack(side = Tk.LEFT, padx = 5)
+				#Setting Default Coefficient to 1
+				coeff = Tk.IntVar()
+				inputCoeff["textvariable"] = coeff
+				coeff.set(1)
+				#Add a Tk.Entry object to singleMonoCoeffList
+				singleMonoCoeffList.append(inputCoeff)
+				combinations += 1
+			createCount2 += 1
+		#Debugging Purposes: prints the 2D array which should store coefficients 	
+		#print("coefficientList: " , self.coefficientList)
+		#counter = 0
+		"""for coefflist in self.coefficientList:
+			print("list at index " + str(counter) + ": ", coefflist)
+			counter += 1"""
 	#Frame and contents for opening screen
 	def initScreen(self):
-
 		self.initFrame = Tk.Frame(master = root)
 		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
