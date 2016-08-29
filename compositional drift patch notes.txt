@@ -12,12 +12,15 @@ to larger weight chances
 - added Not in Europe exception
 TODO
 - decrease runtime
+- fix bug when back is pressed on fullscreen, should minimize
+- add dyad pattern recognization and plotting
+- make simulation take from same pool of monomers
+- fix negative number input bug
+- fix all 0 input bug
+FINISHED TODO:
+- fix bug where if numsims <  numrows, crashes
 - fix hide/ unhide bug
-- make it so graph and visualization canvas need not be destroyed every
+- increase input box size to 4
+- NOPE TOO ANNOYING: make it so graph and visualization canvas need not be destroyed every
 time, causing glitchy graphics when simulatating more than once when
 not on fullscreen
-- fix bug when back is pressed on fullscreen, should minimize
-- fix bug where if numsims <  numrows, crashes
-- increase input box size to 4
-***TODO
-- add dyad pattern recognization and plotting

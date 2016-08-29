@@ -143,6 +143,35 @@ class Application(Tk.Frame):
 		self.startingAmountList = [] 
 		# A 2D list of Tk.Entry objects for Coefficicients
 		self.coefficientList = [] 
+		#Frame for total number of monomers and RAFT to monomer ratio
+		self.initialConditionsFrame = Tk.Frame(master = self.inputFrame)
+		self.initialConditionsFrame.pack(side = Tk.LEFT, padx = 5)
+		#Frame for totalMonomers label and Entry
+		self.totalMonomersFrame = Tk.Frame(master = self.initialConditionsFrame)
+		self.totalMonomersFrame.pack(side = Tk.TOP)
+		#Label for totalMonomers Entry
+		self.totalMonomersLabel = Tk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
+		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for totalMonomers
+		self.totalMonomersEntry = Tk.Entry(master = self.totalMonomersFrame, width = 5)
+		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		#Setting totalMonomers to 1000
+		self.totalMonomers = Tk.IntVar()
+		self.totalMonomersEntry["textvariable"] = self.totalMonomers
+		self.totalMonomers.set(1000)
+		#Frame for raftRatio label and Entry
+		self.raftRatioFrame = Tk.Frame(master = self.initialConditionsFrame)
+		self.raftRatioFrame.pack(side = Tk.TOP)
+		#Label for raftRatio Entry
+		self.raftRatioLabel = Tk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
+		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for raftRatio
+		self.raftRatioEntry = Tk.Entry(master = self.raftRatioFrame, width = 5)
+		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		#Setting number of simulations to 1000
+		self.raftRatio = Tk.IntVar()
+		self.raftRatioEntry["textvariable"] = self.raftRatio
+		self.raftRatio.set(0.01)
 		#Frame for Monomer Amounts
 		self.amountFrame = Tk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
