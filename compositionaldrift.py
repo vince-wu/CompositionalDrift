@@ -48,6 +48,8 @@ class Application(Tk.Frame):
 		def enter(self):
 			#nonlocal numMonomers 
 			self.numMonomers = int(self.monomerCount.get())
+			#asserting that input is in correct range
+			assert self.numMonomers < 8
 			#print(numMonomers) # debugging purposes
 			self.createMoreInputs() 
 		#Clears unneccesary widgets and creates more input widgets; called by enter()
@@ -233,12 +235,16 @@ class Application(Tk.Frame):
 		try:
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
-			simTest = int(self.numSims.get())
+			numSimulations = int(self.numSims.get())
+			assert numSimulations >= self.numPolyToShow.get()
 		except ValueError:
-			errorMessage("Please input valid parameters!")
+			errorMessage("Please input valid parameters!", 220)
 			return
 		except notInEuropeError:
-			errorMessage("You are not in Europe!")
+			errorMessage("You are not in Europe!", 220)
+			return
+		except AssertionError:
+			errorMessage("Number of Simulations must be greater or equal to Number of Polymers to Show!", 470)
 			return
 		#destroys hideButton if necessary
 		if self.destroyHide:
@@ -416,12 +422,15 @@ class Application(Tk.Frame):
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
 #When called, makes a pop out error informing user of invalid inputs
-def errorMessage(message):
+def errorMessage(message, width):
+	#Toplevel parameters
 	top = Tk.Toplevel()
 	top.wm_title("Error")
-	top.geometry("%dx%d%+d%+d" % (220, 70, 250, 125))
-	msg = Tk.Message(master = top, text = message, width = 400)
+	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
+	#Message
+	msg = Tk.Message(master = top, text = message, width = 500)
 	msg.pack(side = Tk.TOP, pady = 5)
+	#OK button to exit
 	exitButton = Tk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
 	exitButton.pack(side = Tk.TOP, pady = 5)
 #Takes in a list of tuple lists with item and weight, and returns a random item based on 
