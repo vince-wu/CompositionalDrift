@@ -260,7 +260,7 @@ class Application(Tk.Frame):
 	#Simulates polymer reaction based on input values
 	def simulate(self):
 		#print("Simulating!")
-		#Asserts that there are no input errors. Shows errorMessage if error caught.
+		#Asserts that there are no input errors. Shows errorMessage if error caught.test
 		try:
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
