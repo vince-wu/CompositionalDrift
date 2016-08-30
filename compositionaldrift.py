@@ -104,11 +104,11 @@ class Application(Tk.Frame):
 		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:")
 		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for numSimulations
-		self.numSimulations = Tk.Entry(master = self.numSimsFrame, width = 5)
-		self.numSimulations.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		self.numSimsEntry = Tk.Entry(master = self.numSimsFrame, width = 5)
+		self.numSimsEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting number of simulations to 1000
 		self.numSims = Tk.IntVar()
-		self.numSimulations["textvariable"] = self.numSims
+		self.numSimsEntry["textvariable"] = self.numSims
 		self.numSims.set(1000)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
@@ -156,9 +156,9 @@ class Application(Tk.Frame):
 		self.totalMonomersEntry = Tk.Entry(master = self.totalMonomersFrame, width = 5)
 		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting totalMonomers to 1000
-		self.totalMonomers = Tk.IntVar()
-		self.totalMonomersEntry["textvariable"] = self.totalMonomers
-		self.totalMonomers.set(1000)
+		self.totalMonomersTkVar = Tk.IntVar()
+		self.totalMonomersEntry["textvariable"] = self.totalMonomersTkVar
+		self.totalMonomersTkVar.set(1000)
 		#Frame for raftRatio label and Entry
 		self.raftRatioFrame = Tk.Frame(master = self.initialConditionsFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
@@ -169,9 +169,9 @@ class Application(Tk.Frame):
 		self.raftRatioEntry = Tk.Entry(master = self.raftRatioFrame, width = 5)
 		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting number of simulations to 1000
-		self.raftRatio = Tk.IntVar()
-		self.raftRatioEntry["textvariable"] = self.raftRatio
-		self.raftRatio.set(0.01)
+		self.raftRatioTkVar = Tk.StringVar()
+		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
+		self.raftRatioTkVar.set(0.01)
 		#Frame for Monomer Amounts
 		self.amountFrame = Tk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
@@ -184,7 +184,7 @@ class Application(Tk.Frame):
 			monomerAmountFrame = Tk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
 			inputAmountLabel = Tk.Label(master = monomerAmountFrame, text = "     Monomer " 
-				+ str(createCount + 1) + " Amount:")
+				+ str(createCount + 1) + " Ratio:")
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
 			inputAmount = Tk.Entry(master = monomerAmountFrame, width = 5)
@@ -265,6 +265,8 @@ class Application(Tk.Frame):
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
 			numSimulations = int(self.numSims.get())
+			self.raftRatio = float(self.raftRatioTkVar.get())
+			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			assert numSimulations >= self.numPolyToShow.get()
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
@@ -275,6 +277,23 @@ class Application(Tk.Frame):
 		except AssertionError:
 			errorMessage("Number of Simulations must be greater or equal to Number of Polymers to Show!", 470)
 			return
+		"""Calculates Initial Conditions based on inputs"""
+		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
+		print(self.totalMonomers)
+		print(self.raftRatio)
+		self.polymerLength = int(1 / self.raftRatio)
+		if self.polymerLength == 0:
+			self.polymerLength = 1
+		self.numPolymers = int(self.totalMonomers / self.polymerLength)
+		#Asserting valid inputs for RAFT ration and totalMonomers
+		try:
+			assert self.numPolymers > 0
+		except AssertionError:
+			errorMessage("RAFT Ratio too small!", 220)
+			return
+		#Debugging Purposes
+		print("Polymer Length: ", self.polymerLength)
+		print("Number of Polymers: ", self.numPolymers)
 		#destroys hideButton if necessary
 		if self.destroyHide:
 			self.hideButton.destroy()
@@ -290,6 +309,7 @@ class Application(Tk.Frame):
 		self.destroyCanvas = True
 		print("monomerAmounts: ", monomerAmounts)
 		print("singleCoeffList: ", singleCoeffList)
+
 		#An array of polymers
 		polymerArray = []
 		counter = 0
@@ -346,7 +366,8 @@ class Application(Tk.Frame):
 			monomerAmounts = originalMonomerAmounts
 			counter += 1
 		#Debugging purposes
-		print("Array of Polymers: ", polymerArray)
+		"""Important Debug: Prints out array of polymers"""
+		#print("Array of Polymers: ", polymerArray)
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
