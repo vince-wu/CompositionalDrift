@@ -107,9 +107,9 @@ class Application(Tk.Frame):
 		self.numSimsEntry = Tk.Entry(master = self.numSimsFrame, width = 5)
 		self.numSimsEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting number of simulations to 1000
-		self.numSims = Tk.IntVar()
-		self.numSimsEntry["textvariable"] = self.numSims
-		self.numSims.set(1000)
+		self.numSimsTkVar = Tk.IntVar()
+		self.numSimsEntry["textvariable"] = self.numSimsTkVar
+		self.numSimsTkVar.set(1000)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
@@ -139,8 +139,8 @@ class Application(Tk.Frame):
 		 command = _quit, width = 7, bg = "light blue", activebackground = "light slate blue")
 		quitButton.pack(side = Tk.LEFT, padx = 6)
 		createCount = 0;
-		# A list of Tk.Entry objects for Monomer Amount
-		self.startingAmountList = [] 
+		# A list of Tk.Entry objects for Monomer ratios
+		self.startingRatiosTkList = [] 
 		# A 2D list of Tk.Entry objects for Coefficicients
 		self.coefficientList = [] 
 		#Frame for total number of monomers and RAFT to monomer ratio
@@ -194,10 +194,10 @@ class Application(Tk.Frame):
 			inputAmount["textvariable"] = amount
 			amount.set(20)
 			#Add Tk.Entry object to startingAmountList
-			self.startingAmountList.append(inputAmount)
+			self.startingRatiosTkList.append(inputAmount)
 			createCount += 1
 		#Debugging purposes
-		#print("startingAmountList: ", self.startingAmountList) 
+		#print("startingAmountList: ", self.startingRatiosTkList) 
 		createCount2 = 0
 		#While loop creating number of neccesary coefficient Entry boxes
 		while createCount2 < self.numMonomers:
@@ -262,11 +262,11 @@ class Application(Tk.Frame):
 		#print("Simulating!")
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
 		try:
+			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
-			numSimulations = int(self.numSims.get())
+			numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
-			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			assert numSimulations >= self.numPolyToShow.get()
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
@@ -309,65 +309,86 @@ class Application(Tk.Frame):
 		self.destroyCanvas = True
 		print("monomerAmounts: ", monomerAmounts)
 		print("singleCoeffList: ", singleCoeffList)
-
+		#Returns 
 		#An array of polymers
 		polymerArray = []
-		counter = 0
-		#print(self.numMonomers)
-		#Builds number of polymers equal to self.numSims
-		while counter < self.numSims.get():
-			#Saving original monomerAmounts so resets are possible by copying monomerAmounts
-			originalMonomerAmounts = monomerAmounts[:]
-			#An array representing a polymer chain
-			polymer = []
-			#initiating polymer chain
-			"""Initiation: Iterates through all monomers, calculating weight chance to initiate for each,
-			 and initiates monomer with highest weight chance"""
-			count = 1
-			largestChance = 0
-			total = sum(monomerAmounts)
-			choices = []
-			while count <= self.numMonomers:
-				#weight chance of monomer initation: (amount of starting monomer)
-				weight = monomerAmounts[count - 1]
-				#Adds a two element list to choices containing monomer and weight
-				choices.append([count, weight])
-				count += 1
-			#Using weighted_choice, selects first monomer
-			startingMonomer = weighted_choice(choices)
-			#Uses up one monomer of the startingMonomer
-			monomerAmounts[startingMonomer - 1] -= 1
-			#startingPolymer becomes first monomer in polymer chain
-			polymer.append(startingMonomer)
-			#building polymer chain
-			while sum(monomerAmounts) > 0:
-				polyCounter = 1
-				largestChance = 0
+		#keeps track of number of simulations
+		simCounter = 0
+		originalMonomerAmounts = list(monomerAmounts)
+		while simCounter < numSimulations:
+			#a local array of polymers
+			localPolymerArray = []
+			#sets monomerAmounts to orignalMonomerAmounts
+			print("originalMonomerAmounts: ", originalMonomerAmounts)
+			monomerAmounts = list(originalMonomerAmounts)
+			print("monomerAmounts: ", monomerAmounts)
+			print("originalMonomerAmounts: ", originalMonomerAmounts)
+			#variable keeping track of current number of polymers
+			currNumPolymers = 0
+			#print(self.numMonomers)
+			#Builds number of polymers equal to self.numpolymers
+			while currNumPolymers < self.numPolymers:
+				"""Initiation: Chooses a monomer to initiate the chain based of weighted chance"""
+				#A variable keeping track of current monomer
+				monomerID = 1
 				choices = []
-				"""Propogation: Iterates through all monomers, calculating weight chance to bind for each, 
-				and binds monomer with highest weight chance"""
-				while polyCounter <= self.numMonomers:
-					#Retrieveing coefficient based on previous and current monomer
-					coeff = singleCoeffList[polymer[-1] - 1][polyCounter - 1]
-					# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
-					chance = monomerAmounts[polyCounter - 1] * coeff
+				while monomerID <= self.numMonomers:
+					#weight chance of monomer initation: (amount of starting monomer)
+					weight = monomerAmounts[monomerID - 1]
 					#Adds a two element list to choices containing monomer and weight
-					choices.append([polyCounter, chance])
-					polyCounter += 1
-				#Using weighted_choice, selects next monomer
-				nextMonomer = weighted_choice(choices)
-				#Reduces number of nextMonomer by 1, since it is being used up in reaction
-				monomerAmounts[nextMonomer - 1] -= 1
-				#Attaches next monomer to polymer chain
-				polymer.append(nextMonomer)
-			#Adds finished polymer to list of polymers
-			polymerArray.append(polymer)
-			#Resets the monomerAmounts to originalMonomerAmounts
-			monomerAmounts = originalMonomerAmounts
-			counter += 1
+					choices.append([monomerID, weight])
+					monomerID += 1
+				print("choices: ", choices)
+				#Using weighted_choice, selects first monomer
+				startingMonomer = weighted_choice(choices)
+				#Starts a new polymer with startingMonomer, represented by an array, 
+				#and adds that array to polymerArray
+				localPolymerArray.append([startingMonomer])
+				#Uses up one monomer of the startingMonomer
+				monomerAmounts[startingMonomer - 1] -= 1
+				#increases number of polymers by 1
+				currNumPolymers += 1
+			#debugging starting monomers
+			print("polymer array", polymerArray)
+			#variable to keep track of polymer length
+			currPolymerLength = 1
+			"""Grows each polymer at the same time until they all reach desired polymer size"""
+			print("self.polymerLength: ", self.polymerLength)
+			while currPolymerLength < self.polymerLength:
+				"""RAFT polymerization: each polymer propagates at the same time, represented here as
+				monomers being attached to each polymer chain one at a time"""
+				for polymer in localPolymerArray:
+					#A variable keeping track of current monomer
+					monomerID = 1
+					choices = []
+					"""Propogation: Iterates through all monomers, calculating weight chance to bind for each, 
+					and binds monomer with highest weight chance"""
+					while monomerID <= self.numMonomers:
+						#Retrieveing coefficient based on previous and current monomer
+						coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
+						# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+						chance = monomerAmounts[monomerID - 1] * coeff
+						#Adds a two element list to choices containing monomer and weight
+						choices.append([monomerID, chance])
+						monomerID += 1
+					print ("currPolymerLength: ", currPolymerLength)
+					print("choices2: ", choices)
+					#Using weighted_choice, selects next monomer
+					nextMonomer = weighted_choice(choices)
+					#Reduces number of nextMonomer by 1, since it is being used up in reaction
+					monomerAmounts[nextMonomer - 1] -= 1
+					#Attaches next monomer to polymer chain
+					polymer.append(nextMonomer)
+				#increase current polymer length by 1
+				currPolymerLength += 1
+			print("simCounter: ", simCounter)
+			#adds local polymer array to global polymer array
+			polymerArray = polymerArray + localPolymerArray
+			#increases simCounter by 1
+			simCounter += 1
 		#Debugging purposes
 		"""Important Debug: Prints out array of polymers"""
-		#print("Array of Polymers: ", polymerArray)
+		print("Array of Polymers: ", polymerArray)
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
@@ -384,9 +405,9 @@ class Application(Tk.Frame):
 		#Iterates through each unique monomer and plots composition
 		for monomer in range(1, self.numMonomers + 1):
 			#x-axis array
-			polymerIndex = list(range(1, self.totalNumMonomers + 1))
+			polymerIndex = list(range(1, self.polymerLength + 1))
 			#y-axis array initation
-			monomercounts = [0] * self.totalNumMonomers
+			monomercounts = [0] * self.polymerLength
 			#inputs counts into y-axis array
 			for index in polymerIndex:
 				count = 0
@@ -445,15 +466,22 @@ class Application(Tk.Frame):
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
-	#Converts an array of Tk.Entrys for numMonomers into an int array
+	#Converts an array of Tk.Entrys of ratios into an int array of starting monomer amounts
 	def getMonomerAmounts(self):
-		numStartingAmtList = []
-		for entry in self.startingAmountList:
-			if entry == 0:
-				numStartingAmtList.append(entry)
-			else:
-				numStartingAmtList.append(int(entry.get()))
-		return numStartingAmtList
+		#A list of starting monomer amounts
+		monomerAmounts = []
+		#A list of starting ratios (not tkvars!)
+		startingWeightList = []
+		#Converts a list of Tkvars to a list of floats
+		for entry in self.startingRatiosTkList:
+			startingWeightList.append(float(entry.get()))
+		totalWeight = sum(startingWeightList)
+		for weight in startingWeightList:
+			#calculates number of monomers from monomer ratio and total monomers, floor dividing
+			numMonomers = int(self.totalMonomers * weight / totalWeight)
+			monomerAmounts.append(numMonomers)
+		print("monomerAmounts: ", monomerAmounts)
+		return monomerAmounts
 	#Converts a 2D array of Tk.Entrys for coefficients into a 2D double array
 	def getCoefficients(self):
 		coeffList = []
