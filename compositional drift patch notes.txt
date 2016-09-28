@@ -16,7 +16,8 @@ TODO
 - add dyad pattern recognization and plotting
 - make simulation take from same pool of monomers (RAFT, free radical)
 - fix negative number input bug
-- fix all 0 input bug
+- fix all 0 input bug**IMPORTANT**
+- add randomize visualization to show different polymer strands
 -CODE CLEANUP: change Tk.IntVar variable naming to be like numSimsTkVar 
 instead of numSims 
 RAFT Simulation:
