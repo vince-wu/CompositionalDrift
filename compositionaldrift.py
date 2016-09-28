@@ -1,6 +1,7 @@
 #All neccesary imports
 import matplotlib
 import random
+import math
 matplotlib.use('TkAgg')
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -109,7 +110,7 @@ class Application(Tk.Frame):
 		#Setting number of simulations to 1000
 		self.numSimsTkVar = Tk.IntVar()
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
-		self.numSimsTkVar.set(1000)
+		self.numSimsTkVar.set(50)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
@@ -313,15 +314,13 @@ class Application(Tk.Frame):
 		#An array of polymers
 		polymerArray = []
 		#keeps track of number of simulations
-		simCounter = 0
+		simCounter = 1
 		originalMonomerAmounts = list(monomerAmounts)
-		while simCounter < numSimulations:
+		while simCounter <= numSimulations:
 			#a local array of polymers
 			localPolymerArray = []
 			#sets monomerAmounts to orignalMonomerAmounts
-			print("originalMonomerAmounts: ", originalMonomerAmounts)
 			monomerAmounts = list(originalMonomerAmounts)
-			print("monomerAmounts: ", monomerAmounts)
 			print("originalMonomerAmounts: ", originalMonomerAmounts)
 			#variable keeping track of current number of polymers
 			currNumPolymers = 0
@@ -349,7 +348,7 @@ class Application(Tk.Frame):
 				#increases number of polymers by 1
 				currNumPolymers += 1
 			#debugging starting monomers
-			print("polymer array", polymerArray)
+			#print("polymer array", polymerArray)
 			#variable to keep track of polymer length
 			currPolymerLength = 1
 			"""Grows each polymer at the same time until they all reach desired polymer size"""
@@ -366,17 +365,20 @@ class Application(Tk.Frame):
 					while monomerID <= self.numMonomers:
 						#Retrieveing coefficient based on previous and current monomer
 						coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
+						print("coeff: ", coeff);
 						# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
 						chance = monomerAmounts[monomerID - 1] * coeff
+						print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
 						#Adds a two element list to choices containing monomer and weight
 						choices.append([monomerID, chance])
 						monomerID += 1
-					print ("currPolymerLength: ", currPolymerLength)
+					#print ("currPolymerLength: ", currPolymerLength)
 					print("choices2: ", choices)
 					#Using weighted_choice, selects next monomer
 					nextMonomer = weighted_choice(choices)
 					#Reduces number of nextMonomer by 1, since it is being used up in reaction
 					monomerAmounts[nextMonomer - 1] -= 1
+					#print("monomerAmounts: ", monomerAmounts)
 					#Attaches next monomer to polymer chain
 					polymer.append(nextMonomer)
 				#increase current polymer length by 1
@@ -388,7 +390,7 @@ class Application(Tk.Frame):
 			simCounter += 1
 		#Debugging purposes
 		"""Important Debug: Prints out array of polymers"""
-		print("Array of Polymers: ", polymerArray)
+		#print("Array of Polymers: ", polymerArray)
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
@@ -435,17 +437,16 @@ class Application(Tk.Frame):
 		self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
-		self.totalNumMonomers = sum(self.getMonomerAmounts())
 		numRows = self.numPolyToShow.get()
 		#parameters for canvas height and width
 		canvasHeight = 120
 		canvasWidth = 1000
 		#Maximizes size of squares
-		if (canvasHeight - 50) / numRows <= (canvasWidth - 50) / self.totalNumMonomers:
+		if (canvasHeight - 50) / numRows <= (canvasWidth - 50) / self.polymerLength:
 			size = (canvasHeight - 50) / numRows
-			canvasWidth = self.totalNumMonomers * size + 20
+			canvasWidth = self.polymerLength * size + 20
 		else:
-			size = (canvasWidth - 50) / self.totalNumMonomers
+			size = (canvasWidth - 50) / self.polymerLength
 			canvasHeight = numRows * size + 10
 		#neccesary instance variables
 		lineColors = ["blue", "green", "red", "cyan", "magenta", "yellow", "black"]
@@ -467,6 +468,7 @@ class Application(Tk.Frame):
 				ulx += size
 			ulx = 20
 	#Converts an array of Tk.Entrys of ratios into an int array of starting monomer amounts
+	#Note: might have result in total amount fo momoners being slightly more than inital total monomers due to ceiling divide
 	def getMonomerAmounts(self):
 		#A list of starting monomer amounts
 		monomerAmounts = []
@@ -477,8 +479,8 @@ class Application(Tk.Frame):
 			startingWeightList.append(float(entry.get()))
 		totalWeight = sum(startingWeightList)
 		for weight in startingWeightList:
-			#calculates number of monomers from monomer ratio and total monomers, floor dividing
-			numMonomers = int(self.totalMonomers * weight / totalWeight)
+			#calculates number of monomers from monomer ratio and total monomers, ceiling dividing
+			numMonomers = math.ceil(self.totalMonomers * weight / totalWeight)
 			monomerAmounts.append(numMonomers)
 		print("monomerAmounts: ", monomerAmounts)
 		return monomerAmounts

@@ -14,18 +14,12 @@ TODO
 - decrease runtime
 - fix bug when back is pressed on fullscreen, should minimize
 - add dyad pattern recognization and plotting
-- make simulation take from same pool of monomers (RAFT, free radical)
 - fix negative number input bug
-- fix all 0 input bug**IMPORTANT**
+- fix two or more 0 input bug**IMPORTANT**
 - add randomize visualization to show different polymer strands
 -CODE CLEANUP: change Tk.IntVar variable naming to be like numSimsTkVar 
 instead of numSims 
-RAFT Simulation:
-- all polymers are building at same time
-- extra monomers will be left over, don't use them
-Free Radical:
-- polymers built one by one
-- don't use leftover monomers
+
 
 FINISHED TODO:
 - fix bug where if numsims <  numrows, crashes
@@ -34,3 +28,7 @@ FINISHED TODO:
 - NOPE TOO ANNOYING: make it so graph and visualization canvas need not be destroyed every
 time, causing glitchy graphics when simulatating more than once when
 not on fullscreen
+-fixed visualization bug
+-fixed one 0 bug
+-fixed not enough polymers bug
+-implemented RAFT simulation
