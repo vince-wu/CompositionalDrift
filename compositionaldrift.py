@@ -375,7 +375,15 @@ class Application(Tk.Frame):
 					#print ("currPolymerLength: ", currPolymerLength)
 					print("choices2: ", choices)
 					#Using weighted_choice, selects next monomer
-					nextMonomer = weighted_choice(choices)
+					try:
+						nextMonomer = weighted_choice(choices)
+					except AssertionError:
+						monomerID = 1
+						choices = []
+						while monomerID <= self.numMonomers:
+							choices.append([monomerID, monomerAmounts[monomerID - 1]])
+							monomerID += 1
+						nextMonomer = weighted_choice(choices)
 					#Reduces number of nextMonomer by 1, since it is being used up in reaction
 					monomerAmounts[nextMonomer - 1] -= 1
 					#print("monomerAmounts: ", monomerAmounts)

@@ -15,7 +15,7 @@ TODO
 - fix bug when back is pressed on fullscreen, should minimize
 - add dyad pattern recognization and plotting
 - fix negative number input bug
-- fix two or more 0 input bug**IMPORTANT**
+- tiny fix for 0 bug error
 - add randomize visualization to show different polymer strands
 -CODE CLEANUP: change Tk.IntVar variable naming to be like numSimsTkVar 
 instead of numSims 
@@ -32,3 +32,4 @@ not on fullscreen
 -fixed one 0 bug
 -fixed not enough polymers bug
 -implemented RAFT simulation
+-fixed more than one 0 bug
