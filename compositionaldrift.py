@@ -279,7 +279,9 @@ class Application(Tk.Frame):
 			singleCoeffList = self.getCoefficients()
 			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
-			assert self.numSimulations >= self.numPolyToShow.get()
+			assert(self.totalMonomers > 0)
+			assert(self.numSimulations > 0)
+			assert(self.raftRatio > 0)
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
 			return
@@ -287,7 +289,7 @@ class Application(Tk.Frame):
 			errorMessage("You are not in Europe!", 220)
 			return
 		except AssertionError:
-			errorMessage("Number of Simulations must be greater or equal to Number of Polymers to Show!", 470)
+			errorMessage("Please input valid parameters!", 220)
 			return
 		"""Calculates Initial Conditions based on inputs"""
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
@@ -321,7 +323,7 @@ class Application(Tk.Frame):
 		self.destroyCanvas = True
 		#print("monomerAmounts: ", monomerAmounts)
 		#print("singleCoeffList: ", singleCoeffList)
-		#Returns 
+		self.monomerCountLabel.config(text = "Polymers Per Simulation: " + str(self.numPolymers))
 		#An array of polymers
 		polymerArray = []
 		#keeps track of number of simulations
@@ -484,6 +486,8 @@ class Application(Tk.Frame):
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
 		numRows = self.numPolyToShow.get()
+		if numRows > self.numPolymers * self.numSimulations: 
+			numRows = self.numPolymers * self.numSimulations
 		#parameters for canvas height and width
 		canvasHeight = 120
 		canvasWidth = 1000
@@ -522,6 +526,7 @@ class Application(Tk.Frame):
 		startingWeightList = []
 		#Converts a list of Tkvars to a list of floats
 		for entry in self.startingRatiosTkList:
+			assert(float(entry.get()) > 0)
 			startingWeightList.append(float(entry.get()))
 		totalWeight = sum(startingWeightList)
 		for weight in startingWeightList:
@@ -545,6 +550,7 @@ class Application(Tk.Frame):
 					elif ',' in list(innerEntry.get()):
 						raise notInEuropeError("You're in America!")
 					else:
+						assert(float(innerEntry.get()) > 0)
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
 #When called, makes a pop out error informing user of invalid inputs
