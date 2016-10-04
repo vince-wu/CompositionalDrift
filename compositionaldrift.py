@@ -2,6 +2,7 @@
 import matplotlib
 import random
 import math
+import json
 matplotlib.use('TkAgg')
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -110,7 +111,7 @@ class Application(Tk.Frame):
 		#Setting number of simulations to 1000
 		self.numSimsTkVar = Tk.IntVar()
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
-		self.numSimsTkVar.set(50)
+		self.numSimsTkVar.set(200)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
@@ -147,6 +148,16 @@ class Application(Tk.Frame):
 		#Frame for total number of monomers and RAFT to monomer ratio
 		self.initialConditionsFrame = Tk.Frame(master = self.inputFrame)
 		self.initialConditionsFrame.pack(side = Tk.LEFT, padx = 5)
+		#variable to keep track of type of graph. 0 = percentage, 1 = occurences
+		self.graphTypeTkIntVar = Tk.IntVar()
+		self.graphTypeTkIntVar.set(0)
+		#RadioButtons for display type
+		self.percentageRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Monomer Occurences",
+		 variable = self.graphTypeTkIntVar, value = 0)
+		self.occurenceRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Percentage Monomer",
+		 variable = self.graphTypeTkIntVar, value = 1)
+		self.percentageRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
+		self.occurenceRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
 		#Frame for totalMonomers label and Entry
 		self.totalMonomersFrame = Tk.Frame(master = self.initialConditionsFrame)
 		self.totalMonomersFrame.pack(side = Tk.TOP)
@@ -266,9 +277,9 @@ class Application(Tk.Frame):
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
-			numSimulations = int(self.numSimsTkVar.get())
+			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
-			assert numSimulations >= self.numPolyToShow.get()
+			assert self.numSimulations >= self.numPolyToShow.get()
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
 			return
@@ -308,20 +319,20 @@ class Application(Tk.Frame):
 			self.canvas.get_tk_widget().destroy()
 			self.toolbar.destroy()
 		self.destroyCanvas = True
-		print("monomerAmounts: ", monomerAmounts)
-		print("singleCoeffList: ", singleCoeffList)
+		#print("monomerAmounts: ", monomerAmounts)
+		#print("singleCoeffList: ", singleCoeffList)
 		#Returns 
 		#An array of polymers
 		polymerArray = []
 		#keeps track of number of simulations
 		simCounter = 1
-		originalMonomerAmounts = list(monomerAmounts)
-		while simCounter <= numSimulations:
+		self.originalMonomerAmounts = list(monomerAmounts)
+		while simCounter <= self.numSimulations:
 			#a local array of polymers
 			localPolymerArray = []
 			#sets monomerAmounts to orignalMonomerAmounts
-			monomerAmounts = list(originalMonomerAmounts)
-			print("originalMonomerAmounts: ", originalMonomerAmounts)
+			monomerAmounts = list(self.originalMonomerAmounts)
+			#print("originalMonomerAmounts: ", originalMonomerAmounts)
 			#variable keeping track of current number of polymers
 			currNumPolymers = 0
 			#print(self.numMonomers)
@@ -337,7 +348,7 @@ class Application(Tk.Frame):
 					#Adds a two element list to choices containing monomer and weight
 					choices.append([monomerID, weight])
 					monomerID += 1
-				print("choices: ", choices)
+				#print("choices: ", choices)
 				#Using weighted_choice, selects first monomer
 				startingMonomer = weighted_choice(choices)
 				#Starts a new polymer with startingMonomer, represented by an array, 
@@ -352,7 +363,7 @@ class Application(Tk.Frame):
 			#variable to keep track of polymer length
 			currPolymerLength = 1
 			"""Grows each polymer at the same time until they all reach desired polymer size"""
-			print("self.polymerLength: ", self.polymerLength)
+			#print("self.polymerLength: ", self.polymerLength)
 			while currPolymerLength < self.polymerLength:
 				"""RAFT polymerization: each polymer propagates at the same time, represented here as
 				monomers being attached to each polymer chain one at a time"""
@@ -365,18 +376,19 @@ class Application(Tk.Frame):
 					while monomerID <= self.numMonomers:
 						#Retrieveing coefficient based on previous and current monomer
 						coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
-						print("coeff: ", coeff);
+						#print("coeff: ", coeff);
 						# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
 						chance = monomerAmounts[monomerID - 1] * coeff
-						print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
+						#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
 						#Adds a two element list to choices containing monomer and weight
 						choices.append([monomerID, chance])
 						monomerID += 1
 					#print ("currPolymerLength: ", currPolymerLength)
-					print("choices2: ", choices)
+					#print("choices2: ", choices)
 					#Using weighted_choice, selects next monomer
 					try:
 						nextMonomer = weighted_choice(choices)
+					#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
 					except AssertionError:
 						monomerID = 1
 						choices = []
@@ -391,7 +403,7 @@ class Application(Tk.Frame):
 					polymer.append(nextMonomer)
 				#increase current polymer length by 1
 				currPolymerLength += 1
-			print("simCounter: ", simCounter)
+			#print("simCounter: ", simCounter)
 			#adds local polymer array to global polymer array
 			polymerArray = polymerArray + localPolymerArray
 			#increases simCounter by 1
@@ -399,6 +411,10 @@ class Application(Tk.Frame):
 		#Debugging purposes
 		"""Important Debug: Prints out array of polymers"""
 		#print("Array of Polymers: ", polymerArray)
+		#outputs polymer onto textfile
+		text_file = open("polymerArray.txt", "w")
+		json.dump(polymerArray, text_file)
+		text_file.close()
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
@@ -410,7 +426,6 @@ class Application(Tk.Frame):
 		self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
 		frequencyPlot = self.plotFigure.add_subplot(111)
 		frequencyPlot.tick_params(labelsize = 7)
-		frequencyPlot.set_ylabel("Total Monomer Occurences", labelpad=5, fontsize = 9)
 		frequencyPlot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 		#Iterates through each unique monomer and plots composition
 		for monomer in range(1, self.numMonomers + 1):
@@ -419,12 +434,35 @@ class Application(Tk.Frame):
 			#y-axis array initation
 			monomercounts = [0] * self.polymerLength
 			#inputs counts into y-axis array
-			for index in polymerIndex:
-				count = 0
-				for polymer in polymerArray:
-					if polymer[index - 1] == monomer:
-						count += 1
-				monomercounts[index - 1] = count
+			graphType = self.graphTypeTkIntVar.get()
+			#graphs Percentage of Monomer Remaining
+			if graphType == 0:
+				#adjust axis title
+				frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
+				#adjust y axis limiys
+				frequencyPlot.set_ylim([0,1])
+				#variable to keep track of average number of monomers consumed
+				monomersConsumed = 0
+				for index in polymerIndex:
+					count = 0
+					for polymer in polymerArray:
+						if polymer[index - 1] == monomer:
+							count += 1
+					startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
+					#calculates monomer consumed
+					monomersConsumed += count / self.numSimulations
+					#calculated percentage of monomer remaining
+					percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
+					monomercounts[index - 1] = percentageRemaining
+			else:
+				#adjust axis title
+				frequencyPlot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
+				for index in polymerIndex:
+					count = 0
+					for polymer in polymerArray:
+						if polymer[index - 1] == monomer:
+							count += 1
+					monomercounts[index - 1] = count / self.numSimulations
 			#debugging purposes
 			#print(polymerIndex)
 			#print(monomercounts)
