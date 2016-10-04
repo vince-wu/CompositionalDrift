@@ -249,7 +249,7 @@ class Application(Tk.Frame):
 		self.initFrame = Tk.Frame(master = root)
 		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
-		 text = "Compositional Drift Simulator v1.1")
+		 text = "Compositional Drift Simulator v1.2")
 		message1.pack(side = Tk.TOP, padx = 0, pady = 0)
 		message2 = Tk.Message(master = self.initFrame, width = 200,
 			text = "Author: Vincent Wu")
@@ -420,6 +420,7 @@ class Application(Tk.Frame):
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
+		center(root)
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
 	def plotCompositions(self, polymerArray):
@@ -576,6 +577,14 @@ def weighted_choice(choices):
         	return c
         upto += w
     assert False, "Shouldn't get here"
+def center(toplevel):
+    toplevel.update_idletasks()
+    w = toplevel.winfo_screenwidth()
+    h = toplevel.winfo_screenheight()
+    size = tuple(int(_) for _ in toplevel.geometry().split('+')[0].split('x'))
+    x = w/2 - size[0]/2
+    y = h/2 - size[1]/2
+    toplevel.geometry("%dx%d+%d+%d" % (size + (x, y - 30)))
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
