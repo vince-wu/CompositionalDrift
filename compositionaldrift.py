@@ -12,9 +12,12 @@ from matplotlib.figure import Figure
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk
+    import Tkinter.filedialog
 else:
     import tkinter as Tk
-    """"
+    import tkinter.filedialog
+
+"""
     Created by Vincent Wu on 8/17/16:
     This program uses the Mayo-Lewis equation and Monte Carlo method to simulate copolymer growth, and
     represents results both graphically and visually

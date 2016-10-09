@@ -1,2 +1,6 @@
 polymerArray.txt
 .idea/
+build
+build/polymerArray.txt
+compositionaldrift.spec
+__pycache__
