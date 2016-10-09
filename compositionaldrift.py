@@ -589,6 +589,6 @@ class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
 root = Tk.Tk()
-root.wm_title("Compositional Drift")
+root.wm_title("Compositional Drift v1.2")
 app = Application(master = root)
 app.mainloop()
