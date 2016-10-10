@@ -3,6 +3,7 @@ import matplotlib
 import random
 import math
 import json
+import os.path
 matplotlib.use('TkAgg')
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
@@ -24,6 +25,28 @@ else:
     """
 #Static Final variables
 MONOMER_CAP = 5000000
+NUM_UNIQUE_MONOMERS = 2
+NUM_POLYMERS_SHOW = 8
+GRAPH_OCCURENCE = True
+TOTAL_STARTING_MONOMERS = 1000
+SETTING = 0
+RAFT_RATIO = 0.01
+#generates a config file if needed
+def generateConfigFile():
+	if not os.path.exists("config.txt"):
+		file = open("config.txt", "w")
+		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \nGraph Monomer Occurence = true \n")
+		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \n")
+		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
+		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
+		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
+		file.close()
+#reads the config file and sets static variables based on config
+def readConfigFile():
+	if not os.path.exists("config.txt"):
+		errorMessage("config.txt does not exist!", 220)
+		return
+
 #Main class 
 class Application(Tk.Frame):
 	def __init__(self, master = None):
@@ -54,7 +77,7 @@ class Application(Tk.Frame):
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
 			#nonlocal numMonomers 
-			self.numMonomers = int(self.monomerCount.get())
+			self.numMonomers = int(self.monomerCountTkVar.get())
 			#asserting that input is in correct range
 			assert self.numMonomers < 8
 			#print(numMonomers) # debugging purposes
@@ -78,9 +101,13 @@ class Application(Tk.Frame):
 		#Label for spinbox
 		self.monomerCountLabel = Tk.Label(master = countFrame, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
+		#tkvar for monomercount
+		self.monomerCountTkVar = Tk.IntVar()
 		#MonomerCount spinbox
-		self.monomerCount = Tk.Spinbox(master = countFrame, from_ = 1, to = 7, width = 2)
-		self.monomerCount.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		self.monomerCountSpinbox = Tk.Spinbox(master = countFrame, from_ = 1, to = 7, width = 2, textvariable = self.monomerCountTkVar)
+		self.monomerCountSpinbox.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		#sets monomerCOuntTkVar to default setting
+		self.monomerCountTkVar.set(NUM_UNIQUE_MONOMERS)
 		#countConfirm Button
 		self.countConfirm = Tk.Button(master = self.inputFrame, text = "Enter",
 		 command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
@@ -89,7 +116,7 @@ class Application(Tk.Frame):
 	def createMoreInputs(self):
 		#Destroys or edits current widgets
 		self.initFrame.destroy()
-		self.monomerCount.destroy()
+		self.monomerCountSpinbox.destroy()
 		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(self.numMonomers))
 		self.countConfirm.destroy()
 		#Commands
@@ -594,6 +621,7 @@ def center(toplevel):
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
+generateConfigFile()
 root = Tk.Tk()
 root.wm_title("Compositional Drift v1.2")
 app = Application(master = root)
