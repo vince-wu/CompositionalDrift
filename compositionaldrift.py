@@ -554,7 +554,7 @@ class Application(Tk.Frame):
 					elif ',' in list(innerEntry.get()):
 						raise notInEuropeError("You're in America!")
 					else:
-						assert(float(innerEntry.get()) > 0)
+						assert(float(innerEntry.get()) >= 0)
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
 #When called, makes a pop out error informing user of invalid inputs
