@@ -22,6 +22,8 @@ else:
     This program uses the Mayo-Lewis equation and Monte Carlo method to simulate copolymer growth, and
     represents results both graphically and visually
     """
+#Static Final variables
+MONOMER_CAP = 5000000
 #Main class 
 class Application(Tk.Frame):
 	def __init__(self, master = None):
@@ -285,6 +287,7 @@ class Application(Tk.Frame):
 			assert(self.totalMonomers > 0)
 			assert(self.numSimulations > 0)
 			assert(self.raftRatio > 0)
+			assert(self.totalMonomers * self.numSimulations <= MONOMER_CAP)
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
 			return
