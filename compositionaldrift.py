@@ -442,7 +442,7 @@ class Application(Tk.Frame):
 			#inputs counts into y-axis array
 			graphType = self.graphTypeTkIntVar.get()
 			#graphs Percentage of Monomer Remaining
-			if graphType == 0:
+			if graphType == 1:
 				#adjust axis title
 				frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
 				#adjust y axis limiys
