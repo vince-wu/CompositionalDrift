@@ -42,7 +42,7 @@ def generateConfigFile():
 		file = open("config.txt", "w")
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \nGraph Monomer Occurence = 1 \n")
 		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
-		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
+		file.write("Setting 1 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
 		file.close()
@@ -60,10 +60,32 @@ def readConfigFile():
 	settingConfig = False
 	#variable to keep track of whether to parse setting config
 	parseSetting = False
+	#variable to keep track of number of monomers
+	numMonomers = 0
+	#global variable to shwo whether or not a setting loaded successfully
+	global LOAD_SUCCESSFUL
 	for line in file:
 		line = line.strip()
 		#If line is end, read next lines as regular config line
 		if line == "end":
+			if settingConfig == True and parseSetting == True:
+				#test to see that the settings are all valid and can be loaded properly
+				try:
+					#test to see that ratios for all monomers are given
+					for monomerID in numMonomerArray:
+						assert(numMonomerArray[monomerID -1] == monomerID)
+					#test to see that all ratios are valid (> 0)
+					for ratio in RATIO_ARRAY:
+						assert(ratio > 0)
+					for column in COEFF_ARRAY:
+						for coeff in column:
+							assert(coeff >= 0)
+				except AssertionError:
+					LOAD_SUCCESSFUL = False
+					continue
+				except IndexError:
+					LOAD_SUCCESSFUL = False
+				LOAD_SUCCESSFUL = True
 			settingConfig = False
 			parseSetting = False
 			continue
@@ -72,13 +94,85 @@ def readConfigFile():
 			#if not relevant setting number, skip
 			if not parseSetting:
 				continue
-			continue
-		#If line is a "Setting X", read next lines as setting config line
-		if len(line.split("=")) == 1:
-			settingConfig = True
 			lineArray = line.split(" ")
-			if int(lineArray[1]) == SETTING:
-				parseSetting = True
+			#first line of setting config must state number of monomers
+			if len(lineArray) == 6:
+				try:
+					assert(lineArray[0] == "Number")
+					assert(lineArray[1] == "of")
+					assert(lineArray[2] == "Unique")
+					assert(lineArray[3] == "Monomers")
+					assert(lineArray[4] == "=")
+					numMonomers = int(lineArray[5])
+					#global array to keep track of monomer ratios, initalized as an array of -1
+					global RATIO_ARRAY
+					RATIO_ARRAY = [-1] * numMonomers
+					#array to keep track of all neccesary monomers
+					numMonomerArray = [0] * numMonomers
+					#global array to keep track monomer coefficients, initialized of an array of arrays of -1
+					global COEFF_ARRAY
+					COEFF_ARRAY = [-1] * numMonomers
+					COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
+				except AssertionError:
+					invalidLines += 1
+				except ValueError:
+					invalidLines += 1
+				continue
+			if len(lineArray) == 5:
+				#checking that line is correct syntax
+				try:
+					assert(lineArray[0] == "Monomer")
+					assert(lineArray[2] == "Ratio")
+					assert(lineArray[3] == "=")
+					#adding monomer number to numMonomerArray
+					numMonomerArray[int(lineArray[1]) - 1] = int(lineArray[1])
+					#add monomer ratio to RATIO_ARRAY
+					RATIO_ARRAY[int(lineArray[1]) - 1] = int(lineArray[4])
+				except AssertionError:
+					invalidLines += 1
+					continue
+				except ValueError:
+					invalidLines += 1
+					continue 
+				except IndexError:
+					invalidLines += 1
+					continue
+			if len(lineArray) == 3:
+				#add the coefficient to the correct place in COEFF_ARRAY
+				try:
+					assert(len(lineArray[0]) == 3)
+					assert(lineArray[1] == "=")
+					coeffTag = lineArray[0]
+					assert(coeffTag[1] == "-")
+					column = int(coeffTag[0]) - 1
+					row = int(coeffTag[2]) - 1
+					COEFF_ARRAY[column][row] = float(lineArray[2])
+				except AssertionError:
+					invalidLines += 1
+					continue
+				except ValueError:
+					invalidLines += 1
+					continue
+				except IndexError:
+					invalidLines += 1
+					continue
+		#If line is a "Setting X", read next lines as setting config line
+		intermediate = line.split("=")
+		if len(intermediate) == 1:
+			intermediate2 = intermediate[0].split(" ")
+			#cehck if line is two words
+			if len(intermediate2) == 2:
+				#check if line starts with "Setting"
+				if intermediate2[0] == "Setting":
+					settingConfig = True
+				#check if setting number is integer and if it matches SETTING
+				try:
+					if int(intermediate2[1]) == SETTING:
+						parseSetting = True
+				except AssertionError:
+					invalidLines += 1
+				continue
+			invalidLines += 1
 			continue
 		#gets the config header
 		configType = (line.split("="))[0].strip()
@@ -139,6 +233,11 @@ class Application(Tk.Frame):
 		self.initialize()
 	#Initialization
 	def initialize(self):
+		#generates and reads config file
+		generateConfigFile()
+		readConfigFile()
+		if LOAD_SUCCESSFUL:
+			print("Load successful!")
 		#Creates the init screen
 		self.initScreen()
 		#Creates Input Widgets
@@ -705,8 +804,6 @@ def center(toplevel):
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
-generateConfigFile()
-readConfigFile()
 root = Tk.Tk()
 root.wm_title("Compositional Drift v1.2")
 app = Application(master = root)
