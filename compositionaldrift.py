@@ -26,27 +26,111 @@ else:
 #Static Final variables
 MONOMER_CAP = 5000000
 NUM_UNIQUE_MONOMERS = 2
+NUM_SIMULATIONS = 200
 NUM_POLYMERS_SHOW = 8
-GRAPH_OCCURENCE = True
+GRAPH_OCCURENCE = 1
 TOTAL_STARTING_MONOMERS = 1000
 SETTING = 0
 RAFT_RATIO = 0.01
+CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
+ ["Number of Polymers to Show", 1], 
+ ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
+ ["Default Setting", 1], ["Monomer Cap", 1]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
 		file = open("config.txt", "w")
-		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \nGraph Monomer Occurence = true \n")
-		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \n")
+		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \nGraph Monomer Occurence = 1 \n")
+		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
 		file.close()
 #reads the config file and sets static variables based on config
 def readConfigFile():
+	#error checking to see if config file exists
 	if not os.path.exists("config.txt"):
 		errorMessage("config.txt does not exist!", 220)
 		return
-
+	file = open("config.txt", "r")
+	#parses each line in the file. If it is a valid configuration line, it sets that correspondin static variable accordingly
+	#variable to keep track of number of invalid config lines
+	invalidLines = 0 
+	#variable to keep track of whether or not line is a setting config line
+	settingConfig = False
+	#variable to keep track of whether to parse setting config
+	parseSetting = False
+	for line in file:
+		line = line.strip()
+		#If line is end, read next lines as regular config line
+		if line == "end":
+			settingConfig = False
+			parseSetting = False
+			continue
+		#handling for setting config line
+		if settingConfig:
+			#if not relevant setting number, skip
+			if not parseSetting:
+				continue
+			continue
+		#If line is a "Setting X", read next lines as setting config line
+		if len(line.split("=")) == 1:
+			settingConfig = True
+			lineArray = line.split(" ")
+			if int(lineArray[1]) == SETTING:
+				parseSetting = True
+			continue
+		#gets the config header
+		configType = (line.split("="))[0].strip()
+		#gets the config value
+		configStringValue = (line.split("="))[1].strip()
+		if (not setConfigVariable(configType, configStringValue)):
+			invalidLines += 1
+	file.close()
+	print("Number of invalid config lines: ", invalidLines)
+#helper method to set the static variable. Returns 1 if successful, 0 if not
+def setConfigVariable(configType, configStringValue):
+	for config in CONFIGS:
+		if config[0] == configType:
+			try:
+				#handling for variable types
+				if config[1]:
+					setConfigVariableHelper(configType, int(configStringValue))
+				else:
+					setConfigVariableHelper(configType, float(configStringValue))
+				print(configType, configStringValue)
+				return 1
+			except AssertionError:
+				return 0
+	return 0
+#A helper function mapping name to static variables
+def setConfigVariableHelper(configType, configValue):
+	if configType == "Number of Unique Monomers":
+		global NUM_UNIQUE_MONOMERS
+		NUM_UNIQUE_MONOMERS = configValue
+	elif configType == "Number of Simulations":
+		global NUM_SIMULATIONS
+		NUM_SIMULATIONS = configValue
+	elif configType == "Number of Polymers to Show":
+		global NUM_POLYMERS_SHOW
+		NUM_POLYMERS_SHOW = configValue	
+	elif configType == "Graph Monomer Occurence":
+		global GRAPH_OCCURENCE
+		GRAPH_OCCURENCE = configValue
+	elif configType == "Total Starting Monomers":
+		global TOTAL_STARTING_MONOMERS
+		TOTAL_STARTING_MONOMERS = configValue
+	elif configType == "RAFT to Monomers Ratio":
+		global RAFT_RATIO
+		RAFT_RATIO = configValue
+	elif configType == "Default Setting":
+		global SETTING
+		SETTING = configValue
+	elif configType == "Monomer Cap":
+		global MONOMER_CAP
+		MONOMER_CAP = configValue
+	else:
+		assert False, "shouldn't get here"	
 #Main class 
 class Application(Tk.Frame):
 	def __init__(self, master = None):
@@ -143,7 +227,7 @@ class Application(Tk.Frame):
 		#Setting number of simulations to 1000
 		self.numSimsTkVar = Tk.IntVar()
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
-		self.numSimsTkVar.set(200)
+		self.numSimsTkVar.set(NUM_SIMULATIONS)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
@@ -156,7 +240,7 @@ class Application(Tk.Frame):
 		#Setting numPolyToShow to 6
 		self.numPolyToShow = Tk.IntVar()
 		self.numPolyToShowBox["textvariable"] = self.numPolyToShow
-		self.numPolyToShow.set(8)
+		self.numPolyToShow.set(NUM_POLYMERS_SHOW)
 		#Frame for Back, Quit, and Simulate buttons
 		self.backSimFrame = Tk.Frame(master = self.buttonFrame)
 		self.backSimFrame.pack(side = Tk.TOP)
@@ -182,12 +266,12 @@ class Application(Tk.Frame):
 		self.initialConditionsFrame.pack(side = Tk.LEFT, padx = 5)
 		#variable to keep track of type of graph. 0 = percentage, 1 = occurences
 		self.graphTypeTkIntVar = Tk.IntVar()
-		self.graphTypeTkIntVar.set(0)
+		self.graphTypeTkIntVar.set(GRAPH_OCCURENCE)
 		#RadioButtons for display type
 		self.percentageRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Monomer Occurences",
-		 variable = self.graphTypeTkIntVar, value = 0)
-		self.occurenceRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Percentage Monomer",
 		 variable = self.graphTypeTkIntVar, value = 1)
+		self.occurenceRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Percentage Monomer",
+		 variable = self.graphTypeTkIntVar, value = 0)
 		self.percentageRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
 		self.occurenceRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
 		#Frame for totalMonomers label and Entry
@@ -202,7 +286,7 @@ class Application(Tk.Frame):
 		#Setting totalMonomers to 1000
 		self.totalMonomersTkVar = Tk.IntVar()
 		self.totalMonomersEntry["textvariable"] = self.totalMonomersTkVar
-		self.totalMonomersTkVar.set(1000)
+		self.totalMonomersTkVar.set(TOTAL_STARTING_MONOMERS)
 		#Frame for raftRatio label and Entry
 		self.raftRatioFrame = Tk.Frame(master = self.initialConditionsFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
@@ -215,7 +299,7 @@ class Application(Tk.Frame):
 		#Setting number of simulations to 1000
 		self.raftRatioTkVar = Tk.StringVar()
 		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
-		self.raftRatioTkVar.set(0.01)
+		self.raftRatioTkVar.set(RAFT_RATIO)
 		#Frame for Monomer Amounts
 		self.amountFrame = Tk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
@@ -472,7 +556,7 @@ class Application(Tk.Frame):
 			#inputs counts into y-axis array
 			graphType = self.graphTypeTkIntVar.get()
 			#graphs Percentage of Monomer Remaining
-			if graphType == 1:
+			if graphType == 0:
 				#adjust axis title
 				frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
 				#adjust y axis limiys
@@ -622,6 +706,7 @@ class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
 generateConfigFile()
+readConfigFile()
 root = Tk.Tk()
 root.wm_title("Compositional Drift v1.2")
 app = Application(master = root)

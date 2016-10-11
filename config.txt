@@ -1,10 +1,11 @@
-Number of Unique Monomers = 2 
-Number of Simulations = 200 
-Number of Polymers to Show = 8 
-Graph Monomer Occurence = true 
-Total Starting Monomers = 1000 
-RAFT to Monomers Ratio = 0.01 
+Number of Unique Monomers = 4 
+Number of Simulations = 202 
+Number of Polymers to Show = 10 
+Graph Monomer Occurence = 0 
+Total Starting Monomers = 1002 
+RAFT to Monomers Ratio = 0.02 
 Default Setting = 0 
+Monomer Cap = 5000000 
 Setting 1 
 Number of Unique Monomers = 4 
 Monomer 1 Ratio = 50 
