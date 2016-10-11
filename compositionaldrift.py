@@ -32,6 +32,7 @@ GRAPH_OCCURENCE = 1
 TOTAL_STARTING_MONOMERS = 1000
 SETTING = 0
 RAFT_RATIO = 0.01
+LOAD_SUCCESSFUL = False
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
@@ -61,6 +62,7 @@ def readConfigFile():
 	#variable to keep track of whether to parse setting config
 	parseSetting = False
 	#variable to keep track of number of monomers
+	global numMonomers
 	numMonomers = 0
 	#global variable to shwo whether or not a setting loaded successfully
 	global LOAD_SUCCESSFUL
@@ -81,9 +83,11 @@ def readConfigFile():
 						for coeff in column:
 							assert(coeff >= 0)
 				except AssertionError:
+					parseSetting = False
 					LOAD_SUCCESSFUL = False
 					continue
 				except IndexError:
+					parseSetting = False
 					LOAD_SUCCESSFUL = False
 				LOAD_SUCCESSFUL = True
 			settingConfig = False
@@ -257,12 +261,18 @@ class Application(Tk.Frame):
 		self.destroyHide = False
 	#Creates input widgets
 	def createInputWidgets(self):
+		def loadSettings(self):
+			global useLoadedSettings
+			useLoadedSettings = True
+			self.createMoreInputs()
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
 			#nonlocal numMonomers 
 			self.numMonomers = int(self.monomerCountTkVar.get())
 			#asserting that input is in correct range
 			assert self.numMonomers < 8
+			global useLoadedSettings
+			useLoadedSettings = False
 			#print(numMonomers) # debugging purposes
 			self.createMoreInputs() 
 		#Clears unneccesary widgets and creates more input widgets; called by enter()
@@ -275,6 +285,9 @@ class Application(Tk.Frame):
 		#The parent LabelFrame for all Input Widgets
 		self.inputFrame = Tk.LabelFrame(master = self.parentFrame, text = "Input Parameters")
 		self.inputFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		#Frame for row one inputs
+		self.rowFrame1 = Tk.Frame(master = self.inputFrame)
+		self.rowFrame1.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		#A frame for all buttons in inputFrame
 		self.buttonFrame = Tk.Frame(master = self.inputFrame)
 		self.buttonFrame.pack(side = Tk.LEFT, padx = 5)
@@ -292,16 +305,27 @@ class Application(Tk.Frame):
 		#sets monomerCOuntTkVar to default setting
 		self.monomerCountTkVar.set(NUM_UNIQUE_MONOMERS)
 		#countConfirm Button
-		self.countConfirm = Tk.Button(master = self.inputFrame, text = "Enter",
-		 command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
-		self.countConfirm.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		self.countConfirmButton = Tk.Button(master = self.inputFrame, text = "Enter",
+		command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
+		self.countConfirmButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		#frame for loaded input option
+		#self.rowFrame2 = Tk.Frame(master = self.inputFrame)
+		#self.rowFrame2.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		#use loaded inputs button
+		self.loadButton = Tk.Button(master = self.inputFrame, text = "Load from Settings",
+		command = lambda:loadSettings(self), bg = "light blue", activebackground = "light slate blue", width = 15)
+		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
 		#Destroys or edits current widgets
+		#case for loading inputs
+		if LOAD_SUCCESSFUL and useLoadedSettings:
+			self.numMonomers = numMonomers
 		self.initFrame.destroy()
 		self.monomerCountSpinbox.destroy()
 		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(self.numMonomers))
-		self.countConfirm.destroy()
+		self.countConfirmButton.destroy()
+		self.loadButton.destroy()
 		#Commands
 		# Quit command: quits window
 		def _quit():
@@ -419,7 +443,10 @@ class Application(Tk.Frame):
 			#Setting Default Value to 20
 			amount = Tk.IntVar()
 			inputAmount["textvariable"] = amount
-			amount.set(20)
+			if LOAD_SUCCESSFUL and useLoadedSettings:
+				amount.set(RATIO_ARRAY[createCount])
+			else:
+				amount.set(20)
 			#Add Tk.Entry object to startingAmountList
 			self.startingRatiosTkList.append(inputAmount)
 			createCount += 1
@@ -448,7 +475,10 @@ class Application(Tk.Frame):
 				#Setting Default Coefficient to 1
 				coeff = Tk.IntVar()
 				inputCoeff["textvariable"] = coeff
-				coeff.set(1)
+				if LOAD_SUCCESSFUL and useLoadedSettings:
+					coeff.set(COEFF_ARRAY[createCount2][combinations])
+				else:
+					coeff.set(1)
 				#Add a Tk.Entry object to singleMonoCoeffList
 				singleMonoCoeffList.append(inputCoeff)
 				combinations += 1
