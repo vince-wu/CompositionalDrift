@@ -33,6 +33,7 @@ TOTAL_STARTING_MONOMERS = 1000
 SETTING = 0
 RAFT_RATIO = 0.01
 LOAD_SUCCESSFUL = False
+VERSION = "v1.2.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
@@ -64,6 +65,10 @@ def readConfigFile():
 	#variable to keep track of number of monomers
 	global numMonomers
 	numMonomers = 0
+	#global array to keep track of monomer ratios, initalized as an array of -1
+	global RATIO_ARRAY
+	#global array to keep track monomer coefficients, initialized of an array of arrays of -1
+	global COEFF_ARRAY
 	#global variable to shwo whether or not a setting loaded successfully
 	global LOAD_SUCCESSFUL
 	for line in file:
@@ -108,13 +113,9 @@ def readConfigFile():
 					assert(lineArray[3] == "Monomers")
 					assert(lineArray[4] == "=")
 					numMonomers = int(lineArray[5])
-					#global array to keep track of monomer ratios, initalized as an array of -1
-					global RATIO_ARRAY
 					RATIO_ARRAY = [-1] * numMonomers
 					#array to keep track of all neccesary monomers
 					numMonomerArray = [0] * numMonomers
-					#global array to keep track monomer coefficients, initialized of an array of arrays of -1
-					global COEFF_ARRAY
 					COEFF_ARRAY = [-1] * numMonomers
 					COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
 				except AssertionError:
@@ -160,6 +161,9 @@ def readConfigFile():
 				except IndexError:
 					invalidLines += 1
 					continue
+			else:
+				invalidLines += 1
+				continue
 		#If line is a "Setting X", read next lines as setting config line
 		intermediate = line.split("=")
 		if len(intermediate) == 1:
@@ -252,7 +256,7 @@ class Application(Tk.Frame):
 		self.destroyHide = False
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
-		self.parentFrame.destroy()
+		self.inputFrame.destroy()
 		self.visualizationFrame.destroy()
 		if self.destroyCanvas:
 			self.canvas.get_tk_widget().destroy()
@@ -280,39 +284,46 @@ class Application(Tk.Frame):
 			root.quit()
 			root.destroy()
 		#PlaceHolder parent inputFrame
-		self.parentFrame = Tk.Frame(master = root)
-		self.parentFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, pady = 3)
+		#self.parentFrame = Tk.Frame(master = root)
+		#self.parentFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, pady = 3)
 		#The parent LabelFrame for all Input Widgets
-		self.inputFrame = Tk.LabelFrame(master = self.parentFrame, text = "Input Parameters")
-		self.inputFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
-		#Frame for row one inputs
-		self.rowFrame1 = Tk.Frame(master = self.inputFrame)
-		self.rowFrame1.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
-		#A frame for all buttons in inputFrame
-		self.buttonFrame = Tk.Frame(master = self.inputFrame)
-		self.buttonFrame.pack(side = Tk.LEFT, padx = 5)
-		#A frame for spinbox and label
-		countFrame = Tk.Frame(master = self.buttonFrame)
-		countFrame.pack(side = Tk.TOP, padx = 5, pady = 0)
-		#Label for spinbox
-		self.monomerCountLabel = Tk.Label(master = countFrame, text = "Number of Unique Monomers:")
+		self.inputFrame = Tk.LabelFrame(master = root, text = "Input Parameters")
+		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		#A frame for column 1 of inputs
+		self.columnFrame = Tk.Frame(master = self.inputFrame)
+		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		#A frame for row 1 of inputs
+		self.rowFrame1 = Tk.Frame(master = self.columnFrame)
+		self.rowFrame1.pack(side = Tk.TOP, padx = 5, pady = 0)
+		#A frame for row 2 of inputs
+		self.rowFrame2 = Tk.Frame(master = self.columnFrame)
+		self.rowFrame2.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		#Label for monomerCount spinbox
+		self.monomerCountLabel = Tk.Label(master = self.rowFrame1, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#tkvar for monomercount
 		self.monomerCountTkVar = Tk.IntVar()
 		#MonomerCount spinbox
-		self.monomerCountSpinbox = Tk.Spinbox(master = countFrame, from_ = 1, to = 7, width = 2, textvariable = self.monomerCountTkVar)
+		self.monomerCountSpinbox = Tk.Spinbox(master = self.rowFrame1, from_ = 1, to = 7, width = 2, textvariable = self.monomerCountTkVar)
 		self.monomerCountSpinbox.pack(side = Tk.LEFT, padx = 5, pady = 0)
 		#sets monomerCOuntTkVar to default setting
 		self.monomerCountTkVar.set(NUM_UNIQUE_MONOMERS)
 		#countConfirm Button
-		self.countConfirmButton = Tk.Button(master = self.inputFrame, text = "Enter",
+		self.countConfirmButton = Tk.Button(master = self.rowFrame1, text = "Enter",
 		command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
 		self.countConfirmButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
-		#frame for loaded input option
-		#self.rowFrame2 = Tk.Frame(master = self.inputFrame)
-		#self.rowFrame2.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		#Label for msetting spinbox
+		self.monomerCountLabel = Tk.Label(master = self.rowFrame2, text = "Setting to Use:")
+		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
+		#tkvar for monomercount
+		self.settingTkVar = Tk.IntVar()
+		#MonomerCount spinbox
+		self.settingSpinbox = Tk.Spinbox(master = self.rowFrame2, width = 2, textvariable = self.settingTkVar)
+		self.settingSpinbox.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		#sets monomerCOuntTkVar to default setting
+		self.settingTkVar.set(NUM_UNIQUE_MONOMERS)
 		#use loaded inputs button
-		self.loadButton = Tk.Button(master = self.inputFrame, text = "Load from Settings",
+		self.loadButton = Tk.Button(master = self.rowFrame2, text = "Load from Settings",
 		command = lambda:loadSettings(self), bg = "light blue", activebackground = "light slate blue", width = 15)
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 	#Creates more input widgets based on numMonomers
@@ -322,10 +333,9 @@ class Application(Tk.Frame):
 		if LOAD_SUCCESSFUL and useLoadedSettings:
 			self.numMonomers = numMonomers
 		self.initFrame.destroy()
-		self.monomerCountSpinbox.destroy()
-		self.monomerCountLabel.config(text = "Number of Unique Monomers: " + str(self.numMonomers))
-		self.countConfirmButton.destroy()
 		self.loadButton.destroy()
+		self.rowFrame1.destroy()
+		self.rowFrame2.destroy()
 		#Commands
 		# Quit command: quits window
 		def _quit():
@@ -339,7 +349,7 @@ class Application(Tk.Frame):
 			self.initScreen()
 			self.createInputWidgets()
 		#Frame for numSimulations label and Entry
-		self.numSimsFrame = Tk.Frame(master = self.buttonFrame)
+		self.numSimsFrame = Tk.Frame(master = self.columnFrame)
 		self.numSimsFrame.pack(side = Tk.TOP)
 		#Label for numSims Entry
 		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:")
@@ -352,7 +362,7 @@ class Application(Tk.Frame):
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
 		self.numSimsTkVar.set(NUM_SIMULATIONS)
 		#Frame for numPolyToShow SpinBox
-		self.numPolyToShowFrame = Tk.Frame(master = self.buttonFrame)
+		self.numPolyToShowFrame = Tk.Frame(master = self.columnFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
 		#Label for numPolyToShow spinbox
 		self.numPolyToShowLabel = Tk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
@@ -365,7 +375,7 @@ class Application(Tk.Frame):
 		self.numPolyToShowBox["textvariable"] = self.numPolyToShow
 		self.numPolyToShow.set(NUM_POLYMERS_SHOW)
 		#Frame for Back, Quit, and Simulate buttons
-		self.backSimFrame = Tk.Frame(master = self.buttonFrame)
+		self.backSimFrame = Tk.Frame(master = self.columnFrame)
 		self.backSimFrame.pack(side = Tk.TOP)
 		#A simulate button to simulate polymer formation
 		self.simulateButton = Tk.Button(master = self.backSimFrame, text = "Simulate", width = 7,
@@ -494,7 +504,7 @@ class Application(Tk.Frame):
 		self.initFrame = Tk.Frame(master = root)
 		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
-		 text = "Compositional Drift Simulator v1.2")
+		 text = "Compositional Drift Simulator %s" % VERSION)
 		message1.pack(side = Tk.TOP, padx = 0, pady = 0)
 		message2 = Tk.Message(master = self.initFrame, width = 200,
 			text = "Author: Vincent Wu")
@@ -569,7 +579,6 @@ class Application(Tk.Frame):
 		self.destroyCanvas = True
 		#print("monomerAmounts: ", monomerAmounts)
 		#print("singleCoeffList: ", singleCoeffList)
-		self.monomerCountLabel.config(text = "Polymers Per Simulation: " + str(self.numPolymers))
 		#An array of polymers
 		polymerArray = []
 		#keeps track of number of simulations
@@ -835,6 +844,6 @@ class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
 root = Tk.Tk()
-root.wm_title("Compositional Drift v1.2")
+root.wm_title("Compositional Drift %s" % VERSION)
 app = Application(master = root)
 app.mainloop()
