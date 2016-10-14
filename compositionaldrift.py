@@ -48,6 +48,34 @@ def generateConfigFile():
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
 		file.close()
+#reads config before initScreen for early variables
+def earlyConfigRead():
+	#error checking to see if config file exists
+	if not os.path.exists("config.txt"):
+		errorMessage("config.txt does not exist!", 220)
+		return
+	file = open("config.txt", "r")
+	#variable to keep track of number of invalid config lines
+	validLines = 0 
+	notParsed = True
+	for line in file:
+		line = line.strip()
+		intermediate = line.split("=")
+		if len(intermediate) == 2:
+			global NUM_UNIQUE_MONOMERS
+			global SETTING
+			try:
+				if intermediate[0].strip() == "Number of Unique Monomers" and notParsed:
+					NUM_UNIQUE_MONOMERS = int(intermediate[1].strip())
+					notParsed = False
+					validLines += 1
+				if intermediate[0].strip() == "Default Setting":
+					SETTING = int(intermediate[1].strip())
+					validLines += 1
+			except ValueError:
+				continue
+	print("earlyConfigRead valid lines: %s" %validLines)
+	file.close()
 #reads the config file and sets static variables based on config
 def readConfigFile():
 	#error checking to see if config file exists
@@ -182,12 +210,17 @@ def readConfigFile():
 				continue
 			invalidLines += 1
 			continue
-		#gets the config header
-		configType = (line.split("="))[0].strip()
-		#gets the config value
-		configStringValue = (line.split("="))[1].strip()
+		try:
+			#gets the config header
+			configType = (line.split("="))[0].strip()
+			#gets the config value
+			configStringValue = (line.split("="))[1].strip()
+		except:
+			invalidLines += 1
+			continue
 		if (not setConfigVariable(configType, configStringValue)):
 			invalidLines += 1
+			continue
 	file.close()
 	print("Number of invalid config lines: ", invalidLines)
 #helper method to set the static variable. Returns 1 if successful, 0 if not
@@ -226,8 +259,7 @@ def setConfigVariableHelper(configType, configValue):
 		global RAFT_RATIO
 		RAFT_RATIO = configValue
 	elif configType == "Default Setting":
-		global SETTING
-		SETTING = configValue
+		pass
 	elif configType == "Monomer Cap":
 		global MONOMER_CAP
 		MONOMER_CAP = configValue
@@ -241,11 +273,16 @@ class Application(Tk.Frame):
 		self.initialize()
 	#Initialization
 	def initialize(self):
-		#generates and reads config file
-		generateConfigFile()
-		readConfigFile()
-		if LOAD_SUCCESSFUL:
-			print("Load successful!")
+		try:
+			#create config file
+			generateConfigFile()
+		except:
+			errorMessage("Unable to generate config file!", 220)
+		try:
+			#early read on config file
+			earlyConfigRead()
+		except:
+			errorMessage("Unable to read config file!", 220)
 		#Creates the init screen
 		self.initScreen()
 		#Creates Input Widgets
@@ -268,7 +305,19 @@ class Application(Tk.Frame):
 		def loadSettings(self):
 			global useLoadedSettings
 			useLoadedSettings = True
-			self.createMoreInputs()
+			global SETTING
+			SETTING = int(self.settingTkVar.get())
+			print(SETTING)
+			#reads config file
+			try:
+				readConfigFile()
+			except:
+				pass
+			if LOAD_SUCCESSFUL:
+				print("Load successful!")
+				self.createMoreInputs()
+			else:
+				errorMessage("Unable to load config settings! Please fix config file.", 300)
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
 			#nonlocal numMonomers 
@@ -283,9 +332,6 @@ class Application(Tk.Frame):
 		def _quit():
 			root.quit()
 			root.destroy()
-		#PlaceHolder parent inputFrame
-		#self.parentFrame = Tk.Frame(master = root)
-		#self.parentFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, pady = 3)
 		#The parent LabelFrame for all Input Widgets
 		self.inputFrame = Tk.LabelFrame(master = root, text = "Input Parameters")
 		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 3, pady = 5)
@@ -313,15 +359,16 @@ class Application(Tk.Frame):
 		command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
 		self.countConfirmButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		#Label for msetting spinbox
-		self.monomerCountLabel = Tk.Label(master = self.rowFrame2, text = "Setting to Use:")
+		self.monomerCountLabel = Tk.Label(master = self.rowFrame2, text = "Setting Number to Use:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
-		#tkvar for monomercount
+		#tkvar for setting
 		self.settingTkVar = Tk.IntVar()
-		#MonomerCount spinbox
-		self.settingSpinbox = Tk.Spinbox(master = self.rowFrame2, width = 2, textvariable = self.settingTkVar)
+		#settingCount spinbox
+		self.settingSpinbox = Tk.Spinbox(master = self.rowFrame2, from_ = 1, to = 1000, width = 2, textvariable = self.settingTkVar)
 		self.settingSpinbox.pack(side = Tk.LEFT, padx = 5, pady = 0)
-		#sets monomerCOuntTkVar to default setting
-		self.settingTkVar.set(NUM_UNIQUE_MONOMERS)
+		#sets settingTkVar to 1
+		global SETTING
+		self.settingTkVar.set(SETTING)
 		#use loaded inputs button
 		self.loadButton = Tk.Button(master = self.rowFrame2, text = "Load from Settings",
 		command = lambda:loadSettings(self), bg = "light blue", activebackground = "light slate blue", width = 15)
