@@ -33,7 +33,7 @@ TOTAL_STARTING_MONOMERS = 1000
 SETTING = 0
 RAFT_RATIO = 0.01
 LOAD_SUCCESSFUL = False
-VERSION = "v1.2.1"
+VERSION = "v1.3"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
@@ -306,8 +306,12 @@ class Application(Tk.Frame):
 			global useLoadedSettings
 			useLoadedSettings = True
 			global SETTING
-			SETTING = int(self.settingTkVar.get())
-			print(SETTING)
+			try: 
+				SETTING = int(self.settingTkVar.get())
+				assert int(SETTING) >= 0
+			except:
+				errorMessage("Please input valid parameters!", 220)
+				return
 			#reads config file
 			try:
 				readConfigFile()
@@ -322,8 +326,12 @@ class Application(Tk.Frame):
 		def enter(self):
 			#nonlocal numMonomers 
 			self.numMonomers = int(self.monomerCountTkVar.get())
-			#asserting that input is in correct range
-			assert self.numMonomers < 8
+			try:
+				#asserting that input is in correct range
+				assert self.numMonomers < 8
+				assert self.monomerCountTkVar.get() > 0
+			except:
+				errorMessage("Please input valid paramters!", 220)
 			global useLoadedSettings
 			useLoadedSettings = False
 			#print(numMonomers) # debugging purposes
@@ -375,6 +383,11 @@ class Application(Tk.Frame):
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
+		try:
+			assert(self.monomerCountTkVar.get() > 0)
+		except:
+			errorMessage("Please input valid parameters!", 220)
+			return
 		#Destroys or edits current widgets
 		#case for loading inputs
 		if LOAD_SUCCESSFUL and useLoadedSettings:
