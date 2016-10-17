@@ -160,7 +160,7 @@ def readConfigFile():
 					#adding monomer number to numMonomerArray
 					numMonomerArray[int(lineArray[1]) - 1] = int(lineArray[1])
 					#add monomer ratio to RATIO_ARRAY
-					RATIO_ARRAY[int(lineArray[1]) - 1] = int(lineArray[4])
+					RATIO_ARRAY[int(lineArray[1]) - 1] = float(lineArray[4])
 				except AssertionError:
 					invalidLines += 1
 					continue

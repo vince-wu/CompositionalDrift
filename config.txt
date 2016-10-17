@@ -29,30 +29,7 @@ Monomer 4 Ratio = 5
 4-3 = 1.1 
 4-4 = 1.1 
 end
-Setting 2 
-Number of Unique Monomers = 4 
-Monomer 1 Ratio = 50 
-Monomer 2 Ratio = 25 
-Monomer 3 Ratio = 20 
-Monomer 4 Ratio = 5 
-1-1 = 0.45 
-1-2 = 1 
-1-3 = 10
-1-4 = 1 
-2-1 = 1 
-2-2 = 1.1 
-2-3 = 1.1 
-2-4 = 1.1 
-3-1 = 1 
-3-2 = 1.1 
-3-3 = 1.1 
-3-4 = 1.1 
-4-1 = 1 
-4-2 = 1.1 
-4-3 = 1.1 
-4-4 = 1.1 
-end
-Setting 3
+Setting 2
 Number of Unique Monomers = 2
 Monomer 1 Ratio = 80
 Monomer 2 Ratio = 20
@@ -60,4 +37,79 @@ Monomer 2 Ratio = 20
 1-2 = 1
 2-1 = 1
 2-2 = 1
+end
+Setting 3
+Number of Unique Monomers = 3
+Monomer 1 Ratio = 50
+Monomer 2 Ratio = 40
+Monomer 3 Ratio = 10
+1-1 = 1.1
+1-2 = 1.1
+1-3 = 1.1
+2-1 = 1.1
+2-2 = 1.1
+2-3 = 1.1
+3-1 = 1.1
+3-2 = 1.1
+3-3 = 1.1
+end
+Setting 4
+Number of Unique Monomers = 3
+Monomer 1 Ratio = 62.5
+Monomer 2 Ratio = 31.25
+Monomer 3 Ratio = 6.25
+1-1 = 0.89
+1-2 = 1
+1-3 = 1
+2-1 = 1
+2-2 = 1.1
+2-3 = 1.1
+3-1 = 1
+3-2 = 1.1
+3-3 = 1.1
+end
+Setting 5
+Number of Unique Monomers = 3
+Monomer 1 Ratio = 52.63
+Monomer 2 Ratio = 26.32
+Monomer 3 Ratio = 21.05
+1-1 = 0.89
+1-2 = 1
+1-3 = 1
+2-1 = 1
+2-2 = 1.1
+2-3 = 1.1
+3-1 = 1
+3-2 = 1.1
+3-3 = 1.1
+end
+Setting 6
+Number of Unique Monomers = 3
+Monomer 1 Ratio = 20
+Monomer 2 Ratio = 40
+Monomer 3 Ratio = 40
+1-1 = 0.89
+1-2 = 1
+1-3 = 1
+2-1 = 1
+2-2 = 1.1
+2-3 = 1.1
+3-1 = 1
+3-2 = 1.1
+3-3 = 1.1
+end
+Setting 7
+Number of Unique Monomers = 3
+Monomer 1 Ratio = 25
+Monomer 2 Ratio = 70
+Monomer 3 Ratio = 5
+1-1 = 1.1
+1-2 = 1.1
+1-3 = 1.1
+2-1 = 1.1
+2-2 = 1.1
+2-3 = 1.1
+3-1 = 1.1
+3-2 = 1.1
+3-3 = 1.1
 end
