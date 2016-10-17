@@ -1,10 +1,10 @@
-Number of Unique Monomers = 5
+Number of Unique Monomers = 4
 Number of Simulations = 200 
 Number of Polymers to Show = 8 
-Graph Monomer Occurence = 1 
+Graph Monomer Occurence = 0 
 Total Starting Monomers = 1000 
 RAFT to Monomers Ratio = 0.01 
-Default Setting = 4 
+Default Setting = 1 
 Monomer Cap = 5000000 
 Setting 1 
 Number of Unique Monomers = 4 
@@ -51,4 +51,13 @@ Monomer 4 Ratio = 5
 4-2 = 1.1 
 4-3 = 1.1 
 4-4 = 1.1 
+end
+Setting 3
+Number of Unique Monomers = 2
+Monomer 1 Ratio = 80
+Monomer 2 Ratio = 20
+1-1 = 1
+1-2 = 1
+2-1 = 1
+2-2 = 1
 end

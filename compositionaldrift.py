@@ -28,7 +28,7 @@ MONOMER_CAP = 5000000
 NUM_UNIQUE_MONOMERS = 2
 NUM_SIMULATIONS = 200
 NUM_POLYMERS_SHOW = 8
-GRAPH_OCCURENCE = 1
+GRAPH_TYPE = 1
 TOTAL_STARTING_MONOMERS = 1000
 SETTING = 0
 RAFT_RATIO = 0.01
@@ -250,8 +250,8 @@ def setConfigVariableHelper(configType, configValue):
 		global NUM_POLYMERS_SHOW
 		NUM_POLYMERS_SHOW = configValue	
 	elif configType == "Graph Monomer Occurence":
-		global GRAPH_OCCURENCE
-		GRAPH_OCCURENCE = configValue
+		global GRAPH_TYPE
+		GRAPH_TYPE = configValue
 	elif configType == "Total Starting Monomers":
 		global TOTAL_STARTING_MONOMERS
 		TOTAL_STARTING_MONOMERS = configValue
@@ -459,14 +459,17 @@ class Application(Tk.Frame):
 		self.initialConditionsFrame.pack(side = Tk.LEFT, padx = 5)
 		#variable to keep track of type of graph. 0 = percentage, 1 = occurences
 		self.graphTypeTkIntVar = Tk.IntVar()
-		self.graphTypeTkIntVar.set(GRAPH_OCCURENCE)
+		self.graphTypeTkIntVar.set(GRAPH_TYPE)
 		#RadioButtons for display type
 		self.percentageRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Monomer Occurences",
 		 variable = self.graphTypeTkIntVar, value = 1)
 		self.occurenceRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Percentage Monomer",
 		 variable = self.graphTypeTkIntVar, value = 0)
+		self.frequencyRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Frequency Histogram",
+		 variable = self.graphTypeTkIntVar, value = 2)
 		self.percentageRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
 		self.occurenceRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
+		self.frequencyRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
 		#Frame for totalMonomers label and Entry
 		self.totalMonomersFrame = Tk.Frame(master = self.initialConditionsFrame)
 		self.totalMonomersFrame.pack(side = Tk.TOP)
@@ -744,52 +747,69 @@ class Application(Tk.Frame):
 		self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
 		frequencyPlot = self.plotFigure.add_subplot(111)
 		frequencyPlot.tick_params(labelsize = 7)
-		frequencyPlot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
-		#Iterates through each unique monomer and plots composition
-		for monomer in range(1, self.numMonomers + 1):
-			#x-axis array
-			polymerIndex = list(range(1, self.polymerLength + 1))
-			#y-axis array initation
-			monomercounts = [0] * self.polymerLength
-			#inputs counts into y-axis array
-			graphType = self.graphTypeTkIntVar.get()
-			#graphs Percentage of Monomer Remaining
-			if graphType == 0:
-				#adjust axis title
-				frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
-				#adjust y axis limiys
-				frequencyPlot.set_ylim([0,1])
-				#variable to keep track of average number of monomers consumed
-				monomersConsumed = 0
-				for index in polymerIndex:
-					count = 0
-					for polymer in polymerArray:
-						if polymer[index - 1] == monomer:
-							count += 1
-					startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
-					#calculates monomer consumed
-					monomersConsumed += count / self.numSimulations
-					#calculated percentage of monomer remaining
-					percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
-					monomercounts[index - 1] = percentageRemaining
-			else:
-				#adjust axis title
-				frequencyPlot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
-				for index in polymerIndex:
-					count = 0
-					for polymer in polymerArray:
-						if polymer[index - 1] == monomer:
-							count += 1
-					monomercounts[index - 1] = count / self.numSimulations
-			#debugging purposes
-			#print(polymerIndex)
-			#print(monomercounts)
-			#plots x and y arrays
-			curve = frequencyPlot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
-			self.lineColors.append(curve[0].get_color())
-		#legend-screw matplotlib; so fucking hard to format
-		handles, labels = frequencyPlot.get_legend_handles_labels()
-		lgd = frequencyPlot.legend(handles, labels, prop = {'size':7})
+		graphType = self.graphTypeTkIntVar.get()
+		if graphType == 2:
+			histogramData = self.getHistogramData(polymerArray, 1, 80)
+			print(histogramData)
+			binwidth = 1
+			frequencyPlot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth))
+			frequencyPlot.set_ylabel("Number of Occurences", labelpad=5, fontsize = 9)
+			frequencyPlot.set_xlabel("Number of Consecutive Monomers", labelpad = 0, fontsize = 9)
+			frequencyPlot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
+			print(min(histogramData))
+			#histogramData = self.getHistogramData(polymerArray, 2, 80)
+			#frequencyPlot.hist(histogramData)
+			#histogramData = self.getHistogramData(polymerArray, 3, 80)
+			#frequencyPlot.hist(histogramData)
+			#histogramData = self.getHistogramData(polymerArray, 4, 80)
+			#frequencyPlot.hist(histogramData)
+			print(max(histogramData))
+		if graphType == 0 or graphType == 1:
+			frequencyPlot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
+			#Iterates through each unique monomer and plots composition
+			for monomer in range(1, self.numMonomers + 1):
+				#x-axis array
+				polymerIndex = list(range(1, self.polymerLength + 1))
+				#y-axis array initation
+				monomercounts = [0] * self.polymerLength
+				#inputs counts into y-axis array
+				#graphs Percentage of Monomer Remaining
+				if graphType == 0:
+					#adjust axis title
+					frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
+					#adjust y axis limiys
+					frequencyPlot.set_ylim([0,1])
+					#variable to keep track of average number of monomers consumed
+					monomersConsumed = 0
+					for index in polymerIndex:
+						count = 0
+						for polymer in polymerArray:
+							if polymer[index - 1] == monomer:
+								count += 1
+						startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
+						#calculates monomer consumed
+						monomersConsumed += count / self.numSimulations
+						#calculated percentage of monomer remaining
+						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
+						monomercounts[index - 1] = percentageRemaining
+				else:
+					#adjust axis title
+					frequencyPlot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
+					for index in polymerIndex:
+						count = 0
+						for polymer in polymerArray:
+							if polymer[index - 1] == monomer:
+								count += 1
+						monomercounts[index - 1] = count / self.numSimulations
+				#debugging purposes
+				#print(polymerIndex)
+				#print(monomercounts)
+				#plots x and y arrays
+				curve = frequencyPlot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
+				self.lineColors.append(curve[0].get_color())
+			#legend-screw matplotlib; so fucking hard to format
+			handles, labels = frequencyPlot.get_legend_handles_labels()
+			lgd = frequencyPlot.legend(handles, labels, prop = {'size':7})
 		# A tk.DrawingArea
 		#imbedding matplotlib graph onto canvas
 		self.canvas = FigureCanvasTkAgg(self.plotFigure, master = root)
@@ -869,6 +889,40 @@ class Application(Tk.Frame):
 						assert(float(innerEntry.get()) >= 0)
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
+	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
+	def getHistogramData(self, polymerArray, monomerID, indexLimit):
+		#initializing array to be returned
+		histogramData = []
+		#count through all polymers
+		for polymer in polymerArray:
+			#constant to keep track of polymer index, to know when to stop counting
+			polymerIndex = 1
+			numConsecutive = 0
+			#iterate through each polymer until monomerLimit is hit and count consecutive polymers
+			for monomer in polymer:
+				#if index limit is reached, add any consecutives to histogram, and break from for loop
+				if polymerIndex > indexLimit:
+					if numConsecutive > 0:
+						count = 0
+						while count < numConsecutive:
+							histogramData.append(numConsecutive)
+							count += 1
+					break
+				#if monomer is not consecutive and monomer before was, add consecutive number to data and reset values
+				if monomer != monomerID and numConsecutive > 0:
+					count = 0
+					while count < numConsecutive:
+						histogramData.append(numConsecutive)
+						count += 1
+					numConsecutive = 0
+					polymerIndex += 1
+					continue
+				#increment consecutive counter by 1 if monomer is consecutive
+				if  monomer == monomerID:
+					numConsecutive += 1
+					polymerIndex += 1
+					continue
+		return histogramData
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
 	#Toplevel parameters
