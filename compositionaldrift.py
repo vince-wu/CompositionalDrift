@@ -30,9 +30,13 @@ NUM_SIMULATIONS = 200
 NUM_POLYMERS_SHOW = 8
 GRAPH_TYPE = 1
 TOTAL_STARTING_MONOMERS = 1000
-SETTING = 0
 RAFT_RATIO = 0.01
 LOAD_SUCCESSFUL = False
+GRAPH1_TYPE = "Monomer Occurences"
+GRAPH2_TYPE = "Percentage Monomer"
+HISTOGRAM1_MONOMER = 0
+HISTOGRAM2_MONOMER = 1
+HISTOGRAM_LIMIT = 0.8
 VERSION = "v1.3"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
@@ -360,7 +364,7 @@ class Application(Tk.Frame):
 		#tkvar for monomercount
 		self.monomerCountTkVar = Tk.IntVar()
 		#MonomerCount spinbox
-		self.monomerCountSpinbox = Tk.Spinbox(master = self.rowFrame1, from_ = 1, to = 7, width = 2, textvariable = self.monomerCountTkVar)
+		self.monomerCountSpinbox = Tk.Spinbox(master = self.rowFrame1, from_ = 2, to = 7, width = 2, textvariable = self.monomerCountTkVar)
 		self.monomerCountSpinbox.pack(side = Tk.LEFT, padx = 5, pady = 0)
 		#sets monomerCOuntTkVar to default setting
 		self.monomerCountTkVar.set(NUM_UNIQUE_MONOMERS)
@@ -410,11 +414,36 @@ class Application(Tk.Frame):
 			#Re-Initiates
 			self.initScreen()
 			self.createInputWidgets()
+		#Frame for totalMonomers label and Entry
+		self.totalMonomersFrame = Tk.Frame(master = self.columnFrame)
+		self.totalMonomersFrame.pack(side = Tk.TOP)
+		#Label for totalMonomers Entry
+		self.totalMonomersLabel = Tk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
+		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for totalMonomers
+		self.totalMonomersEntry = Tk.Entry(master = self.totalMonomersFrame, width = 5)
+		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		#Setting totalMonomers to 1000
+		self.totalMonomersTkVar = Tk.IntVar()
+		self.totalMonomersEntry["textvariable"] = self.totalMonomersTkVar
+		self.totalMonomersTkVar.set(TOTAL_STARTING_MONOMERS)
+		#Frame for raftRatio label and Entry
+		self.raftRatioFrame = Tk.Frame(master = self.columnFrame)
+		self.raftRatioFrame.pack(side = Tk.TOP)
+		#Label for raftRatio Entry
+		self.raftRatioLabel = Tk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
+		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for raftRatio
+		self.raftRatioEntry = Tk.Entry(master = self.raftRatioFrame, width = 5)
+		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		self.raftRatioTkVar = Tk.StringVar()
+		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
+		self.raftRatioTkVar.set(RAFT_RATIO)
 		#Frame for numSimulations label and Entry
 		self.numSimsFrame = Tk.Frame(master = self.columnFrame)
 		self.numSimsFrame.pack(side = Tk.TOP)
 		#Label for numSims Entry
-		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:")
+		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:   ")
 		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for numSimulations
 		self.numSimsEntry = Tk.Entry(master = self.numSimsFrame, width = 5)
@@ -452,58 +481,86 @@ class Application(Tk.Frame):
 		 command = _quit, width = 7, bg = "light blue", activebackground = "light slate blue")
 		quitButton.pack(side = Tk.LEFT, padx = 6)
 		createCount = 0;
-		# A list of Tk.Entry objects for Monomer ratios
-		self.startingRatiosTkList = [] 
-		# A 2D list of Tk.Entry objects for Coefficicients
-		self.coefficientList = [] 
-		#Frame for total number of monomers and RAFT to monomer ratio
-		self.initialConditionsFrame = Tk.Frame(master = self.inputFrame)
-		self.initialConditionsFrame.pack(side = Tk.LEFT, padx = 5)
-		#variable to keep track of type of graph. 0 = percentage, 1 = occurences
-		self.graphTypeTkIntVar = Tk.IntVar()
-		self.graphTypeTkIntVar.set(GRAPH_TYPE)
-		#RadioButtons for display type
-		self.percentageRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Monomer Occurences",
-		 variable = self.graphTypeTkIntVar, value = 1)
-		self.occurenceRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Percentage Monomer",
-		 variable = self.graphTypeTkIntVar, value = 0)
-		self.frequencyRadioButton = Tk.Radiobutton(master = self.initialConditionsFrame, text = "Graph Frequency Histogram",
-		 variable = self.graphTypeTkIntVar, value = 2)
-		self.percentageRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
-		self.occurenceRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
-		self.frequencyRadioButton.pack(side = Tk.TOP, anchor = Tk.W)
-		#Frame for totalMonomers label and Entry
-		self.totalMonomersFrame = Tk.Frame(master = self.initialConditionsFrame)
-		self.totalMonomersFrame.pack(side = Tk.TOP)
-		#Label for totalMonomers Entry
-		self.totalMonomersLabel = Tk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
-		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
-		#Entry for totalMonomers
-		self.totalMonomersEntry = Tk.Entry(master = self.totalMonomersFrame, width = 5)
-		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
-		#Setting totalMonomers to 1000
-		self.totalMonomersTkVar = Tk.IntVar()
-		self.totalMonomersEntry["textvariable"] = self.totalMonomersTkVar
-		self.totalMonomersTkVar.set(TOTAL_STARTING_MONOMERS)
-		#Frame for raftRatio label and Entry
-		self.raftRatioFrame = Tk.Frame(master = self.initialConditionsFrame)
-		self.raftRatioFrame.pack(side = Tk.TOP)
-		#Label for raftRatio Entry
-		self.raftRatioLabel = Tk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
-		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
-		#Entry for raftRatio
-		self.raftRatioEntry = Tk.Entry(master = self.raftRatioFrame, width = 5)
-		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
-		#Setting number of simulations to 1000
-		self.raftRatioTkVar = Tk.StringVar()
-		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
-		self.raftRatioTkVar.set(RAFT_RATIO)
+		#Frame for graph options
+		self.column2Frame = Tk.Frame(master = self.inputFrame)
+		self.column2Frame.pack(side = Tk.LEFT, padx = 5)
+		#tkvar for graphType1
+		self.graphType1TkVar = Tk.StringVar()
+		#tkVar for graphType2
+		self.graphType2TkVar = Tk.StringVar()
+		#frame for graphType1
+		self.graphFrame1 = Tk.Frame(master = self.column2Frame)
+		self.graphFrame1.pack(side = Tk.TOP, pady = 3)
+		#frame for graphType2
+		self.graphFrame2 = Tk.Frame(master = self.column2Frame)
+		self.graphFrame2.pack(side = Tk.TOP, pady = 3)
+		#Label for graphType1 spinbox
+		self.graphType1Label = Tk.Label(master = self.graphFrame1, text = "Graph 1 Type:")
+		self.graphType1Label.pack(side = Tk.LEFT)
+		#Label for graphType2 spinbox
+		self.graphType2Label = Tk.Label(master = self.graphFrame2, text = "Graph 2 Type:")
+		self.graphType2Label.pack(side = Tk.LEFT)
+		#Spinbox for graphType1
+		self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
+			"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
+		self.graphType1Spinbox.pack(side = Tk.LEFT)
+		#setting default variable for graphType1
+		self.graphType2TkVar.set(GRAPH1_TYPE)
+		#Spinbox for graphType2
+		self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
+			"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
+		self.graphType2Spinbox.pack(side = Tk.LEFT)
+		#setting default variable for graphType2
+		self.graphType2TkVar.set(GRAPH2_TYPE)
+		#Frame for histogramMonomer1
+		self.histogramMonomer1Frame = Tk.Frame(master = self.column2Frame)
+		self.histogramMonomer1Frame.pack(side = Tk.TOP)
+		#Label for histogramMonomer1
+		self.histogramMonomer1Label = Tk.Label(master = self.histogramMonomer1Frame, text = "Histogram 1 Monomer:")
+		self.histogramMonomer1Label.pack(side = Tk.LEFT)
+		#tkvar for histogramMonomer1
+		self.histogramMonomer1TkVar = Tk.IntVar()
+		#spinbox for histogramMonomer1
+		self.histogramMonomer1Spinbox  = Tk.Spinbox(master = self.histogramMonomer1Frame, from_ = 1, to = self.numMonomers, width = 2, state = "readonly")
+		self.histogramMonomer1Spinbox.pack(side = Tk.LEFT)
+		#setting spinbox to default value
+		self.histogramMonomer1TkVar.set(HISTOGRAM1_MONOMER)
+		#Frame for histogramMonomer2
+		self.histogramMonomer2Frame = Tk.Frame(master = self.column2Frame)
+		self.histogramMonomer2Frame.pack(side = Tk.TOP)
+		#Label for histogramMonomer2
+		self.histogramMonomer2Label = Tk.Label(master = self.histogramMonomer2Frame, text = "Histogram 2 Monomer:")
+		self.histogramMonomer2Label.pack(side = Tk.LEFT)
+		#tkvar for histogramMonomer2
+		self.histogramMonomer2TkVar = Tk.IntVar()
+		#spinbox for histogramMonomer2
+		self.histogramMonomer2Spinbox  = Tk.Spinbox(master = self.histogramMonomer2Frame, from_ = 1, to = self.numMonomers, width = 2, state = "readonly")
+		self.histogramMonomer2Spinbox.pack(side = Tk.LEFT)
+		#setting spinbox to default value
+		self.histogramMonomer2TkVar.set(HISTOGRAM2_MONOMER)
+		#Frame for histogramLimit
+		self.histogramLimitFrame = Tk.Frame(master = self.column2Frame)
+		self.histogramLimitFrame.pack(side = Tk.TOP)
+		#Label for histogramLimit
+		self.histogramLimitLabel = Tk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
+		self.histogramLimitLabel.pack(side = Tk.LEFT)
+		#entry for histogramLimit
+		self.histogramLimitEntry = Tk.Entry(master = self.histogramLimitFrame, width = 4)
+		self.histogramLimitEntry.pack(side = Tk.LEFT)
+		#tkvar for histogramLimit
+		self.histogramLimitTkVar = Tk.StringVar()
+		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
+		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
 		#Frame for Monomer Amounts
 		self.amountFrame = Tk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
 		#Frame for Monomer Coefficients
 		self.coefficientFrame = Tk.Frame(master = self.inputFrame)
 		self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
+		# A list of Tk.Entry objects for Monomer ratios
+		self.startingRatiosTkList = [] 
+		# A 2D list of Tk.Entry objects for Coefficicients
+		self.coefficientList = [] 
 		#While loop creating number of neccesary amount Entry boxes
 		while createCount < self.numMonomers:
 			#Label for inputAmount
@@ -747,25 +804,19 @@ class Application(Tk.Frame):
 		self.lineColors = []
 		#Plot and Figure formatting
 		self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
-		frequencyPlot = self.plotFigure.add_subplot(111)
+		frequencyPlot = self.plotFigure.add_subplot(121)
 		frequencyPlot.tick_params(labelsize = 7)
 		graphType = self.graphTypeTkIntVar.get()
 		if graphType == 2:
 			histogramData = self.getHistogramData(polymerArray, 1, 80)
-			print(histogramData)
+			#print(histogramData)
 			binwidth = 1
 			frequencyPlot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth))
 			frequencyPlot.set_ylabel("Number of Occurences", labelpad=5, fontsize = 9)
 			frequencyPlot.set_xlabel("Number of Consecutive Monomers", labelpad = 0, fontsize = 9)
 			frequencyPlot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
-			print(min(histogramData))
-			#histogramData = self.getHistogramData(polymerArray, 2, 80)
-			#frequencyPlot.hist(histogramData)
-			#histogramData = self.getHistogramData(polymerArray, 3, 80)
-			#frequencyPlot.hist(histogramData)
-			#histogramData = self.getHistogramData(polymerArray, 4, 80)
-			#frequencyPlot.hist(histogramData)
-			print(max(histogramData))
+			#print(min(histogramData))
+			#print(max(histogramData))
 		if graphType == 0 or graphType == 1:
 			frequencyPlot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 			#Iterates through each unique monomer and plots composition
