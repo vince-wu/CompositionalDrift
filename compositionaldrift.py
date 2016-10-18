@@ -389,15 +389,16 @@ class Application(Tk.Frame):
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
-		try:
-			assert(self.monomerCountTkVar.get() > 0)
-		except:
-			errorMessage("Please input valid parameters!", 220)
-			return
-		#Destroys or edits current widgets
 		#case for loading inputs
 		if LOAD_SUCCESSFUL and useLoadedSettings:
 			self.numMonomers = numMonomers
+		else: 
+			try:
+				assert(self.monomerCountTkVar.get() > 0)
+			except:
+				errorMessage("Please input valid parameters!", 220)
+				return
+		#Destroys or edits current widgets
 		self.initFrame.destroy()
 		self.loadButton.destroy()
 		self.rowFrame1.destroy()
@@ -656,6 +657,8 @@ class Application(Tk.Frame):
 			singleCoeffList = self.getCoefficients()
 			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
+			self.histogramLimit = float(self.histogramLimitTkVar.get())
+			assert(self.histogramLimitTkVar > 0)
 			assert(self.totalMonomers > 0)
 			assert(self.numSimulations > 0)
 			assert(self.raftRatio > 0)
