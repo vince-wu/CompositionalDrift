@@ -34,19 +34,23 @@ RAFT_RATIO = 0.01
 LOAD_SUCCESSFUL = False
 GRAPH1_TYPE = "Monomer Occurences"
 GRAPH2_TYPE = "Percentage Monomer"
-HISTOGRAM1_MONOMER = 0
-HISTOGRAM2_MONOMER = 1
+HISTOGRAM1_MONOMER = 1
+HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
-VERSION = "v1.3"
+COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+VERSION = "v1.4"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
- ["Default Setting", 1], ["Monomer Cap", 1]]
+ ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
+ ["Percentage to Analyze for Histogram", 0]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
 		file = open("config.txt", "w")
-		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \nGraph Monomer Occurence = 1 \n")
+		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
+		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
+		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8")
 		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
 		file.write("Setting 1 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
@@ -234,10 +238,13 @@ def setConfigVariable(configType, configStringValue):
 		if config[0] == configType:
 			try:
 				#handling for variable types
-				if config[1]:
-					setConfigVariableHelper(configType, int(configStringValue))
-				else:
+				if config[1] == 0:
 					setConfigVariableHelper(configType, float(configStringValue))
+				elif config[1] == 1:
+					setConfigVariableHelper(configType, int(configStringValue))
+				elif config[1] == 2:
+					print("configstring ", configStringValue)
+					setConfigVariableHelper(configType, configStringValue)
 				print(configType, configStringValue)
 				return 1
 			except AssertionError:
@@ -254,9 +261,6 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Number of Polymers to Show":
 		global NUM_POLYMERS_SHOW
 		NUM_POLYMERS_SHOW = configValue	
-	elif configType == "Graph Monomer Occurence":
-		global GRAPH_TYPE
-		GRAPH_TYPE = configValue
 	elif configType == "Total Starting Monomers":
 		global TOTAL_STARTING_MONOMERS
 		TOTAL_STARTING_MONOMERS = configValue
@@ -268,6 +272,39 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Monomer Cap":
 		global MONOMER_CAP
 		MONOMER_CAP = configValue
+	elif configType == "Graph 1 Type":
+		global GRAPH1_TYPE
+		if configValue == 0:
+			GRAPH1_TYPE = "Monomer Occurences"
+		elif configValue == 1:
+			GRAPH1_TYPE = "Percentage Monomer"
+		elif configValue == 2:
+			GRAPH1_TYPE = "Monomer Separation"
+		elif configValue == 3:
+			GRAPH1_TYPE = "None"
+		else:
+			assert False
+	elif configType == "Graph 2 Type":
+		global GRAPH2_TYPE
+		if configValue == 0:
+			GRAPH2_TYPE = "Monomer Occurences"
+		elif configValue == 1:
+			GRAPH2_TYPE = "Percentage Monomer"
+		elif configValue == 2:
+			GRAPH2_TYPE = "Monomer Separation"
+		elif configValue == 3:
+			GRAPH2_TYPE = "None"
+		else:
+			assert False
+	elif configType == "Histogram 1 Monomer":
+		global HISTOGRAM1_MONOMER
+		HISTOGRAM1_MONOMER = configValue
+	elif configType == "Histogram 2 Monomer":
+		global HISTOGRAM2_MONOMER
+		HISTOGRAM2_MONOMER = configValue
+	elif configType == "Percentage to Analyze for Histogram":
+		global HISTOGRAM_LIMIT
+		HISTOGRAM_LIMIT = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -506,7 +543,7 @@ class Application(Tk.Frame):
 			"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
 		self.graphType1Spinbox.pack(side = Tk.LEFT)
 		#setting default variable for graphType1
-		self.graphType2TkVar.set(GRAPH1_TYPE)
+		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#Spinbox for graphType2
 		self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
 			"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
@@ -525,6 +562,7 @@ class Application(Tk.Frame):
 		self.histogramMonomer1Spinbox  = Tk.Spinbox(master = self.histogramMonomer1Frame, from_ = 1, to = self.numMonomers, width = 2, state = "readonly")
 		self.histogramMonomer1Spinbox.pack(side = Tk.LEFT)
 		#setting spinbox to default value
+		self.histogramMonomer1Spinbox["textvariable"] = self.histogramMonomer1TkVar
 		self.histogramMonomer1TkVar.set(HISTOGRAM1_MONOMER)
 		#Frame for histogramMonomer2
 		self.histogramMonomer2Frame = Tk.Frame(master = self.column2Frame)
@@ -538,6 +576,7 @@ class Application(Tk.Frame):
 		self.histogramMonomer2Spinbox  = Tk.Spinbox(master = self.histogramMonomer2Frame, from_ = 1, to = self.numMonomers, width = 2, state = "readonly")
 		self.histogramMonomer2Spinbox.pack(side = Tk.LEFT)
 		#setting spinbox to default value
+		self.histogramMonomer2Spinbox["textvariable"] = self.histogramMonomer2TkVar
 		self.histogramMonomer2TkVar.set(HISTOGRAM2_MONOMER)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = Tk.Frame(master = self.column2Frame)
@@ -658,7 +697,8 @@ class Application(Tk.Frame):
 			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
-			assert(self.histogramLimitTkVar > 0)
+			assert(self.histogramLimit <= 1)
+			assert(self.histogramLimit > 0)
 			assert(self.totalMonomers > 0)
 			assert(self.numSimulations > 0)
 			assert(self.raftRatio > 0)
@@ -805,67 +845,28 @@ class Application(Tk.Frame):
 	#plots compositions given a PolymerArray
 	def plotCompositions(self, polymerArray):
 		self.lineColors = []
+		#retrieving graphType variables
+		self.graph1Type = self.graphType1TkVar.get()
+		self.graph2Type = self.graphType2TkVar.get()
 		#Plot and Figure formatting
 		self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
-		frequencyPlot = self.plotFigure.add_subplot(121)
-		frequencyPlot.tick_params(labelsize = 7)
-		graphType = self.graphTypeTkIntVar.get()
-		if graphType == 2:
-			histogramData = self.getHistogramData(polymerArray, 1, 80)
-			#print(histogramData)
-			binwidth = 1
-			frequencyPlot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth))
-			frequencyPlot.set_ylabel("Number of Occurences", labelpad=5, fontsize = 9)
-			frequencyPlot.set_xlabel("Number of Consecutive Monomers", labelpad = 0, fontsize = 9)
-			frequencyPlot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
-			#print(min(histogramData))
-			#print(max(histogramData))
-		if graphType == 0 or graphType == 1:
-			frequencyPlot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
-			#Iterates through each unique monomer and plots composition
-			for monomer in range(1, self.numMonomers + 1):
-				#x-axis array
-				polymerIndex = list(range(1, self.polymerLength + 1))
-				#y-axis array initation
-				monomercounts = [0] * self.polymerLength
-				#inputs counts into y-axis array
-				#graphs Percentage of Monomer Remaining
-				if graphType == 0:
-					#adjust axis title
-					frequencyPlot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
-					#adjust y axis limiys
-					frequencyPlot.set_ylim([0,1])
-					#variable to keep track of average number of monomers consumed
-					monomersConsumed = 0
-					for index in polymerIndex:
-						count = 0
-						for polymer in polymerArray:
-							if polymer[index - 1] == monomer:
-								count += 1
-						startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
-						#calculates monomer consumed
-						monomersConsumed += count / self.numSimulations
-						#calculated percentage of monomer remaining
-						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
-						monomercounts[index - 1] = percentageRemaining
-				else:
-					#adjust axis title
-					frequencyPlot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
-					for index in polymerIndex:
-						count = 0
-						for polymer in polymerArray:
-							if polymer[index - 1] == monomer:
-								count += 1
-						monomercounts[index - 1] = count / self.numSimulations
-				#debugging purposes
-				#print(polymerIndex)
-				#print(monomercounts)
-				#plots x and y arrays
-				curve = frequencyPlot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
-				self.lineColors.append(curve[0].get_color())
-			#legend-screw matplotlib; so fucking hard to format
-			handles, labels = frequencyPlot.get_legend_handles_labels()
-			lgd = frequencyPlot.legend(handles, labels, prop = {'size':7})
+		if self.graph1Type == "None" and self.graph2Type == "None":
+			return
+		if self.graph1Type == "None":
+			self.subplot1 = self.plotFigure.add_subplot(111)
+			self.subplot1.tick_params(labelsize = 7)
+			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot1, 1)
+		elif self.graph2Type == "None":
+			self.subplot1 = self.plotFigure.add_subplot(111)
+			self.subplot1.tick_params(labelsize = 7)
+			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
+		else:
+			self.subplot1 = self.plotFigure.add_subplot(121)
+			self.subplot2 = self.plotFigure.add_subplot(122)
+			self.subplot1.tick_params(labelsize = 7)
+			self.subplot2.tick_params(labelsize = 7)
+			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
+			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot2, 2)	
 		# A tk.DrawingArea
 		#imbedding matplotlib graph onto canvas
 		self.canvas = FigureCanvasTkAgg(self.plotFigure, master = root)
@@ -979,6 +980,69 @@ class Application(Tk.Frame):
 					polymerIndex += 1
 					continue
 		return histogramData
+	def graphSubPlot(self, polymerArray, graphType, subplot, number):
+		if graphType == "Percentage Monomer" or graphType == "Monomer Occurences":
+			#Iterates through each unique monomer and plots composition
+			for monomer in range(1, self.numMonomers + 1):
+				#x-axis array
+				polymerIndex = list(range(1, self.polymerLength + 1))
+				#y-axis array initation
+				monomercounts = [0] * self.polymerLength
+				#inputs counts into y-axis array
+				#graphs Percentage of Monomer Remaining
+				if graphType == "Percentage Monomer":
+					#adjust axis title
+					subplot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
+					#adjust y axis limiys
+					subplot.set_ylim([0,1])
+					#variable to keep track of average number of monomers consumed
+					monomersConsumed = 0
+					for index in polymerIndex:
+						count = 0
+						for polymer in polymerArray:
+							if polymer[index - 1] == monomer:
+								count += 1
+						startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
+						#calculates monomer consumed
+						monomersConsumed += count / self.numSimulations
+						#calculated percentage of monomer remaining
+						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
+						monomercounts[index - 1] = percentageRemaining
+				elif graphType == "Monomer Occurences":
+					#adjust axis title
+					subplot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
+					for index in polymerIndex:
+						count = 0
+						for polymer in polymerArray:
+							if polymer[index - 1] == monomer:
+								count += 1
+						monomercounts[index - 1] = count / self.numSimulations
+				#debugging purposes
+				#print(polymerIndex)
+				#print(monomercounts)
+				#plots x and y arrays
+				curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
+				self.lineColors.append(curve[0].get_color())
+			#legend-screw matplotlib; so fucking hard to format
+			handles, labels = subplot.get_legend_handles_labels()
+			lgd = subplot.legend(handles, labels, prop = {'size':7})
+			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
+		elif graphType == "Monomer Separation":
+			#retrieving all needed variables from inputs
+			if number == 1:
+				histogramMonomer = int(self.histogramMonomer1TkVar.get())
+			if number == 2:
+				histogramMonomer = int(self.histogramMonomer2TkVar.get())
+			histogramNumberLimit = self.histogramLimit * self.polymerLength
+			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
+			print(histogramData)
+			binwidth = 1
+			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = COLORS[histogramMonomer - 1])
+			subplot.set_ylabel("Number of Occurences", labelpad=5, fontsize = 9)
+			subplot.set_xlabel("Distances Between Monomer %i" %histogramMonomer, labelpad = 0, fontsize = 9)
+			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
+			#print(min(histogramData))
+			#print(max(histogramData))
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
 	#Toplevel parameters

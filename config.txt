@@ -1,7 +1,11 @@
 Number of Unique Monomers = 4
 Number of Simulations = 200 
 Number of Polymers to Show = 8 
-Graph Monomer Occurence = 0 
+Graph 1 Type = 0
+Graph 2 Type = 1
+Histogram 1 Monomer = 1
+Histogram 2 Monomer = 2
+Percentage to Analyze for Histogram = 0.8
 Total Starting Monomers = 1000 
 RAFT to Monomers Ratio = 0.01 
 Default Setting = 1 
