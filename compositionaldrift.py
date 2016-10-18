@@ -99,6 +99,7 @@ def readConfigFile():
 	global COEFF_ARRAY
 	#global variable to shwo whether or not a setting loaded successfully
 	global LOAD_SUCCESSFUL
+	LOAD_SUCCESSFUL = False
 	for line in file:
 		line = line.strip()
 		#If line is end, read next lines as regular config line
@@ -308,6 +309,7 @@ class Application(Tk.Frame):
 			global SETTING
 			try: 
 				SETTING = int(self.settingTkVar.get())
+				print("Setting", SETTING)
 				assert int(SETTING) >= 0
 			except:
 				errorMessage("Please input valid parameters!", 220)

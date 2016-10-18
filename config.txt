@@ -5,7 +5,7 @@ Graph Monomer Occurence = 0
 Total Starting Monomers = 1000 
 RAFT to Monomers Ratio = 0.01 
 Default Setting = 1 
-Monomer Cap = 5000000 
+Monomer Cap = 5000000000 
 Setting 1 
 Number of Unique Monomers = 4 
 Monomer 1 Ratio = 50 
