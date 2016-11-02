@@ -13,10 +13,12 @@ from matplotlib.figure import Figure
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk
-    import Tkinter.filedialog
+    #import Tkinter.filedialog
+    print(sys.version_info[0], "hi")
 else:
     import tkinter as Tk
-    import tkinter.filedialog
+    #import tkinter.filedialog
+    print(sys.version_info[0])
 
 """
     Created by Vincent Wu on 8/17/16:
@@ -50,7 +52,7 @@ def generateConfigFile():
 		file = open("config.txt", "w")
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
-		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8")
+		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
 		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
 		file.write("Setting 1 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
@@ -1016,7 +1018,7 @@ class Application(Tk.Frame):
 						for polymer in polymerArray:
 							if polymer[index - 1] == monomer:
 								count += 1
-						monomercounts[index - 1] = count / self.numSimulations
+						monomercounts[index - 1] = float(float(count) / float(self.numSimulations))
 				#debugging purposes
 				#print(polymerIndex)
 				#print(monomercounts)
@@ -1038,8 +1040,8 @@ class Application(Tk.Frame):
 			print(histogramData)
 			binwidth = 1
 			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = COLORS[histogramMonomer - 1])
-			subplot.set_ylabel("Number of Occurences", labelpad=5, fontsize = 9)
-			subplot.set_xlabel("Distances Between Monomer %i" %histogramMonomer, labelpad = 0, fontsize = 9)
+			subplot.set_ylabel("Total Separation", labelpad=5, fontsize = 9)
+			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
