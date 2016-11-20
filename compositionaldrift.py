@@ -7,6 +7,7 @@ import os.path
 matplotlib.use('TkAgg')
 from numpy import arange, sin, pi
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib import style
 # implement the default mpl key bindings
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
@@ -33,18 +34,17 @@ NUM_SIMULATIONS = 200
 NUM_POLYMERS_SHOW = 8
 GRAPH_TYPE = 1
 TOTAL_STARTING_MONOMERS = 1000
-RAFT_RATIO = 0.01
+RAFT_RATIO = 100
 LOAD_SUCCESSFUL = False
 GRAPH1_TYPE = "Monomer Occurences"
 GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
-COLORS = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
 VERSION = "v1.4"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
- ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 0], 
+ ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0]]
 #generates a config file if needed
@@ -54,7 +54,7 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
-		file.write("Total Starting Monomers = 1000 \nRAFT to Monomers Ratio = 0.01 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
+		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 0 \nMonomer Cap = 5000000 \n")
 		file.write("Setting 1 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
@@ -388,7 +388,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		#The parent LabelFrame for all Input Widgets
 		self.inputFrame = ttk.LabelFrame(master = root, text = "Input Parameters")
-		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 7, pady = 7)
 		#A frame for column 1 of inputs
 		self.columnFrame = ttk.Frame(master = self.inputFrame)
 		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 0)
@@ -472,7 +472,7 @@ class Application(ttk.Frame):
 		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Degree of Polymerization:")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
 		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
@@ -737,7 +737,7 @@ class Application(ttk.Frame):
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
 		print(self.totalMonomers)
 		print(self.raftRatio)
-		self.polymerLength = int(1 / self.raftRatio)
+		self.polymerLength = int(self.raftRatio)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
 		self.numPolymers = int(self.totalMonomers / self.polymerLength)
@@ -865,6 +865,9 @@ class Application(ttk.Frame):
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
 	def plotCompositions(self, polymerArray):
+		#style to use
+		style.use("bmh")
+		#self.colorArray = ["blue", "green", "red", "cyan", "magenta", "yellow", "black"]
 		self.lineColors = []
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
@@ -875,15 +878,19 @@ class Application(ttk.Frame):
 			return
 		if self.graph1Type == "None":
 			self.subplot1 = self.plotFigure.add_subplot(111)
+			self.subplot2 = self.plotFigure.add_subplot(122)
 			self.subplot1.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot1, 1)
 		elif self.graph2Type == "None":
 			self.subplot1 = self.plotFigure.add_subplot(111)
+			self.subplot1.set_color_cycle(self.colorArray)
 			self.subplot1.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
 		else:
 			self.subplot1 = self.plotFigure.add_subplot(121)
 			self.subplot2 = self.plotFigure.add_subplot(122)
+			self.subplot1.set_color_cycle(self.colorArray)
+			self.subplot2.set_color_cycle(self.colorArray)
 			self.subplot1.tick_params(labelsize = 7)
 			self.subplot2.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
@@ -901,7 +908,7 @@ class Application(ttk.Frame):
 	def visualizePolymers(self, polymerArray):
 		#LabelFrame for visualizeCanvas
 		self.visualizationFrame = ttk.LabelFrame(master = root, text = "Polymer Visualization")
-		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0)
+		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0, padx = 7, pady = 0)
 		#update visuals to get correct sizing
 		self.visualizationFrame.update()
 		#variable to keep track of frame width
@@ -912,21 +919,21 @@ class Application(ttk.Frame):
 			numRows = self.numPolymers * self.numSimulations
 		#parameters for canvas height and width
 		canvasHeight = 130
-		canvasWidth = self.visualFrameWidth * 0.95
+		canvasWidth = self.visualFrameWidth
 		#Maximizes size of squares
-		if (canvasHeight - 50) / numRows <= (canvasWidth - 50) / self.polymerLength:
-			size = (canvasHeight - 50) / numRows
+		if (canvasHeight - 25) / numRows <= (canvasWidth - 40) / self.polymerLength:
+			size = (canvasHeight - 25) / numRows
 			canvasWidth = self.polymerLength * size + 20
 		else:
-			size = (canvasWidth - 50) / self.polymerLength
+			size = (canvasWidth - 40) / self.polymerLength
 			canvasHeight = numRows * size + 10
 		self.visualFrameWidth = self.visualizationFrame.winfo_height()
-		print("height", self.visualFrameWidth)
-		#neccesary instance variables
-		lineColors = ["blue", "green", "red", "cyan", "magenta", "yellow", "black"]
 		#Canvas for visualization
 		visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
 		visualizeCanvas.pack()
+		#colors
+		#line colors to use
+		self.colorArray = ['#4D4D4D','#5DA5DA', '#F15854', '#60BD68', '#F17CB0', '#B276B2', '#DECF3F', '#FAA43A']
 		#Pad Parameters
 		ulx = 20
 		uly = 10
@@ -934,7 +941,7 @@ class Application(ttk.Frame):
 		for row in range(0, numRows):
 			#iterates through an array representation of monomer and adds a square with corresponding color
 			for monomer in polymerArray[row]:
-				color = lineColors[monomer - 1]
+				color = self.colorArray[monomer - 1]
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
@@ -1065,7 +1072,7 @@ class Application(ttk.Frame):
 			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
 			print(histogramData)
 			binwidth = 1
-			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = COLORS[histogramMonomer - 1])
+			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = self.colorArray[histogramMonomer - 1])
 			subplot.set_ylabel("Total Separation", labelpad=5, fontsize = 9)
 			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))

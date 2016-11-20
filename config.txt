@@ -7,7 +7,7 @@ Histogram 1 Monomer = 1
 Histogram 2 Monomer = 2
 Percentage to Analyze for Histogram = 0.8
 Total Starting Monomers = 1000 
-RAFT to Monomers Ratio = 0.01 
+RAFT to Monomers Ratio = 100
 Default Setting = 1 
 Monomer Cap = 5000000000 
 Setting 1 
