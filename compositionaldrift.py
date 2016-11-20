@@ -13,13 +13,14 @@ from matplotlib.figure import Figure
 import sys
 if sys.version_info[0] < 3:
     import Tkinter as Tk
+    from Tkinter import ttk
     #import Tkinter.filedialog
     print(sys.version_info[0], "hi")
 else:
     import tkinter as Tk
+    from tkinter import ttk
     #import tkinter.filedialog
     print(sys.version_info[0])
-
 """
     Created by Vincent Wu on 8/17/16:
     This program uses the Mayo-Lewis equation and Monte Carlo method to simulate copolymer growth, and
@@ -310,9 +311,9 @@ def setConfigVariableHelper(configType, configValue):
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
-class Application(Tk.Frame):
+class Application(ttk.Frame):
 	def __init__(self, master = None):
-		Tk.Frame.__init__(self, master)
+		ttk.Frame.__init__(self, master)
 		self.pack()
 		self.initialize()
 	#Initialization
@@ -332,7 +333,7 @@ class Application(Tk.Frame):
 		#Creates Input Widgets
 		self.createInputWidgets()
 		#Creates dummy visualization Frame
-		self.visualizationFrame = Tk.Frame(master = root)
+		self.visualizationFrame = ttk.Frame(master = root)
 		self.destroyCanvas = False
 		self.destroyHide = False
 	#Destroys unneccesary widgets
@@ -386,19 +387,19 @@ class Application(Tk.Frame):
 			root.quit()
 			root.destroy()
 		#The parent LabelFrame for all Input Widgets
-		self.inputFrame = Tk.LabelFrame(master = root, text = "Input Parameters")
+		self.inputFrame = ttk.LabelFrame(master = root, text = "Input Parameters")
 		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		#A frame for column 1 of inputs
-		self.columnFrame = Tk.Frame(master = self.inputFrame)
+		self.columnFrame = ttk.Frame(master = self.inputFrame)
 		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 0)
 		#A frame for row 1 of inputs
-		self.rowFrame1 = Tk.Frame(master = self.columnFrame)
+		self.rowFrame1 = ttk.Frame(master = self.columnFrame)
 		self.rowFrame1.pack(side = Tk.TOP, padx = 5, pady = 0)
 		#A frame for row 2 of inputs
-		self.rowFrame2 = Tk.Frame(master = self.columnFrame)
+		self.rowFrame2 = ttk.Frame(master = self.columnFrame)
 		self.rowFrame2.pack(side = Tk.LEFT, padx = 5, pady = 0)
 		#Label for monomerCount spinbox
-		self.monomerCountLabel = Tk.Label(master = self.rowFrame1, text = "Number of Unique Monomers:")
+		self.monomerCountLabel = ttk.Label(master = self.rowFrame1, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#tkvar for monomercount
 		self.monomerCountTkVar = Tk.IntVar()
@@ -408,11 +409,11 @@ class Application(Tk.Frame):
 		#sets monomerCOuntTkVar to default setting
 		self.monomerCountTkVar.set(NUM_UNIQUE_MONOMERS)
 		#countConfirm Button
-		self.countConfirmButton = Tk.Button(master = self.rowFrame1, text = "Enter",
-		command = lambda:enter(self), bg = "light blue", activebackground = "light slate blue", width = 9)
+		self.countConfirmButton = ttk.Button(master = self.rowFrame1, text = "Enter",
+		command = lambda:enter(self), width = 9)
 		self.countConfirmButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		#Label for msetting spinbox
-		self.monomerCountLabel = Tk.Label(master = self.rowFrame2, text = "Setting Number to Use:")
+		self.monomerCountLabel = ttk.Label(master = self.rowFrame2, text = "Setting Number to Use:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#tkvar for setting
 		self.settingTkVar = Tk.IntVar()
@@ -423,8 +424,8 @@ class Application(Tk.Frame):
 		global SETTING
 		self.settingTkVar.set(SETTING)
 		#use loaded inputs button
-		self.loadButton = Tk.Button(master = self.rowFrame2, text = "Load from Settings",
-		command = lambda:loadSettings(self), bg = "light blue", activebackground = "light slate blue", width = 15)
+		self.loadButton = ttk.Button(master = self.rowFrame2, text = "Load from Settings",
+		command = lambda:loadSettings(self), width = 18)
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
@@ -455,48 +456,48 @@ class Application(Tk.Frame):
 			self.initScreen()
 			self.createInputWidgets()
 		#Frame for totalMonomers label and Entry
-		self.totalMonomersFrame = Tk.Frame(master = self.columnFrame)
+		self.totalMonomersFrame = ttk.Frame(master = self.columnFrame)
 		self.totalMonomersFrame.pack(side = Tk.TOP)
 		#Label for totalMonomers Entry
-		self.totalMonomersLabel = Tk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
+		self.totalMonomersLabel = ttk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
 		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for totalMonomers
-		self.totalMonomersEntry = Tk.Entry(master = self.totalMonomersFrame, width = 5)
+		self.totalMonomersEntry = ttk.Entry(master = self.totalMonomersFrame, width = 5)
 		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting totalMonomers to 1000
 		self.totalMonomersTkVar = Tk.IntVar()
 		self.totalMonomersEntry["textvariable"] = self.totalMonomersTkVar
 		self.totalMonomersTkVar.set(TOTAL_STARTING_MONOMERS)
 		#Frame for raftRatio label and Entry
-		self.raftRatioFrame = Tk.Frame(master = self.columnFrame)
+		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = Tk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "RAFT to Monomers Ratio:")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
-		self.raftRatioEntry = Tk.Entry(master = self.raftRatioFrame, width = 5)
+		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
 		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		self.raftRatioTkVar = Tk.StringVar()
 		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
 		self.raftRatioTkVar.set(RAFT_RATIO)
 		#Frame for numSimulations label and Entry
-		self.numSimsFrame = Tk.Frame(master = self.columnFrame)
+		self.numSimsFrame = ttk.Frame(master = self.columnFrame)
 		self.numSimsFrame.pack(side = Tk.TOP)
 		#Label for numSims Entry
-		self.numSimsLabel = Tk.Label(master = self.numSimsFrame, text = "Number of Simulations:   ")
+		self.numSimsLabel = ttk.Label(master = self.numSimsFrame, text = "Number of Simulations:   ")
 		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for numSimulations
-		self.numSimsEntry = Tk.Entry(master = self.numSimsFrame, width = 5)
+		self.numSimsEntry = ttk.Entry(master = self.numSimsFrame, width = 5)
 		self.numSimsEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting number of simulations to 1000
 		self.numSimsTkVar = Tk.IntVar()
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
 		self.numSimsTkVar.set(NUM_SIMULATIONS)
 		#Frame for numPolyToShow SpinBox
-		self.numPolyToShowFrame = Tk.Frame(master = self.columnFrame)
+		self.numPolyToShowFrame = ttk.Frame(master = self.columnFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP)
 		#Label for numPolyToShow spinbox
-		self.numPolyToShowLabel = Tk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
+		self.numPolyToShowLabel = ttk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
 		self.numPolyToShowLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#numPolyToShow spinbox
 		self.numPolyToShowBox = Tk.Spinbox(master = self.numPolyToShowFrame, from_ = 1, to = 12, width = 2)
@@ -506,57 +507,66 @@ class Application(Tk.Frame):
 		self.numPolyToShowBox["textvariable"] = self.numPolyToShow
 		self.numPolyToShow.set(NUM_POLYMERS_SHOW)
 		#Frame for Back, Quit, and Simulate buttons
-		self.backSimFrame = Tk.Frame(master = self.columnFrame)
+		self.backSimFrame = ttk.Frame(master = self.columnFrame)
 		self.backSimFrame.pack(side = Tk.TOP)
 		#A simulate button to simulate polymer formation
-		self.simulateButton = Tk.Button(master = self.backSimFrame, text = "Simulate", width = 7,
-		 command = self.simulate, bg = "light blue", activebackground = "light slate blue")
+		self.simulateButton = ttk.Button(master = self.backSimFrame, text = "Simulate", width = 9,
+		 command = self.simulate)
 		self.simulateButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
 		#A back button to enter a diff number of monomers
-		self.backButton = Tk.Button(master = self.backSimFrame, text = "Back", width = 7,
-		 command = lambda:back(self), bg = "light blue", activebackground = "light slate blue")
+		self.backButton = ttk.Button(master = self.backSimFrame, text = "Back", width = 7,
+		 command = lambda:back(self))
 		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
 		#Quit Button Widget
-		quitButton = Tk.Button(master = self.backSimFrame, text = "Quit",
-		 command = _quit, width = 7, bg = "light blue", activebackground = "light slate blue")
+		quitButton = ttk.Button(master = self.backSimFrame, text = "Quit",
+		 command = _quit, width = 7)
 		quitButton.pack(side = Tk.LEFT, padx = 6)
 		createCount = 0;
 		#Frame for graph options
-		self.column2Frame = Tk.Frame(master = self.inputFrame)
+		self.column2Frame = ttk.Frame(master = self.inputFrame)
 		self.column2Frame.pack(side = Tk.LEFT, padx = 5)
 		#tkvar for graphType1
 		self.graphType1TkVar = Tk.StringVar()
 		#tkVar for graphType2
 		self.graphType2TkVar = Tk.StringVar()
 		#frame for graphType1
-		self.graphFrame1 = Tk.Frame(master = self.column2Frame)
+		self.graphFrame1 = ttk.Frame(master = self.column2Frame)
 		self.graphFrame1.pack(side = Tk.TOP, pady = 3)
 		#frame for graphType2
-		self.graphFrame2 = Tk.Frame(master = self.column2Frame)
+		self.graphFrame2 = ttk.Frame(master = self.column2Frame)
 		self.graphFrame2.pack(side = Tk.TOP, pady = 3)
 		#Label for graphType1 spinbox
-		self.graphType1Label = Tk.Label(master = self.graphFrame1, text = "Graph 1 Type:")
+		self.graphType1Label = ttk.Label(master = self.graphFrame1, text = "Graph 1 Type:")
 		self.graphType1Label.pack(side = Tk.LEFT)
 		#Label for graphType2 spinbox
-		self.graphType2Label = Tk.Label(master = self.graphFrame2, text = "Graph 2 Type:")
+		self.graphType2Label = ttk.Label(master = self.graphFrame2, text = "Graph 2 Type:")
 		self.graphType2Label.pack(side = Tk.LEFT)
+		#combobox
+		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
+			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly")
+		self.graphType1ComboBox.pack(side = Tk.LEFT)
+
 		#Spinbox for graphType1
-		self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
-			"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
-		self.graphType1Spinbox.pack(side = Tk.LEFT)
+		#self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
+		#	"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
+		#self.graphType1Spinbox.pack(side = Tk.LEFT)
 		#setting default variable for graphType1
 		self.graphType1TkVar.set(GRAPH1_TYPE)
+		#combobox
+		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
+			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly")
+		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Spinbox for graphType2
-		self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
-			"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
-		self.graphType2Spinbox.pack(side = Tk.LEFT)
+		#self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
+		#"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
+		#self.graphType2Spinbox.pack(side = Tk.LEFT)
 		#setting default variable for graphType2
 		self.graphType2TkVar.set(GRAPH2_TYPE)
 		#Frame for histogramMonomer1
-		self.histogramMonomer1Frame = Tk.Frame(master = self.column2Frame)
+		self.histogramMonomer1Frame = ttk.Frame(master = self.column2Frame)
 		self.histogramMonomer1Frame.pack(side = Tk.TOP)
 		#Label for histogramMonomer1
-		self.histogramMonomer1Label = Tk.Label(master = self.histogramMonomer1Frame, text = "Histogram 1 Monomer:")
+		self.histogramMonomer1Label = ttk.Label(master = self.histogramMonomer1Frame, text = "Histogram 1 Monomer:")
 		self.histogramMonomer1Label.pack(side = Tk.LEFT)
 		#tkvar for histogramMonomer1
 		self.histogramMonomer1TkVar = Tk.IntVar()
@@ -567,10 +577,10 @@ class Application(Tk.Frame):
 		self.histogramMonomer1Spinbox["textvariable"] = self.histogramMonomer1TkVar
 		self.histogramMonomer1TkVar.set(HISTOGRAM1_MONOMER)
 		#Frame for histogramMonomer2
-		self.histogramMonomer2Frame = Tk.Frame(master = self.column2Frame)
+		self.histogramMonomer2Frame = ttk.Frame(master = self.column2Frame)
 		self.histogramMonomer2Frame.pack(side = Tk.TOP)
 		#Label for histogramMonomer2
-		self.histogramMonomer2Label = Tk.Label(master = self.histogramMonomer2Frame, text = "Histogram 2 Monomer:")
+		self.histogramMonomer2Label = ttk.Label(master = self.histogramMonomer2Frame, text = "Histogram 2 Monomer:")
 		self.histogramMonomer2Label.pack(side = Tk.LEFT)
 		#tkvar for histogramMonomer2
 		self.histogramMonomer2TkVar = Tk.IntVar()
@@ -581,52 +591,60 @@ class Application(Tk.Frame):
 		self.histogramMonomer2Spinbox["textvariable"] = self.histogramMonomer2TkVar
 		self.histogramMonomer2TkVar.set(HISTOGRAM2_MONOMER)
 		#Frame for histogramLimit
-		self.histogramLimitFrame = Tk.Frame(master = self.column2Frame)
+		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
 		self.histogramLimitFrame.pack(side = Tk.TOP)
 		#Label for histogramLimit
-		self.histogramLimitLabel = Tk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
+		self.histogramLimitLabel = ttk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
 		self.histogramLimitLabel.pack(side = Tk.LEFT)
 		#entry for histogramLimit
-		self.histogramLimitEntry = Tk.Entry(master = self.histogramLimitFrame, width = 4)
+		self.histogramLimitEntry = ttk.Entry(master = self.histogramLimitFrame, width = 4)
 		self.histogramLimitEntry.pack(side = Tk.LEFT)
 		#tkvar for histogramLimit
 		self.histogramLimitTkVar = Tk.StringVar()
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
 		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
 		#Frame for Monomer Amounts
-		self.amountFrame = Tk.Frame(master = self.inputFrame) 
+		self.amountFrame = ttk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
 		#Frame for Monomer Coefficients
-		self.coefficientFrame = Tk.Frame(master = self.inputFrame)
+		self.coefficientFrame = ttk.Frame(master = self.inputFrame)
 		self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
-		# A list of Tk.Entry objects for Monomer ratios
+		# A list of ttk.Entry objects for Monomer ratios
 		self.startingRatiosTkList = [] 
-		# A 2D list of Tk.Entry objects for Coefficicients
+		# A 2D list of ttk.Entry objects for Coefficicients
 		self.coefficientList = [] 
+		#a list of the ttk.Entry objects for monomer input
+		self.monomerAmountTkVarArray = []
 		#While loop creating number of neccesary amount Entry boxes
 		while createCount < self.numMonomers:
 			#Label for inputAmount
-			monomerAmountFrame = Tk.Frame(master = self.amountFrame)
+			monomerAmountFrame = ttk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-			inputAmountLabel = Tk.Label(master = monomerAmountFrame, text = "     Monomer " 
+			inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
 				+ str(createCount + 1) + " Ratio:")
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
-			inputAmount = Tk.Entry(master = monomerAmountFrame, width = 5)
+			amount = Tk.IntVar()
+			inputAmount = ttk.Entry(master = monomerAmountFrame, width = 5, textvariable = amount, text = 20)
 			inputAmount.pack(side = Tk.LEFT, padx = 5)
 			#Setting Default Value to 20
-			amount = Tk.IntVar()
 			inputAmount["textvariable"] = amount
 			if LOAD_SUCCESSFUL and useLoadedSettings:
 				amount.set(RATIO_ARRAY[createCount])
 			else:
 				amount.set(20)
-			#Add Tk.Entry object to startingAmountList
+			self.monomerAmountTkVarArray.append(amount)
+			#Add ttk.Entry object to startingAmountList
 			self.startingRatiosTkList.append(inputAmount)
 			createCount += 1
+		setDefaultCount = 0
+		"""while setDefaultCount < self.numMonomers:
+			self.startingRatiosTkList[setDefaultCount].configure(text = 20)
+			setDefaultCount += 1"""
 		#Debugging purposes
 		#print("startingAmountList: ", self.startingRatiosTkList) 
 		createCount2 = 0
+		self.coeffTkVarArray = []
 		#While loop creating number of neccesary coefficient Entry boxes
 		while createCount2 < self.numMonomers:
 			combinations = 0
@@ -634,17 +652,17 @@ class Application(Tk.Frame):
 			singleMonoCoeffList = []
 			self.coefficientList.append(singleMonoCoeffList)
 			#Frame for Coefficients for Single Monomer
-			singleCoeffFrame = Tk.Frame(master = self.coefficientFrame)
+			singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
 			singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
 			while combinations < self.numMonomers:				
 				#Label for inputAmount
-				coeffValFrame = Tk.Frame(master = singleCoeffFrame)
+				coeffValFrame = ttk.Frame(master = singleCoeffFrame)
 				coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-				inputCoeffLabel = Tk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+				inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
 				 + "-" + str(combinations + 1) + " Constant:" )
 				inputCoeffLabel.pack(side = Tk.LEFT)
 				#Entry for inputAmount
-				inputCoeff = Tk.Entry(master = coeffValFrame, width = 4)
+				inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
 				inputCoeff.pack(side = Tk.LEFT, padx = 5)
 				#Setting Default Coefficient to 1
 				coeff = Tk.IntVar()
@@ -653,7 +671,8 @@ class Application(Tk.Frame):
 					coeff.set(COEFF_ARRAY[createCount2][combinations])
 				else:
 					coeff.set(1)
-				#Add a Tk.Entry object to singleMonoCoeffList
+				self.coeffTkVarArray.append(coeff)
+				#Add a ttk.Entry object to singleMonoCoeffList
 				singleMonoCoeffList.append(inputCoeff)
 				combinations += 1
 			createCount2 += 1
@@ -665,7 +684,7 @@ class Application(Tk.Frame):
 			counter += 1"""
 	#Frame and contents for opening screen
 	def initScreen(self):
-		self.initFrame = Tk.Frame(master = root)
+		self.initFrame = ttk.Frame(master = root)
 		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
 		 text = "Compositional Drift Simulator %s" % VERSION)
@@ -685,7 +704,7 @@ class Application(Tk.Frame):
 	#Shows input params
 	def hideInputParams(self):
 		self.inputFrame.pack_forget()
-		self.showButton = Tk.Button(master = self.parentFrame, text = "Show Input Parameters", width = 27,
+		self.showButton = ttk.Button(master = self.parentFrame, text = "Show Input Parameters", width = 27,
 			bg = "pale turquoise", activebackground = "light slate blue", command = self.showInputParams)
 		self.showButton.pack(side = Tk.TOP)
 	#Simulates polymer reaction based on input values
@@ -735,7 +754,7 @@ class Application(Tk.Frame):
 		if self.destroyHide:
 			self.hideButton.destroy()
 		#hideButton creation, _DEPRECATED_
-		"""self.hideButton = Tk.Button(master = self.buttonFrame, bg = "pale turquoise", activebackground = "light slate blue",
+		"""self.hideButton = ttk.Button(master = self.buttonFrame, bg = "pale turquoise", activebackground = "light slate blue",
 			width = 27, text = "Hide Input Paramters", command = self.hideInputParams)
 		self.hideButton.pack(side = Tk.TOP, pady = 3)
 		self.destroyHide = True"""
@@ -880,12 +899,20 @@ class Application(Tk.Frame):
 		self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
+		#LabelFrame for visualizeCanvas
+		self.visualizationFrame = ttk.LabelFrame(master = root, text = "Polymer Visualization")
+		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0)
+		#update visuals to get correct sizing
+		self.visualizationFrame.update()
+		#variable to keep track of frame width
+		self.visualFrameWidth = self.visualizationFrame.winfo_width()
+		#print("Width", self.visualFrameWidth)
 		numRows = self.numPolyToShow.get()
 		if numRows > self.numPolymers * self.numSimulations: 
 			numRows = self.numPolymers * self.numSimulations
 		#parameters for canvas height and width
-		canvasHeight = 120
-		canvasWidth = 1000
+		canvasHeight = 130
+		canvasWidth = self.visualFrameWidth * 0.95
 		#Maximizes size of squares
 		if (canvasHeight - 50) / numRows <= (canvasWidth - 50) / self.polymerLength:
 			size = (canvasHeight - 50) / numRows
@@ -893,11 +920,10 @@ class Application(Tk.Frame):
 		else:
 			size = (canvasWidth - 50) / self.polymerLength
 			canvasHeight = numRows * size + 10
+		self.visualFrameWidth = self.visualizationFrame.winfo_height()
+		print("height", self.visualFrameWidth)
 		#neccesary instance variables
 		lineColors = ["blue", "green", "red", "cyan", "magenta", "yellow", "black"]
-		#LabelFrame for visualizeCanvas
-		self.visualizationFrame = Tk.LabelFrame(master = root, text = "Polymer Visualization", padx = 3, pady = 3)
-		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0)
 		#Canvas for visualization
 		visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
 		visualizeCanvas.pack()
@@ -912,7 +938,7 @@ class Application(Tk.Frame):
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
-	#Converts an array of Tk.Entrys of ratios into an int array of starting monomer amounts
+	#Converts an array of ttk.Entrys of ratios into an int array of starting monomer amounts
 	#Note: might have result in total amount fo momoners being slightly more than inital total monomers due to ceiling divide
 	def getMonomerAmounts(self):
 		#A list of starting monomer amounts
@@ -930,7 +956,7 @@ class Application(Tk.Frame):
 			monomerAmounts.append(numMonomers)
 		print("monomerAmounts: ", monomerAmounts)
 		return monomerAmounts
-	#Converts a 2D array of Tk.Entrys for coefficients into a 2D double array
+	#Converts a 2D array of ttk.Entrys for coefficients into a 2D double array
 	def getCoefficients(self):
 		coeffList = []
 		for entry in self.coefficientList:
@@ -1055,7 +1081,7 @@ def errorMessage(message, width):
 	msg = Tk.Message(master = top, text = message, width = 500)
 	msg.pack(side = Tk.TOP, pady = 5)
 	#OK button to exit
-	exitButton = Tk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
+	exitButton = ttk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
 	exitButton.pack(side = Tk.TOP, pady = 5)
 #Takes in a list of tuple lists with item and weight, and returns a random item based on 
 #weight
