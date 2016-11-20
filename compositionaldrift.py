@@ -34,7 +34,7 @@ NUM_SIMULATIONS = 200
 NUM_POLYMERS_SHOW = 8
 GRAPH_TYPE = 1
 TOTAL_STARTING_MONOMERS = 1000
-RAFT_RATIO = 100
+DP = 100
 LOAD_SUCCESSFUL = False
 GRAPH1_TYPE = "Monomer Occurences"
 GRAPH2_TYPE = "Percentage Monomer"
@@ -44,7 +44,7 @@ HISTOGRAM_LIMIT = 0.8
 VERSION = "v1.4"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
- ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["RAFT to Monomers Ratio", 1], 
+ ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0]]
 #generates a config file if needed
@@ -246,7 +246,7 @@ def setConfigVariable(configType, configStringValue):
 				elif config[1] == 1:
 					setConfigVariableHelper(configType, int(configStringValue))
 				elif config[1] == 2:
-					print("configstring ", configStringValue)
+					#print("configstring ", configStringValue)
 					setConfigVariableHelper(configType, configStringValue)
 				print(configType, configStringValue)
 				return 1
@@ -267,9 +267,9 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Total Starting Monomers":
 		global TOTAL_STARTING_MONOMERS
 		TOTAL_STARTING_MONOMERS = configValue
-	elif configType == "RAFT to Monomers Ratio":
-		global RAFT_RATIO
-		RAFT_RATIO = configValue
+	elif configType == "Degree of Polymerization":
+		global DP
+		DP = configValue
 	elif configType == "Default Setting":
 		pass
 	elif configType == "Monomer Cap":
@@ -353,7 +353,7 @@ class Application(ttk.Frame):
 			global SETTING
 			try: 
 				SETTING = int(self.settingTkVar.get())
-				print("Setting", SETTING)
+				#print("Setting", SETTING)
 				assert int(SETTING) >= 0
 			except:
 				errorMessage("Please input valid parameters!", 220)
@@ -479,7 +479,7 @@ class Application(ttk.Frame):
 		self.raftRatioEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		self.raftRatioTkVar = Tk.StringVar()
 		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
-		self.raftRatioTkVar.set(RAFT_RATIO)
+		self.raftRatioTkVar.set(DP)
 		#Frame for numSimulations label and Entry
 		self.numSimsFrame = ttk.Frame(master = self.columnFrame)
 		self.numSimsFrame.pack(side = Tk.TOP)
@@ -695,7 +695,7 @@ class Application(ttk.Frame):
 		message3 = Tk.Message(master = self.initFrame, width = 300,
 			text = "Welcome to Compositional Drift Simulator! This program uses the Mayo Lewis Equation and the" 
 			" Monte Carlo method to simulate the growth of a copolymer chain."
-			" Please input your desired number of unique copolymers and press 'Enter' to continue.")
+			" Please input your desired number of unique monomers or choose a default setting.")
 		message3.pack(side = Tk.TOP)
 	#Hides input params
 	def showInputParams(self):
@@ -733,10 +733,19 @@ class Application(ttk.Frame):
 		except AssertionError:
 			errorMessage("Please input valid parameters!", 220)
 			return
+		#progress bar widget setup
+		simulationProgressTkVar = Tk.IntVar()
+		self.simulationProgressBar = ttk.Progressbar(master = self.column2Frame, mode = "determinate", 
+			variable = simulationProgressTkVar, maximum = self.numSimulations, length = 200)
+		self.simulationProgressBar.pack(side = Tk.TOP, padx = 5, pady = 2)
+		self.simulationProgressBar.update()
+		simulationProgressTkVar.set(0)
+		currProgress = 0
+		self.simulationProgressBar.start()
 		"""Calculates Initial Conditions based on inputs"""
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
-		print(self.totalMonomers)
-		print(self.raftRatio)
+		#print(self.totalMonomers)
+		#print(self.raftRatio)
 		self.polymerLength = int(self.raftRatio)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
@@ -748,8 +757,8 @@ class Application(ttk.Frame):
 			errorMessage("RAFT Ratio too small!", 220)
 			return
 		#Debugging Purposes
-		print("Polymer Length: ", self.polymerLength)
-		print("Number of Polymers: ", self.numPolymers)
+		#print("Polymer Length: ", self.polymerLength)
+		#print("Number of Polymers: ", self.numPolymers)
 		#destroys hideButton if necessary
 		if self.destroyHide:
 			self.hideButton.destroy()
@@ -851,9 +860,16 @@ class Application(ttk.Frame):
 			polymerArray = polymerArray + localPolymerArray
 			#increases simCounter by 1
 			simCounter += 1
+			#increase progress
+			currProgress += 1
+			simulationProgressTkVar.set(currProgress)
+			self.simulationProgressBar.update()
+			#print(currProgress)
 		#Debugging purposes
 		"""Important Debug: Prints out array of polymers"""
 		#print("Array of Polymers: ", polymerArray)
+		#stops progress bar
+		self.simulationProgressBar.stop()
 		#outputs polymer onto textfile
 		text_file = open("polymerArray.txt", "w")
 		json.dump(polymerArray, text_file)
@@ -861,14 +877,14 @@ class Application(ttk.Frame):
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(polymerArray)
 		self.plotCompositions(polymerArray)
+		#destroy progress bar
+		self.simulationProgressBar.destroy()
 		center(root)
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
 	def plotCompositions(self, polymerArray):
 		#style to use
 		style.use("bmh")
-		#self.colorArray = ["blue", "green", "red", "cyan", "magenta", "yellow", "black"]
-		self.lineColors = []
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
@@ -879,6 +895,7 @@ class Application(ttk.Frame):
 		if self.graph1Type == "None":
 			self.subplot1 = self.plotFigure.add_subplot(111)
 			self.subplot2 = self.plotFigure.add_subplot(122)
+			self.subplot1.set_color_cycle(self.colorArray)
 			self.subplot1.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot1, 1)
 		elif self.graph2Type == "None":
@@ -961,7 +978,7 @@ class Application(ttk.Frame):
 			#calculates number of monomers from monomer ratio and total monomers, ceiling dividing
 			numMonomers = math.ceil(self.totalMonomers * weight / totalWeight)
 			monomerAmounts.append(numMonomers)
-		print("monomerAmounts: ", monomerAmounts)
+		#print("monomerAmounts: ", monomerAmounts)
 		return monomerAmounts
 	#Converts a 2D array of ttk.Entrys for coefficients into a 2D double array
 	def getCoefficients(self):
@@ -1057,10 +1074,9 @@ class Application(ttk.Frame):
 				#print(monomercounts)
 				#plots x and y arrays
 				curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
-				self.lineColors.append(curve[0].get_color())
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
-			lgd = subplot.legend(handles, labels, prop = {'size':7})
+			lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 		elif graphType == "Monomer Separation":
 			#retrieving all needed variables from inputs
@@ -1070,7 +1086,7 @@ class Application(ttk.Frame):
 				histogramMonomer = int(self.histogramMonomer2TkVar.get())
 			histogramNumberLimit = self.histogramLimit * self.polymerLength
 			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
-			print(histogramData)
+			#print(histogramData)
 			binwidth = 1
 			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = self.colorArray[histogramMonomer - 1])
 			subplot.set_ylabel("Total Separation", labelpad=5, fontsize = 9)
