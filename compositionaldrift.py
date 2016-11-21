@@ -44,7 +44,7 @@ GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
-VERSION = "v1.4"
+VERSION = "v1.5"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
@@ -339,6 +339,7 @@ class Application(ttk.Frame):
 		#Creates dummy visualization Frame
 		self.visualizationFrame = ttk.Frame(master = root)
 		self.destroyCanvas = False
+		self.destroyCanvas2 = False
 		self.destroyHide = False
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
@@ -544,7 +545,7 @@ class Application(ttk.Frame):
 		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
 		#Quit Button Widget
 		quitButton = ttk.Button(master = self.backSimFrame, text = "Update",
-		 command = self.plotCompositions, width = 7)
+		 command = lambda:self.plotCompositions(True), width = 7)
 		quitButton.pack(side = Tk.LEFT, padx = 6)
 		createCount = 0;
 		#seperator for column
@@ -907,18 +908,22 @@ class Application(ttk.Frame):
 		self.destroyCanvas = True
 		self.visualizationFrame.destroy()
 		self.visualizePolymers(self.polymerArray)
-		self.plotCompositions()
+		self.plotCompositions(False)
 		#destroy progress bar
 		self.simulationProgressBar.destroy()
 		center(root)
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
-	def plotCompositions(self):
+	def plotCompositions(self, update):
 		try:
 			polymerArray = self.polymerArray
 		except:
 			errorMessage("Please simulate first!", 300)
 			return
+		#destroys canvas if necessary
+		if update:
+			self.canvas.get_tk_widget().destroy()
+			self.toolbar.destroy()
 		#style to use
 		style.use("bmh")
 		#retrieving graphType variables
