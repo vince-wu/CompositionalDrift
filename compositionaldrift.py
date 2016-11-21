@@ -400,17 +400,23 @@ class Application(ttk.Frame):
 			root.quit()
 			root.destroy()
 		#The parent LabelFrame for all Input Widgets
-		self.inputFrame = ttk.LabelFrame(master = root, text = "Input Parameters")
+		self.inputFrame = ttk.Frame(master = root, borderwidth = 1, relief = "ridge")
 		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 7, pady = 7)
+		#top seperator
+		#self.topSep = ttk.Separator(master = self.inputFrame, orient = Tk.HORIZONTAL)
+		#self.topSep.pack(side = Tk.TOP, fill = Tk.BOTH)
+		#leftmost separator
+		#self.sideSep1 = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+		#self.sideSep1.pack(side = Tk.LEFT, fill = Tk.BOTH)
 		#A frame for column 1 of inputs
 		self.columnFrame = ttk.Frame(master = self.inputFrame)
-		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		#A frame for row 1 of inputs
 		self.rowFrame1 = ttk.Frame(master = self.columnFrame)
 		self.rowFrame1.pack(side = Tk.TOP, padx = 5, pady = 0)
 		#A frame for row 2 of inputs
 		self.rowFrame2 = ttk.Frame(master = self.columnFrame)
-		self.rowFrame2.pack(side = Tk.LEFT, padx = 5, pady = 0)
+		self.rowFrame2.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		#Label for monomerCount spinbox
 		self.monomerCountLabel = ttk.Label(master = self.rowFrame1, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
@@ -440,6 +446,12 @@ class Application(ttk.Frame):
 		self.loadButton = ttk.Button(master = self.rowFrame2, text = "Load from Settings",
 		command = lambda:loadSettings(self), width = 18)
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		#rightmost separator
+		#self.sideSep2 = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+		#self.sideSep2.pack(side = Tk.LEFT, fill = Tk.BOTH)
+		#bottom separator
+		#self.bottomSep = ttk.Separator(master = self.inputFrame, orient = Tk.HORIZONTAL)
+		#self.bottomSep.pack(side = Tk.BOTTOM, fill = Tk.BOTH)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
 		#case for loading inputs
@@ -531,13 +543,16 @@ class Application(ttk.Frame):
 		 command = lambda:back(self))
 		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
 		#Quit Button Widget
-		quitButton = ttk.Button(master = self.backSimFrame, text = "Quit",
-		 command = _quit, width = 7)
+		quitButton = ttk.Button(master = self.backSimFrame, text = "Update",
+		 command = self.plotCompositions, width = 7)
 		quitButton.pack(side = Tk.LEFT, padx = 6)
 		createCount = 0;
+		#seperator for column
+		self.col1Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+		self.col1Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, pady = 1)
 		#Frame for graph options
 		self.column2Frame = ttk.Frame(master = self.inputFrame)
-		self.column2Frame.pack(side = Tk.LEFT, padx = 5)
+		self.column2Frame.pack(side = Tk.LEFT, padx = 8)
 		#tkvar for graphType1
 		self.graphType1TkVar = Tk.StringVar()
 		#tkVar for graphType2
@@ -616,12 +631,15 @@ class Application(ttk.Frame):
 		self.histogramLimitTkVar = Tk.StringVar()
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
 		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
+		#seperator for column2
+		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
 		#Frame for Monomer Amounts
 		self.amountFrame = ttk.Frame(master = self.inputFrame) 
-		self.amountFrame.pack(side = Tk.LEFT, padx = 5)
+		self.amountFrame.pack(side = Tk.LEFT, padx = 0)
 		#Frame for Monomer Coefficients
 		self.coefficientFrame = ttk.Frame(master = self.inputFrame)
-		self.coefficientFrame.pack(side = Tk.LEFT, padx = 5)
+		self.coefficientFrame.pack(side = Tk.LEFT, padx = 0)
 		# A list of ttk.Entry objects for Monomer ratios
 		self.startingRatiosTkList = [] 
 		# A 2D list of ttk.Entry objects for Coefficicients
@@ -639,7 +657,7 @@ class Application(ttk.Frame):
 			#Entry for inputAmount
 			amount = Tk.IntVar()
 			inputAmount = ttk.Entry(master = monomerAmountFrame, width = 5, textvariable = amount, text = 20)
-			inputAmount.pack(side = Tk.LEFT, padx = 5)
+			inputAmount.pack(side = Tk.LEFT, padx = 2)
 			#Setting Default Value to 20
 			inputAmount["textvariable"] = amount
 			if LOAD_SUCCESSFUL and useLoadedSettings:
@@ -780,15 +798,10 @@ class Application(ttk.Frame):
 			width = 27, text = "Hide Input Paramters", command = self.hideInputParams)
 		self.hideButton.pack(side = Tk.TOP, pady = 3)
 		self.destroyHide = True"""
-		#destroys canvas if necessary
-		if self.destroyCanvas:
-			self.canvas.get_tk_widget().destroy()
-			self.toolbar.destroy()
-		self.destroyCanvas = True
 		#print("monomerAmounts: ", monomerAmounts)
 		#print("singleCoeffList: ", singleCoeffList)
 		#An array of polymers
-		polymerArray = []
+		self.polymerArray = []
 		#keeps track of number of simulations
 		simCounter = 1
 		self.originalMonomerAmounts = list(monomerAmounts)
@@ -870,7 +883,7 @@ class Application(ttk.Frame):
 				currPolymerLength += 1
 			#print("simCounter: ", simCounter)
 			#adds local polymer array to global polymer array
-			polymerArray = polymerArray + localPolymerArray
+			self.polymerArray = self.polymerArray + localPolymerArray
 			#increases simCounter by 1
 			simCounter += 1
 			#increase progress
@@ -885,17 +898,27 @@ class Application(ttk.Frame):
 		self.simulationProgressBar.stop()
 		#outputs polymer onto textfile
 		text_file = open("polymerArray.txt", "w")
-		json.dump(polymerArray, text_file)
+		json.dump(self.polymerArray, text_file)
 		text_file.close()
+		#destroys canvas if necessary
+		if self.destroyCanvas:
+			self.canvas.get_tk_widget().destroy()
+			self.toolbar.destroy()
+		self.destroyCanvas = True
 		self.visualizationFrame.destroy()
-		self.visualizePolymers(polymerArray)
-		self.plotCompositions(polymerArray)
+		self.visualizePolymers(self.polymerArray)
+		self.plotCompositions()
 		#destroy progress bar
 		self.simulationProgressBar.destroy()
 		center(root)
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
-	def plotCompositions(self, polymerArray):
+	def plotCompositions(self):
+		try:
+			polymerArray = self.polymerArray
+		except:
+			errorMessage("Please simulate first!", 300)
+			return
 		#style to use
 		style.use("bmh")
 		#retrieving graphType variables
