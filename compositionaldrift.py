@@ -219,6 +219,7 @@ def readConfigFile():
 				#check if setting number is integer and if it matches SETTING
 				try:
 					if int(intermediate2[1]) == SETTING:
+						print("true setting", SETTING)
 						parseSetting = True
 				except AssertionError:
 					invalidLines += 1
@@ -274,8 +275,7 @@ def setConfigVariableHelper(configType, configValue):
 		global DP
 		DP = configValue
 	elif configType == "Default Setting":
-		global SETTING
-		SETTING = configValue
+		pass
 	elif configType == "Monomer Cap":
 		global MONOMER_CAP
 		MONOMER_CAP = configValue
@@ -358,7 +358,7 @@ class Application(ttk.Frame):
 			global SETTING
 			try: 
 				SETTING = int(self.settingTkVar.get())
-				#print("Setting", SETTING)
+				print("Setting", SETTING)
 				assert int(SETTING) >= 0
 			except:
 				errorMessage("Please input valid parameters!", 220)
