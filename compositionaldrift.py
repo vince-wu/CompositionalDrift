@@ -113,6 +113,9 @@ def readConfigFile():
 	global COEFF_ARRAY
 	#global variable to shwo whether or not a setting loaded successfully
 	global LOAD_SUCCESSFUL
+	#global variable to kep track of last setting number
+	global LAST_SETTING
+	LAST_SETTING = 0
 	LOAD_SUCCESSFUL = False
 	for line in file:
 		line = line.strip()
@@ -218,6 +221,9 @@ def readConfigFile():
 					settingConfig = True
 				#check if setting number is integer and if it matches SETTING
 				try:
+					#check if setting is bigger than the last setting
+					if int(intermediate2[1]) > LAST_SETTING:
+						LAST_SETTING = int(intermediate2[1])
 					if int(intermediate2[1]) == SETTING:
 						print("true setting", SETTING)
 						parseSetting = True
@@ -543,10 +549,14 @@ class Application(ttk.Frame):
 		self.backButton = ttk.Button(master = self.backSimFrame, text = "Back", width = 7,
 		 command = lambda:back(self))
 		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
-		#Quit Button Widget
-		quitButton = ttk.Button(master = self.backSimFrame, text = "Update",
+		#An Update Button Widget
+		updateButton = ttk.Button(master = self.backSimFrame, text = "Update",
 		 command = lambda:self.plotCompositions(True), width = 7)
-		quitButton.pack(side = Tk.LEFT, padx = 6)
+		updateButton.pack(side = Tk.LEFT, padx = 6)
+		#A save state button
+		self.saveButton = ttk.Button(master = self.backSimFrame, text = "Save", width = 7,
+		 command = self.saveState)
+		self.saveButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
 		createCount = 0;
 		#seperator for column
 		self.col1Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
@@ -1135,11 +1145,80 @@ class Application(ttk.Frame):
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
+	def saveState(self):
+		ratiosList = []
+		#Asserts that there are no input errors. Shows errorMessage if error caught.test
+		try:
+			self.totalMonomers = int(self.totalMonomersTkVar.get())
+			monomerAmounts = self.getMonomerAmounts()
+			singleCoeffList = self.getCoefficients()
+			self.numSimulations = int(self.numSimsTkVar.get())
+			self.raftRatio = float(self.raftRatioTkVar.get())
+			self.histogramLimit = float(self.histogramLimitTkVar.get())
+			#Converts a list of Tkvars to a list of floats
+			for entry in self.startingRatiosTkList:
+				assert(float(entry.get()) > 0)
+				ratiosList.append(float(entry.get()))
+			assert(self.histogramLimit <= 1)
+			assert(self.histogramLimit > 0)
+			assert(self.totalMonomers > 0)
+			assert(self.numSimulations > 0)
+			assert(self.raftRatio > 0)
+			assert(self.totalMonomers * self.numSimulations <= MONOMER_CAP)
+		except ValueError:
+			errorMessage("Please input valid parameters!", 220)
+			return
+		except notInEuropeError:
+			errorMessage("You are not in Europe!", 220)
+			return
+		except AssertionError:
+			errorMessage("Please input valid parameters!", 220)
+			return
+		startingWeightList = []
+		#error checking to see if config file exists
+		if not os.path.exists("config.txt"):
+			errorMessage("config.txt does not exist!", 220)
+			return
+		nextSetting = LAST_SETTING + 1
+		file = open("config.txt", "a")
+		file.write("\nSetting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
+		monomerIndex = 1
+		while monomerIndex <= self.numMonomers:
+			file.write("\nMonomer %i Ratio = %i" %(monomerIndex, ratiosList[monomerIndex - 1]))
+			monomerIndex += 1
+		monomerIndex = 1
+		print("single:", singleCoeffList)
+		while monomerIndex <= self.numMonomers:
+			innerIndex = 1
+			while innerIndex <= self.numMonomers:
+				coefflist = singleCoeffList[monomerIndex - 1]
+				file.write("\n%i-%i = %f" %(monomerIndex, innerIndex, (coefflist[innerIndex - 1])))
+				innerIndex += 1
+			monomerIndex += 1
+		file.write("\nend")
+		file.close()
+		global LAST_SETTING
+		LAST_SETTING += 1
+		infoMessage("Save Successful", "State successfully saved into setting %i!" %nextSetting, 300)
+		#self.saveButton.update()
+		return
+
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
 	top.wm_title("Error")
+	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
+	#Message
+	msg = Tk.Message(master = top, text = message, width = 500)
+	msg.pack(side = Tk.TOP, pady = 5)
+	#OK button to exit
+	exitButton = ttk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
+	exitButton.pack(side = Tk.TOP, pady = 5)
+def infoMessage(title, message, width):
+	#Toplevel parameters
+	top = Tk.Toplevel()
+	top.wm_title(title)
 	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
 	#Message
 	msg = Tk.Message(master = top, text = message, width = 500)
