@@ -1054,7 +1054,7 @@ class Application(ttk.Frame):
 		#initializing array to be returned
 		histogramData = []
 		#count through all polymers
-		for polymer in polymerArray:
+		for polymer in polymerArray: 
 			#constant to keep track of polymer index, to know when to stop counting
 			polymerIndex = 1
 			numConsecutive = 0
@@ -1139,7 +1139,8 @@ class Application(ttk.Frame):
 			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
 			#print(histogramData)
 			binwidth = 1
-			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth), color = self.colorArray[histogramMonomer - 1])
+			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
+			 color = self.colorArray[histogramMonomer - 1], normed = True)
 			subplot.set_ylabel("Total Separation", labelpad=5, fontsize = 9)
 			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
