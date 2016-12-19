@@ -44,7 +44,7 @@ GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
-VERSION = "v1.5"
+VERSION = "v1.5.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
@@ -1141,7 +1141,7 @@ class Application(ttk.Frame):
 			binwidth = 1
 			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
 			 color = self.colorArray[histogramMonomer - 1], normed = True)
-			subplot.set_ylabel("Total Separation", labelpad=5, fontsize = 9)
+			subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
 			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
