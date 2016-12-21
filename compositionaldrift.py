@@ -742,16 +742,16 @@ class Application(ttk.Frame):
 		if PENULTIMATE:
 			self.coeffTkVarArray = []
 			#for loop creating neccesary number of penultimate coefficient entry boxes
-			for ultimate in range(0, self.numMonomers):
-				ultimateMonomerList = []
-				self.coefficientList.append(ultimateMonomerList)
+			for nextMonomer in range(0, self.numMonomers):
+				nextMonomerList = []
+				self.coefficientList.append(nextMonomerList)
 				#Frame for Coefficients for Single Monomer
 				singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
 				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-				for penultimate in range(0, self.numMonomers):
-					penultimateCoeffList = []
-					ultimateMonomerList.append(penultimateCoeffList)
-					for nextMonomer in range(0, self.numMonomers):
+				for ultimate in range(0, self.numMonomers):
+					CoeffList = []
+					nextMonomerList.append(CoeffList)
+					for penultimate in range(0, self.numMonomers):
 						#Label for inputAmount
 						coeffValFrame = ttk.Frame(master = singleCoeffFrame)
 						coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
@@ -770,7 +770,7 @@ class Application(ttk.Frame):
 							coeff.set(1)
 						self.coeffTkVarArray.append(coeff)
 						#Add a ttk.Entry object to singleMonoCoeffList
-						penultimateCoeffList.append(inputCoeff)
+						CoeffList.append(inputCoeff)
 
 		# Syntax": for i in range(0,x)
 		# fpr i in iterable
@@ -912,30 +912,24 @@ class Application(ttk.Frame):
 			currPolymerLength = 1
 			"""Grows each polymer at the same time until they all reach desired polymer size"""
 			#print("self.polymerLength: ", self.polymerLength)
-			while currPolymerLength < self.polymerLength:
-				"""RAFT polymerization: each polymer propagates at the same time, represented here as
-				monomers being attached to each polymer chain one at a time"""
+			#case for penultimate model: choosing the second monomer in chain, based off of HETEROGENOUS constants (works only for 2 monomer system)
+			if PENULTIMATE:
+				#iterating through each polymer in batch
 				for polymer in localPolymerArray:
-					#A variable keeping track of current monomer
-					monomerID = 1
 					choices = []
-					"""Propogation: Iterates through all monomers, calculating weight chance to bind for each, 
-					and binds monomer with highest weight chance"""
-					while monomerID <= self.numMonomers:
-						#Retrieveing coefficient based on previous and current monomer
-						coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
-						#print("coeff: ", coeff);
+					#calculates weight chance for each monomer
+					for monomerID in range(1, self.numMonomers + 1):
+						#retrieving coefficient based on previous and currrent monomer, assumes hetergoenous penultimate monomer
+						coeff = singleCoeffList[monomerID - 1][polymer[-1] - 1][1]
+						#print("coeff: ", coeff)
 						# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
 						chance = monomerAmounts[monomerID - 1] * coeff
-						#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
-						#Adds a two element list to choices containing monomer and weight
+						#adds a two element list to choices containing monomer and weight
 						choices.append([monomerID, chance])
-						monomerID += 1
-					#print ("currPolymerLength: ", currPolymerLength)
-					#print("choices2: ", choices)
 					#Using weighted_choice, selects next monomer
 					try:
-						nextMonomer = weighted_choice(choices)
+						#print(choices)
+						nextMonomer = weighted_choice(choices)	
 					#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
 					except AssertionError:
 						monomerID = 1
@@ -949,8 +943,80 @@ class Application(ttk.Frame):
 					#print("monomerAmounts: ", monomerAmounts)
 					#Attaches next monomer to polymer chain
 					polymer.append(nextMonomer)
-				#increase current polymer length by 1
-				currPolymerLength += 1
+			#case for penultimate model: propogating polymer chain once first 2 monomers have been decided
+			if PENULTIMATE:
+				for currPolymer in range(2, self.polymerLength):
+					for polymer in localPolymerArray:
+						choices = []
+						#calculates weight chance for each monomer
+						for monomerID in range(1, self.numMonomers + 1):
+							#retrieving coefficient based on previous and currrent monomer, assumes hetergoenous penultimate monomer
+							#assigning variables for clarity
+							nextMonomer = monomerID - 1
+							ultimateMonomer = polymer[-1] - 1
+							penultimateMonomer = polymer[-2] - 1
+							coeff = singleCoeffList[nextMonomer][ultimateMonomer][penultimateMonomer]
+							# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+							chance = monomerAmounts[monomerID - 1] * coeff
+							#adds a two element list to choices containing monomer and weight
+							choices.append([monomerID, chance])
+						#Using weighted_choice, selects next monomer
+						try:
+							nextMonomer = weighted_choice(choices)
+						#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
+						except AssertionError:
+							monomerID = 1
+							choices = []
+							while monomerID <= self.numMonomers:
+								choices.append([monomerID, monomerAmounts[monomerID - 1]])
+								monomerID += 1
+							nextMonomer = weighted_choice(choices)
+						#Reduces number of nextMonomer by 1, since it is being used up in reaction
+						monomerAmounts[nextMonomer - 1] -= 1
+						#print("monomerAmounts: ", monomerAmounts)
+						#Attaches next monomer to polymer chain
+						polymer.append(nextMonomer)
+			#case for non-penultimate simulation
+			else:
+				while currPolymerLength < self.polymerLength:
+					"""RAFT polymerization: each polymer propagates at the same time, represented here as
+					monomers being attached to each polymer chain one at a time"""
+					for polymer in localPolymerArray:
+						#A variable keeping track of current monomer
+						monomerID = 1
+						choices = []
+						"""Propogation: Iterates through all monomers, calculating weight chance to bind for each, 
+						and binds monomer with highest weight chance"""
+						while monomerID <= self.numMonomers:
+							#Retrieveing coefficient based on previous and current monomer
+							coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
+							#print("coeff: ", coeff);
+							# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+							chance = monomerAmounts[monomerID - 1] * coeff
+							#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
+							#Adds a two element list to choices containing monomer and weight
+							choices.append([monomerID, chance])
+							monomerID += 1
+						#print ("currPolymerLength: ", currPolymerLength)
+						#print("choices2: ", choices)
+						#Using weighted_choice, selects next monomer
+						try:
+							nextMonomer = weighted_choice(choices)
+						#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
+						except AssertionError:
+							monomerID = 1
+							choices = []
+							while monomerID <= self.numMonomers:
+								choices.append([monomerID, monomerAmounts[monomerID - 1]])
+								monomerID += 1
+							nextMonomer = weighted_choice(choices)
+						#Reduces number of nextMonomer by 1, since it is being used up in reaction
+						monomerAmounts[nextMonomer - 1] -= 1
+						#print("monomerAmounts: ", monomerAmounts)
+						#Attaches next monomer to polymer chain
+						polymer.append(nextMonomer)
+					#increase current polymer length by 1
+					currPolymerLength += 1
 			#print("simCounter: ", simCounter)
 			#adds local polymer array to global polymer array
 			self.polymerArray = self.polymerArray + localPolymerArray
