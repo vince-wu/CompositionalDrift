@@ -44,6 +44,7 @@ GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
+PENULTIMATE = 0
 VERSION = "v1.5.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
@@ -423,7 +424,7 @@ class Application(ttk.Frame):
 		self.rowFrame1.pack(side = Tk.TOP, padx = 5, pady = 0)
 		#A frame for row 2 of inputs
 		self.rowFrame2 = ttk.Frame(master = self.columnFrame)
-		self.rowFrame2.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		self.rowFrame2.pack(side = Tk.TOP, padx = 5, pady = 5)
 		#Label for monomerCount spinbox
 		self.monomerCountLabel = ttk.Label(master = self.rowFrame1, text = "Number of Unique Monomers:")
 		self.monomerCountLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
@@ -453,6 +454,18 @@ class Application(ttk.Frame):
 		self.loadButton = ttk.Button(master = self.rowFrame2, text = "Load from Settings",
 		command = lambda:loadSettings(self), width = 18)
 		self.loadButton.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		#frame for penultimate model choice, 3 row of inputs
+		self.penultimateFrame = ttk.Frame(master = self.columnFrame)
+		self.penultimateFrame.pack(side = Tk.TOP, padx = 5, pady = 0)
+		#Label for penultimate checkbox
+		self.penultimateLabel = ttk.Label(master = self.penultimateFrame, text = "Use Penultimate Model:")
+		self.penultimateLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
+		self.penultimateCheckButton = ttk.Entry(master = self.penultimateFrame, width = 2)
+		self.penultimateCheckButton.pack(side = Tk.LEFT, padx = 5)
+		#Setting penultimateTkVar to PENULTIMATE global variable
+		self.penultimateTkVar = Tk.IntVar()
+		self.penultimateCheckButton["textvariable"] = self.penultimateTkVar
+		self.penultimateTkVar.set(PENULTIMATE)
 		#rightmost separator
 		#self.sideSep2 = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		#self.sideSep2.pack(side = Tk.LEFT, fill = Tk.BOTH)
@@ -467,6 +480,8 @@ class Application(ttk.Frame):
 		else: 
 			try:
 				assert(self.monomerCountTkVar.get() > 0)
+				global PENULTIMATE
+				PENULTIMATE = self.penultimateTkVar.get()
 			except:
 				errorMessage("Please input valid parameters!", 220)
 				return
@@ -475,6 +490,7 @@ class Application(ttk.Frame):
 		self.loadButton.destroy()
 		self.rowFrame1.destroy()
 		self.rowFrame2.destroy()
+		self.penultimateFrame.destroy()
 		#Commands
 		# Quit command: quits window
 		def _quit():
@@ -557,7 +573,6 @@ class Application(ttk.Frame):
 		self.saveButton = ttk.Button(master = self.backSimFrame, text = "Save", width = 7,
 		 command = self.saveState)
 		self.saveButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
-		createCount = 0;
 		#seperator for column
 		self.col1Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col1Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, pady = 1)
@@ -657,6 +672,8 @@ class Application(ttk.Frame):
 		self.coefficientList = [] 
 		#a list of the ttk.Entry objects for monomer input
 		self.monomerAmountTkVarArray = []
+		#variable for keeping track of monomer ratio loop
+		createCount = 0;
 		#While loop creating number of neccesary amount Entry boxes
 		while createCount < self.numMonomers:
 			#Label for inputAmount
@@ -685,39 +702,78 @@ class Application(ttk.Frame):
 			setDefaultCount += 1"""
 		#Debugging purposes
 		#print("startingAmountList: ", self.startingRatiosTkList) 
-		createCount2 = 0
-		self.coeffTkVarArray = []
-		#While loop creating number of neccesary coefficient Entry boxes
-		while createCount2 < self.numMonomers:
-			combinations = 0
-			#Appends to coefficient list a list containing coefficients for the polymer index
-			singleMonoCoeffList = []
-			self.coefficientList.append(singleMonoCoeffList)
-			#Frame for Coefficients for Single Monomer
-			singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
-			singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-			while combinations < self.numMonomers:				
-				#Label for inputAmount
-				coeffValFrame = ttk.Frame(master = singleCoeffFrame)
-				coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-				inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-				 + "-" + str(combinations + 1) + " Constant:" )
-				inputCoeffLabel.pack(side = Tk.LEFT)
-				#Entry for inputAmount
-				inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
-				inputCoeff.pack(side = Tk.LEFT, padx = 5)
-				#Setting Default Coefficient to 1
-				coeff = Tk.IntVar()
-				inputCoeff["textvariable"] = coeff
-				if LOAD_SUCCESSFUL and useLoadedSettings:
-					coeff.set(COEFF_ARRAY[createCount2][combinations])
-				else:
-					coeff.set(1)
-				self.coeffTkVarArray.append(coeff)
-				#Add a ttk.Entry object to singleMonoCoeffList
-				singleMonoCoeffList.append(inputCoeff)
-				combinations += 1
-			createCount2 += 1
+		if not PENULTIMATE:
+			createCount2 = 0
+			#IMPORTANT: list so that inputs can be udated and not trash collected
+			self.coeffTkVarArray = []
+			#While loop creating number of neccesary coefficient Entry boxes
+			while createCount2 < self.numMonomers:
+				combinations = 0
+				#Appends to coefficient list a list containing coefficients for the polymer index
+				singleMonoCoeffList = []
+				self.coefficientList.append(singleMonoCoeffList)
+				#Frame for Coefficients for Single Monomer
+				singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
+				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
+				while combinations < self.numMonomers:				
+					#Label for inputAmount
+					coeffValFrame = ttk.Frame(master = singleCoeffFrame)
+					coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+					inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+					 + "-" + str(combinations + 1) + " Constant:" )
+					inputCoeffLabel.pack(side = Tk.LEFT)
+					#Entry for inputAmount
+					inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
+					inputCoeff.pack(side = Tk.LEFT, padx = 5)
+					#Setting Default Coefficient to 1
+					coeff = Tk.IntVar()
+					inputCoeff["textvariable"] = coeff
+					if LOAD_SUCCESSFUL and useLoadedSettings:
+						coeff.set(COEFF_ARRAY[createCount2][combinations])
+					else:
+						coeff.set(1)
+					#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
+					self.coeffTkVarArray.append(coeff)
+					#Add a ttk.Entry object to singleMonoCoeffList
+					singleMonoCoeffList.append(inputCoeff)
+					combinations += 1
+				createCount2 += 1
+		#if PENULTIMATE is true, create input entries for penultimate model
+		if PENULTIMATE:
+			self.coeffTkVarArray = []
+			#for loop creating neccesary number of penultimate coefficient entry boxes
+			for ultimate in range(0, self.numMonomers):
+				ultimateMonomerList = []
+				self.coefficientList.append(ultimateMonomerList)
+				#Frame for Coefficients for Single Monomer
+				singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
+				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
+				for penultimate in range(0, self.numMonomers):
+					penultimateCoeffList = []
+					ultimateMonomerList.append(penultimateCoeffList)
+					for nextMonomer in range(0, self.numMonomers):
+						#Label for inputAmount
+						coeffValFrame = ttk.Frame(master = singleCoeffFrame)
+						coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(penultimate + 1) + "-" + str(ultimate + 1)
+						 + "-" + str(nextMonomer + 1) + " Constant:" )
+						inputCoeffLabel.pack(side = Tk.LEFT)
+						#Entry for inputAmount
+						inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
+						inputCoeff.pack(side = Tk.LEFT, padx = 5)
+						#Setting Default Coefficient to 1
+						coeff = Tk.IntVar()
+						inputCoeff["textvariable"] = coeff
+						if LOAD_SUCCESSFUL and useLoadedSettings:
+							coeff.set(COEFF_ARRAY[createCount2][combinations])
+						else:
+							coeff.set(1)
+						self.coeffTkVarArray.append(coeff)
+						#Add a ttk.Entry object to singleMonoCoeffList
+						penultimateCoeffList.append(inputCoeff)
+
+		# Syntax": for i in range(0,x)
+		# fpr i in iterable
 		#Debugging Purposes: prints the 2D array which should store coefficients 	
 		#print("coefficientList: " , self.coefficientList)
 		#counter = 0
@@ -756,7 +812,10 @@ class Application(ttk.Frame):
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
-			singleCoeffList = self.getCoefficients()
+			if not PENULTIMATE:
+				singleCoeffList = self.getCoefficients()
+			else:
+				singleCoeffList = self.getPenultimateCoeff()
 			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
@@ -1049,6 +1108,24 @@ class Application(ttk.Frame):
 						assert(float(innerEntry.get()) >= 0)
 						singleCoeffList.append(float(innerEntry.get()))
 		return coeffList
+	def getPenultimateCoeff(self):
+		coeffList = []
+		for nextMonomerList in self.coefficientList:
+			ultimateList = []
+			coeffList.append(ultimateList)
+			for ultimateMonomerList in nextMonomerList:
+				penultimateCoeffList = []
+				ultimateList.append(penultimateCoeffList)
+				for penultimateCoeffEntry in ultimateMonomerList:
+					if ',' in list(penultimateCoeffEntry.get()):
+						raise notInEuropeError("You're in America!")
+					else:
+						assert(float(penultimateCoeffEntry.get()) >= 0)
+						penultimateCoeffList.append(float(penultimateCoeffEntry.get()))
+		print("coeffList: ", coeffList)
+		return coeffList
+
+
 	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
 	def getHistogramData(self, polymerArray, monomerID, indexLimit):
 		#initializing array to be returned
