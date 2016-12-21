@@ -1130,6 +1130,14 @@ class Application(ttk.Frame):
 			lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 		elif graphType == "Monomer Separation":
+			#obtain histogram limit
+			try:
+				self.histogramLimit = float(self.histogramLimitTkVar.get())
+				assert(self.histogramLimit <= 1)
+				assert(self.histogramLimit > 0)
+			except AssertionError:
+				errorMessage("Percent to Analyze Value Invalid!", 220)
+				return
 			#retrieving all needed variables from inputs
 			if number == 1:
 				histogramMonomer = int(self.histogramMonomer1TkVar.get())
