@@ -50,7 +50,7 @@ CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
- ["Percentage to Analyze for Histogram", 0]]
+ ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -58,7 +58,7 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
-		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \n")
+		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
@@ -79,6 +79,7 @@ def earlyConfigRead():
 		if len(intermediate) == 2:
 			global NUM_UNIQUE_MONOMERS
 			global SETTING
+			global PENULTIMATE
 			try:
 				if intermediate[0].strip() == "Number of Unique Monomers" and notParsed:
 					NUM_UNIQUE_MONOMERS = int(intermediate[1].strip())
@@ -87,6 +88,10 @@ def earlyConfigRead():
 				if intermediate[0].strip() == "Default Setting":
 					SETTING = int(intermediate[1].strip())
 					validLines += 1
+				if intermediate[0].strip() == "Penultimate":
+					PENULTIMATE= int(intermediate[1].strip())
+					validLines += 1
+					print("read penultimate!")
 			except ValueError:
 				continue
 	print("earlyConfigRead valid lines: %s" %validLines)
@@ -319,6 +324,9 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Percentage to Analyze for Histogram":
 		global HISTOGRAM_LIMIT
 		HISTOGRAM_LIMIT = configValue
+	elif configType == "Penultimate":
+		global PENULTIMATE
+		PENULTIMATE = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -460,11 +468,11 @@ class Application(ttk.Frame):
 		#Label for penultimate checkbox
 		self.penultimateLabel = ttk.Label(master = self.penultimateFrame, text = "Use Penultimate Model:")
 		self.penultimateLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
-		self.penultimateCheckButton = ttk.Entry(master = self.penultimateFrame, width = 2)
+		self.penultimateCheckButton = ttk.Checkbutton(master = self.penultimateFrame, text = None)
 		self.penultimateCheckButton.pack(side = Tk.LEFT, padx = 5)
 		#Setting penultimateTkVar to PENULTIMATE global variable
 		self.penultimateTkVar = Tk.IntVar()
-		self.penultimateCheckButton["textvariable"] = self.penultimateTkVar
+		self.penultimateCheckButton["variable"] = self.penultimateTkVar
 		self.penultimateTkVar.set(PENULTIMATE)
 		#rightmost separator
 		#self.sideSep2 = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
@@ -945,7 +953,7 @@ class Application(ttk.Frame):
 					polymer.append(nextMonomer)
 			#case for penultimate model: propogating polymer chain once first 2 monomers have been decided
 			if PENULTIMATE:
-				for currPolymer in range(2, self.polymerLength):
+				for currPolymer in range(2, self.polymerLength):	
 					for polymer in localPolymerArray:
 						choices = []
 						#calculates weight chance for each monomer
