@@ -58,7 +58,7 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
-		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0")
+		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
