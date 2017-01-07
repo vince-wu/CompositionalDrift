@@ -482,6 +482,9 @@ class Application(ttk.Frame):
 		#self.bottomSep.pack(side = Tk.BOTTOM, fill = Tk.BOTH)
 	#Creates more input widgets based on numMonomers
 	def createMoreInputs(self):
+		root.maxsize(width = 10000, height = 10000)
+		root.resizable(width = True, height = True)
+		root.sizefrom(who = "program")
 		#case for loading inputs
 		if LOAD_SUCCESSFUL and useLoadedSettings:
 			self.numMonomers = numMonomers
@@ -511,6 +514,7 @@ class Application(ttk.Frame):
 			#Re-Initiates
 			self.initScreen()
 			self.createInputWidgets()
+
 		#Frame for totalMonomers label and Entry
 		self.totalMonomersFrame = ttk.Frame(master = self.columnFrame)
 		self.totalMonomersFrame.pack(side = Tk.TOP)
@@ -790,6 +794,7 @@ class Application(ttk.Frame):
 			counter += 1"""
 	#Frame and contents for opening screen
 	def initScreen(self):
+		root.maxsize(width = 330, height = 270)
 		self.initFrame = ttk.Frame(master = root)
 		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
 		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
@@ -803,6 +808,8 @@ class Application(ttk.Frame):
 			" Monte Carlo method to simulate the growth of a copolymer chain."
 			" Please input your desired number of unique monomers or choose a default setting.")
 		message3.pack(side = Tk.TOP)
+		root.resizable(width=True, height=True)
+		root.sizefrom(who = "program")
 	#Hides input params
 	def showInputParams(self):
 		self.inputFrame.pack(side = Tk.BOTTOM, pady = 3)
