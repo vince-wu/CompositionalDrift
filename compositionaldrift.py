@@ -45,6 +45,7 @@ HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
 PENULTIMATE = 0
+DYAD = 0
 VERSION = "v1.5.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
@@ -669,6 +670,19 @@ class Application(ttk.Frame):
 		self.histogramLimitTkVar = Tk.StringVar()
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
 		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
+		#Frame for dyad
+		self.dyadFrame = ttk.Frame(master = self.column2Frame)
+		self.dyadFrame.pack(side = Tk.TOP)
+		#label for dyad
+		self.dyadLabel = ttk.Label(master = self.dyadFrame, text = "Enable Homodyad Detection:")
+		self.dyadLabel.pack(side = Tk.LEFT)
+		#checkbox for dyad
+		self.dyadCheckButton = ttk.Checkbutton(master = self.dyadFrame, text = None)
+		self.dyadCheckButton.pack(side = Tk.LEFT, padx = 5)
+		#Setting penultimateTkVar to PENULTIMATE global variable
+		self.dyadTkVar = Tk.IntVar()
+		self.dyadCheckButton["variable"] = self.dyadTkVar
+		self.dyadTkVar.set(DYAD)
 		#seperator for column2
 		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
@@ -1114,6 +1128,13 @@ class Application(ttk.Frame):
 		self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
+		enableDyad = self.dyadTkVar.get()
+		if enableDyad:
+			polymerArrayToUse = self.getDyad(polymerArray)
+			monomerRange = self.numMonomers * 2 + 1
+		else:
+			polymerArrayToUse = polymerArray
+			monomerRange = self.numMonomers + 1
 		#LabelFrame for visualizeCanvas
 		self.visualizationFrame = ttk.LabelFrame(master = root, text = "Polymer Visualization")
 		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0, padx = 7, pady = 0)
@@ -1148,7 +1169,7 @@ class Application(ttk.Frame):
 		#Visualizes polymers, number of polymers visualized based on numRows
 		for row in range(0, numRows):
 			#iterates through an array representation of monomer and adds a square with corresponding color
-			for monomer in polymerArray[row]:
+			for monomer in polymerArrayToUse[row]:
 				color = self.colorArray[monomer - 1]
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
@@ -1241,17 +1262,63 @@ class Application(ttk.Frame):
 					polymerIndex += 1
 					continue
 		return histogramData
+	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
+	def getDyad(self, polymerArray):
+		dyadArray = []
+		for polymer in polymerArray:
+			polymerDyad = []
+			for monomer in polymer:
+				if polymerDyad == []:
+					polymerDyad.append(monomer)
+					prevMonomer = monomer
+					continue
+				if monomer == prevMonomer:
+					polymerDyad[-1] = prevMonomer + self.numMonomers
+					polymerDyad.append(prevMonomer + self.numMonomers)
+				else:
+					polymerDyad.append(monomer)
+					prevMonomer = monomer
+			dyadArray.append(polymerDyad)
+		return dyadArray
+
+
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
 		if graphType == "Percentage Monomer" or graphType == "Monomer Occurences":
-			#Iterates through each unique monomer and plots composition
-			for monomer in range(1, self.numMonomers + 1):
-				#x-axis array
-				polymerIndex = list(range(1, self.polymerLength + 1))
-				#y-axis array initation
-				monomercounts = [0] * self.polymerLength
-				#inputs counts into y-axis array
-				#graphs Percentage of Monomer Remaining
-				if graphType == "Percentage Monomer":
+			if graphType == "Monomer Occurences":
+				enableDyad = self.dyadTkVar.get()
+				if enableDyad:
+					polymerArrayToUse = self.getDyad(polymerArray)
+					monomerRange = self.numMonomers * 2 + 1
+				else:
+					polymerArrayToUse = polymerArray
+					monomerRange = self.numMonomers + 1
+				#Iterates through each unique monomer and plots composition
+				for monomer in range(1, monomerRange):
+					#x-axis array
+					polymerIndex = list(range(1, self.polymerLength + 1))
+					#y-axis array initation
+					monomercounts = [0] * self.polymerLength
+					#inputs counts into y-axis array
+						#adjust axis title
+					subplot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
+					for index in polymerIndex:
+						count = 0
+						for polymer in polymerArrayToUse:
+							if polymer[index - 1] == monomer:
+								count += 1
+						monomercounts[index - 1] = float(float(count) / float(self.numSimulations))
+					if monomer > self.numMonomers:
+						label = "Homodyad " + str(monomer - self.numMonomers)
+					else:
+						label = "Monomer " + str(monomer)
+					curve = subplot.plot(polymerIndex, monomercounts, label = label)
+			#graphs Percentage of Monomer Remaining
+			if graphType == "Percentage Monomer":
+				for monomer in range(1, self.numMonomers + 1):
+					#x-axis array
+					polymerIndex = list(range(1, self.polymerLength + 1))
+					#y-axis array initation
+					monomercounts = [0] * self.polymerLength
 					#adjust axis title
 					subplot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
 					#adjust y axis limiys
@@ -1269,20 +1336,11 @@ class Application(ttk.Frame):
 						#calculated percentage of monomer remaining
 						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
 						monomercounts[index - 1] = percentageRemaining
-				elif graphType == "Monomer Occurences":
-					#adjust axis title
-					subplot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
-					for index in polymerIndex:
-						count = 0
-						for polymer in polymerArray:
-							if polymer[index - 1] == monomer:
-								count += 1
-						monomercounts[index - 1] = float(float(count) / float(self.numSimulations))
 				#debugging purposes
 				#print(polymerIndex)
 				#print(monomercounts)
 				#plots x and y arrays
-				curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
+					curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
 			lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
