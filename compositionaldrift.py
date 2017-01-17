@@ -49,9 +49,10 @@ PENULTIMATE = 0
 DYAD = 0
 LEGEND = 1
 ALIAS = 0
+SETINITIAL = 0
 STYLE = "bmh"
 COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
-VERSION = "v1.5.1"
+VERSION = "v1.6"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
@@ -379,6 +380,9 @@ class Application(ttk.Frame):
 		self.legendTkVar = Tk.IntVar()
 		self.legendTkVar.set(LEGEND)
 		self.aliasList = []
+		self.simulateLocked = False
+		self.initialSetTkVar = Tk.StringVar()
+		self.initialSetTkVar.set("Weighted")
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -862,6 +866,10 @@ class Application(ttk.Frame):
 	#Simulates polymer reaction based on input values
 	def simulate(self):
 		#print("Simulating!")
+		#a lock
+		if self.simulateLocked == True:
+			return
+		self.simulateLocked = True
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
@@ -924,6 +932,13 @@ class Application(ttk.Frame):
 		self.destroyHide = True"""
 		#print("monomerAmounts: ", monomerAmounts)
 		#print("singleCoeffList: ", singleCoeffList)
+		if self.initialSetTkVar.get() == "Weighted":
+			global SETINITIAL
+			SETINITIAL = 0
+		else:
+			wordarray = self.initialSetTkVar.get().split()
+			global SETINITIAL
+			SETINITIAL = int(wordarray[1])
 		#An array of polymers
 		self.polymerArray = []
 		#keeps track of number of simulations
@@ -941,6 +956,12 @@ class Application(ttk.Frame):
 			#Builds number of polymers equal to self.numpolymers
 			while currNumPolymers < self.numPolymers:
 				"""Initiation: Chooses a monomer to initiate the chain based of weighted chance"""
+				#case for setting first monomer
+				if SETINITIAL:
+					localPolymerArray.append([SETINITIAL])
+					monomerAmounts[SETINITIAL - 1] -= 1
+					currNumPolymers += 1
+					continue
 				#A variable keeping track of current monomer
 				monomerID = 1
 				choices = []
@@ -1101,6 +1122,7 @@ class Application(ttk.Frame):
 		#destroy progress bar
 		self.simulationProgressBar.destroy()
 		center(root)
+		self.simulateLocked = False
 		#self.inputFrame.pack_forget()
 	#plots compositions given a PolymerArray
 	def plotCompositions(self, update):
@@ -1154,8 +1176,7 @@ class Application(ttk.Frame):
 		self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
-		enableDyad = self.dyadTkVar.get()
-		if enableDyad:
+		if DYAD:
 			polymerArrayToUse = self.getDyad(polymerArray)
 			monomerRange = self.numMonomers * 2 + 1
 		else:
@@ -1311,8 +1332,7 @@ class Application(ttk.Frame):
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
 		if graphType == "Percentage Monomer" or graphType == "Monomer Occurences":
 			if graphType == "Monomer Occurences":
-				enableDyad = self.dyadTkVar.get()
-				if enableDyad:
+				if DYAD:
 					polymerArrayToUse = self.getDyad(polymerArray)
 					monomerRange = self.numMonomers * 2 + 1
 				else:
@@ -1379,8 +1399,6 @@ class Application(ttk.Frame):
 						curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
-			global LEGEND
-			LEGEND = int(self.legendTkVar.get())
 			if LEGEND:
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
@@ -1480,20 +1498,11 @@ class Application(ttk.Frame):
 		self.styleFrame.pack(side = Tk.TOP)
 		self.styleLabel = ttk.Label(master = self.styleFrame, text = "Style: ")
 		self.styleLabel.pack(side = Tk.LEFT)
-		self.styleComboBox = ttk.Combobox(master = self.styleFrame, values = ("bmh", "classic", "dark_background", "fivethirtyeight", "ggplot", 
+		self.styleComboBox = ttk.Combobox(master = self.styleFrame, values = ["bmh", "classic", "dark_background", "fivethirtyeight", "ggplot", 
 			"grayscale", "seaborn-colorblind", "seaborn-dark", "seaborn-dark-pallete", "seaborn-darkgrid", "seaborn-deep", "seaborn-muted", "seaborn-notebook",
-			"seaborn-paper", "seaborn-pastel", "seaborn-poster", "seaborn-talk", "seaborn-ticks", "seaborn-white", "seaborn-whitegrid"), 
+			"seaborn-paper", "seaborn-pastel", "seaborn-poster", "seaborn-talk", "seaborn-ticks", "seaborn-white", "seaborn-whitegrid"], 
 		state = "readonly", textvariable = self.styleTkVar)
 		self.styleComboBox.pack(side = Tk.LEFT)
-		self.legendFrame = ttk.Frame(master = self.options1Frame)
-		self.legendFrame.pack(side = Tk.TOP)
-		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
-		self.legendLabel.pack(side = Tk.LEFT)
-		self.legendCheckButton = ttk.Checkbutton(master = self.legendFrame, text = None)
-		self.legendCheckButton.pack(side = Tk.LEFT, padx = 5)
-		self.legendTkVar = Tk.IntVar()
-		self.legendCheckButton["variable"] = self.legendTkVar
-		self.legendTkVar.set(LEGEND)
 		#Frame for dyad
 		self.dyadFrame = ttk.Frame(master = self.options1Frame)
 		self.dyadFrame.pack(side = Tk.TOP)
@@ -1507,6 +1516,27 @@ class Application(ttk.Frame):
 		self.dyadTkVar = Tk.IntVar()
 		self.dyadCheckButton["variable"] = self.dyadTkVar
 		self.dyadTkVar.set(DYAD)
+		self.initialSetFrame = ttk.Frame(master = self.options1Frame)
+		self.initialSetFrame.pack(side = Tk.TOP)
+		self.initialSetLabel = ttk.Label(master = self.initialSetFrame, text = "Initial Monomer: ")
+		self.initialSetLabel.pack(side = Tk.LEFT)
+		self.initialSetTkVar = Tk.StringVar()
+		self.initialSetOptions = ["Weighted"]
+		for monomerID in range(1, self.numMonomers + 1):
+			self.initialSetOptions.append("Monomer %i" %monomerID)
+		self.initialSetComboBox = ttk.Combobox(master = self.initialSetFrame, values = self.initialSetOptions, state = "readonly", 
+			textvariable = self.initialSetTkVar, width = 11)
+		self.initialSetTkVar.set(self.initialSetOptions[SETINITIAL])
+		self.initialSetComboBox.pack(side = Tk.LEFT)
+		self.legendFrame = ttk.Frame(master = self.options1Frame)
+		self.legendFrame.pack(side = Tk.TOP)
+		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
+		self.legendLabel.pack(side = Tk.LEFT)
+		self.legendCheckButton = ttk.Checkbutton(master = self.legendFrame, text = None)
+		self.legendCheckButton.pack(side = Tk.LEFT, padx = 5)
+		self.legendTkVar = Tk.IntVar()
+		self.legendCheckButton["variable"] = self.legendTkVar
+		self.legendTkVar.set(LEGEND)
 		self.options1Sep = ttk.Separator(master = self.allOptionsFrame, orient = Tk.VERTICAL)
 		self.options1Sep.pack(side = Tk.LEFT, padx = 2, expand = True, fill = Tk.BOTH)
 		self.options2Frame = ttk.Frame(master = self.allOptionsFrame)
@@ -1538,7 +1568,7 @@ class Application(ttk.Frame):
 			aliasEntry = ttk.Entry(master = aliasFrame, width = 6, textvariable = aliasTkVar)
 			self.aliasTkVarList.append(aliasTkVar)
 			aliasEntry.pack(side = Tk.LEFT)
-		self.okButton = ttk.Button(master = self.optionsWindow, text = "Apply Aliases", width = 14, command = lambda:self.applyAlias())
+		self.okButton = ttk.Button(master = self.optionsWindow, text = "Apply", width = 14, command = lambda:self.applyAlias())
 		self.okButton.pack(side = Tk.TOP, pady = 3)
 	def displayColorChooser(self, monomerID, canvas):
 		color = askcolor()
@@ -1550,6 +1580,10 @@ class Application(ttk.Frame):
 			COLORARRAY[monomerID - 1] = color[1]
 			print("color: ", color[1])
 	def applyAlias(self):
+		global DYAD
+		DYAD = self.dyadTkVar.get()
+		global LEGEND
+		LEGEND = int(self.legendTkVar.get())
 		self.aliasList = []
 		for tkVar in self.aliasTkVarList:
 			self.aliasList.append(tkVar.get())
