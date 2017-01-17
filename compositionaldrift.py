@@ -378,6 +378,7 @@ class Application(ttk.Frame):
 		self.dyadTkVar.set(DYAD)
 		self.legendTkVar = Tk.IntVar()
 		self.legendTkVar.set(LEGEND)
+		self.aliasList = []
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -1532,6 +1533,8 @@ class Application(ttk.Frame):
 			aliasLabel = ttk.Label(master = aliasFrame, text = "Monomer %i Alias:" %monomer)
 			aliasLabel.pack(side = Tk.LEFT)
 			aliasTkVar = Tk.StringVar()
+			if self.aliasList:
+				aliasTkVar.set(self.aliasList[monomer - 1])
 			aliasEntry = ttk.Entry(master = aliasFrame, width = 6, textvariable = aliasTkVar)
 			self.aliasTkVarList.append(aliasTkVar)
 			aliasEntry.pack(side = Tk.LEFT)
@@ -1542,16 +1545,26 @@ class Application(ttk.Frame):
 		self.changeColor(color, monomerID)
 		canvas.create_rectangle(0, 0, 20, 20, fill = color[1])
 	def changeColor(self, color, monomerID):
-		global COLORARRAY
-		COLORARRAY[monomerID - 1] = color[1]
-		print("monomerID:", monomerID)
+		if color[1]:
+			global COLORARRAY
+			COLORARRAY[monomerID - 1] = color[1]
+			print("color: ", color[1])
 	def applyAlias(self):
-		global ALIAS
-		ALIAS = True
 		self.aliasList = []
 		for tkVar in self.aliasTkVarList:
 			self.aliasList.append(tkVar.get())
 		self.optionsWindow.destroy()
+		for alias in self.aliasList:
+			if alias == "":
+				global ALIAS
+				ALIAS = False
+				self.amountFrame.destroy()
+				self.coefficientFrame.destroy()
+				self.createIterativeInputs(False)
+				print("reached here!")
+				return
+		global ALIAS
+		ALIAS = True
 		self.amountFrame.destroy()
 		self.coefficientFrame.destroy()
 		self.createIterativeInputs(True)
