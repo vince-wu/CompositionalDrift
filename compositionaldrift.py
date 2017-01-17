@@ -48,6 +48,7 @@ HISTOGRAM_LIMIT = 0.8
 PENULTIMATE = 0
 DYAD = 0
 LEGEND = 1
+ALIAS = 0
 STYLE = "bmh"
 COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
 VERSION = "v1.5.1"
@@ -373,6 +374,10 @@ class Application(ttk.Frame):
 		self.destroyHide = False
 		self.styleTkVar = Tk.StringVar()
 		self.styleTkVar.set(STYLE)
+		self.dyadTkVar = Tk.IntVar()
+		self.dyadTkVar.set(DYAD)
+		self.legendTkVar = Tk.IntVar()
+		self.legendTkVar.set(LEGEND)
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -693,6 +698,8 @@ class Application(ttk.Frame):
 		#seperator for column2
 		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
+		self.createIterativeInputs(False)
+	def createIterativeInputs(self, alias):
 		#Frame for Monomer Amounts
 		self.amountFrame = ttk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 0)
@@ -712,8 +719,11 @@ class Application(ttk.Frame):
 			#Label for inputAmount
 			monomerAmountFrame = ttk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-			inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
-				+ str(createCount + 1) + " Ratio:")
+			if alias:
+				inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = self.aliasList[createCount] + " Ratio:")
+			else:
+				inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
+					+ str(createCount + 1) + " Ratio:")
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
 			amount = Tk.IntVar()
@@ -752,8 +762,11 @@ class Application(ttk.Frame):
 					#Label for inputAmount
 					coeffValFrame = ttk.Frame(master = singleCoeffFrame)
 					coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-					inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-					 + "-" + str(combinations + 1) + " Constant:" )
+					if alias:
+						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = self.aliasList[createCount2] + "-" + self.aliasList[combinations] + " Constant:" )
+					else:
+						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+						 + "-" + str(combinations + 1) + " Constant:" )
 					inputCoeffLabel.pack(side = Tk.LEFT)
 					#Entry for inputAmount
 					inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
@@ -788,6 +801,9 @@ class Application(ttk.Frame):
 						#Label for inputAmount
 						coeffValFrame = ttk.Frame(master = singleCoeffFrame)
 						coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+						if alias:
+							inputCoeffLabel = ttk.Label(master = coeffValFrame, text = self.aliasList[penultimate] + "-" + self.aliasList[ultimate]
+						 + "-" + self.aliasList[nextMonomer] + " Constant:" )
 						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(penultimate + 1) + "-" + str(ultimate + 1)
 						 + "-" + str(nextMonomer + 1) + " Constant:" )
 						inputCoeffLabel.pack(side = Tk.LEFT)
@@ -804,6 +820,7 @@ class Application(ttk.Frame):
 						self.coeffTkVarArray.append(coeff)
 						#Add a ttk.Entry object to singleMonoCoeffList
 						CoeffList.append(inputCoeff)
+
 
 		# Syntax": for i in range(0,x)
 		# fpr i in iterable
@@ -1316,9 +1333,15 @@ class Application(ttk.Frame):
 								count += 1
 						monomercounts[index - 1] = float(float(count) / float(self.numSimulations))
 					if monomer > self.numMonomers:
-						label = "Homodyad " + str(monomer - self.numMonomers)
+						if ALIAS:
+							label = self.aliasList[monomer - self.numMonomers - 1] + " Homodyad"
+						else:
+							label = "Homodyad " + str(monomer - self.numMonomers)
 					else:
-						label = "Monomer " + str(monomer)
+						if ALIAS:
+							label = self.aliasList[monomer - 1]
+						else:
+							label = "Monomer " + str(monomer)
 					curve = subplot.plot(polymerIndex, monomercounts, label = label)
 			#graphs Percentage of Monomer Remaining
 			if graphType == "Percentage Monomer":
@@ -1348,7 +1371,11 @@ class Application(ttk.Frame):
 				#print(polymerIndex)
 				#print(monomercounts)
 				#plots x and y arrays
-					curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
+					if ALIAS:
+						labelToUse = self.aliasList[monomer - 1]
+						curve = subplot.plot(polymerIndex, monomercounts, label = labelToUse)
+					else:
+						curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
 			global LEGEND
@@ -1444,7 +1471,9 @@ class Application(ttk.Frame):
 		self.optionsWindow.grab_set()
 		self.optionsWindow.focus_force()
 		self.optionsWindow.title("Options")
-		self.options1Frame = ttk.Frame(master = self.optionsWindow)
+		self.allOptionsFrame = ttk.Frame(master = self.optionsWindow)
+		self.allOptionsFrame.pack(side = Tk.TOP, pady = 5)
+		self.options1Frame = ttk.Frame(master = self.allOptionsFrame)
 		self.options1Frame.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		self.styleFrame = ttk.Frame(master = self.options1Frame)
 		self.styleFrame.pack(side = Tk.TOP)
@@ -1477,9 +1506,9 @@ class Application(ttk.Frame):
 		self.dyadTkVar = Tk.IntVar()
 		self.dyadCheckButton["variable"] = self.dyadTkVar
 		self.dyadTkVar.set(DYAD)
-		self.options1Sep = ttk.Separator(master = self.optionsWindow, orient = Tk.VERTICAL)
+		self.options1Sep = ttk.Separator(master = self.allOptionsFrame, orient = Tk.VERTICAL)
 		self.options1Sep.pack(side = Tk.LEFT, padx = 2, expand = True, fill = Tk.BOTH)
-		self.options2Frame = ttk.Frame(master = self.optionsWindow)
+		self.options2Frame = ttk.Frame(master = self.allOptionsFrame)
 		self.options2Frame.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		for monomer in range(1, self.numMonomers + 1):
 			colorFrame = ttk.Frame(master = self.options2Frame)
@@ -1492,6 +1521,22 @@ class Application(ttk.Frame):
 			colorButton = ttk.Button(master = colorFrame, text = "Change", width = 8,
 			 command = lambda monomer = monomer, canvas = colorCanvas:self.displayColorChooser(monomer, canvas))
 			colorButton.pack(side = Tk.LEFT, padx = 5)
+		self.options2Sep = ttk.Separator(master = self.allOptionsFrame, orient = Tk.VERTICAL)
+		self.options2Sep.pack(side = Tk.LEFT, padx = 2, expand = True, fill = Tk.BOTH)
+		self.options3Frame = ttk.Frame(master = self.allOptionsFrame)
+		self.options3Frame.pack(side = Tk.LEFT, padx = 5)
+		self.aliasTkVarList = []
+		for monomer in range(1, self.numMonomers + 1):
+			aliasFrame = ttk.Frame(master = self.options3Frame)
+			aliasFrame.pack(side = Tk.TOP, pady = 3)
+			aliasLabel = ttk.Label(master = aliasFrame, text = "Monomer %i Alias:" %monomer)
+			aliasLabel.pack(side = Tk.LEFT)
+			aliasTkVar = Tk.StringVar()
+			aliasEntry = ttk.Entry(master = aliasFrame, width = 6, textvariable = aliasTkVar)
+			self.aliasTkVarList.append(aliasTkVar)
+			aliasEntry.pack(side = Tk.LEFT)
+		self.okButton = ttk.Button(master = self.optionsWindow, text = "Apply Aliases", width = 14, command = lambda:self.applyAlias())
+		self.okButton.pack(side = Tk.TOP, pady = 3)
 	def displayColorChooser(self, monomerID, canvas):
 		color = askcolor()
 		self.changeColor(color, monomerID)
@@ -1500,7 +1545,16 @@ class Application(ttk.Frame):
 		global COLORARRAY
 		COLORARRAY[monomerID - 1] = color[1]
 		print("monomerID:", monomerID)
-
+	def applyAlias(self):
+		global ALIAS
+		ALIAS = True
+		self.aliasList = []
+		for tkVar in self.aliasTkVarList:
+			self.aliasList.append(tkVar.get())
+		self.optionsWindow.destroy()
+		self.amountFrame.destroy()
+		self.coefficientFrame.destroy()
+		self.createIterativeInputs(True)
 
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):

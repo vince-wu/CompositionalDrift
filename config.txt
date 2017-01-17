@@ -37,3 +37,12 @@ Monomer 4 Ratio = 5
 4-3 = 1.1 
 4-4 = 1.1 
 end
+Setting 2 
+Number of Unique Monomers = 2 
+Monomer 1 Ratio = 20
+Monomer 2 Ratio = 20
+1-1 = 1.000000
+1-2 = 1.000000
+2-1 = 1.000000
+2-2 = 1.000000
+end
