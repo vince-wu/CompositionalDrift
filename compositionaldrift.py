@@ -50,14 +50,23 @@ DYAD = 0
 LEGEND = 1
 ALIAS = 0
 SETINITIAL = 0
+CONVERSION = 100
 STYLE = "bmh"
-COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
+COLOR1 = '#4D4D4D'
+COLOR2 = '#5DA5DA'
+COLOR3 = '#F15854'
+COLOR4 = '#DECF3F'
+COLOR5 = '#60BD68'
+COLOR6 = '#F17CB0'
+COLOR7 = '#B276B2'
+COLOR8 = '#FAA43A'
+COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 VERSION = "v1.6"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
- ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
+ ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
- ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1]]
+ ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -65,8 +74,8 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
-		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
-		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \n")
+		file.write("Total Starting Monomers = 1000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
+		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
@@ -291,7 +300,7 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Total Starting Monomers":
 		global TOTAL_STARTING_MONOMERS
 		TOTAL_STARTING_MONOMERS = configValue
-	elif configType == "Degree of Polymerization":
+	elif configType == "Monomers to RAFT Ratio":
 		global DP
 		DP = configValue
 	elif configType == "Default Setting":
@@ -344,6 +353,9 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Legend":
 		global LEGEND
 		LEGEND = configValue
+	elif configType == "Percent Conversion":
+		global CONVERSION
+		CONVERSION = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -383,6 +395,8 @@ class Application(ttk.Frame):
 		self.simulateLocked = False
 		self.initialSetTkVar = Tk.StringVar()
 		self.initialSetTkVar.set("Weighted")
+		self.conversionTkVar = Tk.DoubleVar()
+		self.conversionTkVar.set(CONVERSION)
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -559,7 +573,7 @@ class Application(ttk.Frame):
 		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Degree of Polymerization:")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Monomers to RAFT Ratio:")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
 		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
@@ -582,7 +596,7 @@ class Application(ttk.Frame):
 		self.numSimsTkVar.set(NUM_SIMULATIONS)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = ttk.Frame(master = self.columnFrame)
-		self.numPolyToShowFrame.pack(side = Tk.TOP)
+		self.numPolyToShowFrame.pack(side = Tk.TOP, pady = 2)
 		#Label for numPolyToShow spinbox
 		self.numPolyToShowLabel = ttk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
 		self.numPolyToShowLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
@@ -909,7 +923,7 @@ class Application(ttk.Frame):
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
 		#print(self.totalMonomers)
 		#print(self.raftRatio)
-		self.polymerLength = int(self.raftRatio)
+		self.polymerLength = int(self.raftRatio * CONVERSION / 100)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
 		self.numPolymers = int(self.totalMonomers / self.polymerLength)
@@ -1528,6 +1542,14 @@ class Application(ttk.Frame):
 			textvariable = self.initialSetTkVar, width = 11)
 		self.initialSetTkVar.set(self.initialSetOptions[SETINITIAL])
 		self.initialSetComboBox.pack(side = Tk.LEFT)
+		self.conversionFrame = ttk.Frame(master = self.options1Frame)
+		self.conversionFrame.pack(side = Tk.TOP, pady = 3)
+		self.conversionLabel = ttk.Label(master = self.conversionFrame, text = "Percent Conversion: ")
+		self.conversionLabel.pack(side = Tk.LEFT)
+		self.conversionTkVar = Tk.DoubleVar()
+		self.conversionEntry = ttk.Entry(master	= self.conversionFrame, width = 5, textvariable = self.conversionTkVar)
+		self.conversionTkVar.set(CONVERSION)
+		self.conversionEntry.pack(side = Tk.LEFT)
 		self.legendFrame = ttk.Frame(master = self.options1Frame)
 		self.legendFrame.pack(side = Tk.TOP)
 		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
@@ -1584,6 +1606,8 @@ class Application(ttk.Frame):
 		DYAD = self.dyadTkVar.get()
 		global LEGEND
 		LEGEND = int(self.legendTkVar.get())
+		global CONVERSION
+		CONVERSION = float(self.conversionTkVar.get())
 		self.aliasList = []
 		for tkVar in self.aliasTkVarList:
 			self.aliasList.append(tkVar.get())
