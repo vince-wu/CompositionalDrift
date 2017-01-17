@@ -21,6 +21,7 @@ if sys.version_info[0] < 3:
 else:
     import tkinter as Tk
     from tkinter import ttk
+    from tkinter.colorchooser import *
     import tkinter.filedialog
     import tkinter.messagebox
     print(sys.version_info[0])
@@ -46,12 +47,15 @@ HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 0.8
 PENULTIMATE = 0
 DYAD = 0
+LEGEND = 1
+STYLE = "bmh"
+COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
 VERSION = "v1.5.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Degree of Polymerization", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
- ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1]]
+ ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -60,6 +64,7 @@ def generateConfigFile():
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
 		file.write("Total Starting Monomers = 1000 \nDegree of Polymerization = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
+		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
@@ -328,6 +333,15 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Penultimate":
 		global PENULTIMATE
 		PENULTIMATE = configValue
+	elif configType == "Dyad":
+		global DYAD
+		DYAD = configValue
+	elif configType == "Style":
+		global STYLE
+		STYLE = configValue
+	elif configType == "Legend":
+		global LEGEND
+		LEGEND = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -357,6 +371,8 @@ class Application(ttk.Frame):
 		self.destroyCanvas = False
 		self.destroyCanvas2 = False
 		self.destroyHide = False
+		self.styleTkVar = Tk.StringVar()
+		self.styleTkVar.set(STYLE)
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -571,21 +587,25 @@ class Application(ttk.Frame):
 		self.backSimFrame = ttk.Frame(master = self.columnFrame)
 		self.backSimFrame.pack(side = Tk.TOP)
 		#A simulate button to simulate polymer formation
-		self.simulateButton = ttk.Button(master = self.backSimFrame, text = "Simulate", width = 9,
+		self.simulateButton = ttk.Button(master = self.backSimFrame, text = "Simulate", width = 8,
 		 command = self.simulate)
-		self.simulateButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
+		self.simulateButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
 		#A back button to enter a diff number of monomers
-		self.backButton = ttk.Button(master = self.backSimFrame, text = "Back", width = 7,
+		self.backButton = ttk.Button(master = self.backSimFrame, text = "Back", width = 6,
 		 command = lambda:back(self))
-		self.backButton.pack(side = Tk.LEFT, padx = 6, pady = 4)	
+		self.backButton.pack(side = Tk.LEFT, padx = 2, pady = 4)	
 		#An Update Button Widget
 		updateButton = ttk.Button(master = self.backSimFrame, text = "Update",
 		 command = lambda:self.plotCompositions(True), width = 7)
-		updateButton.pack(side = Tk.LEFT, padx = 6)
+		updateButton.pack(side = Tk.LEFT, padx = 2)
 		#A save state button
-		self.saveButton = ttk.Button(master = self.backSimFrame, text = "Save", width = 7,
+		self.saveButton = ttk.Button(master = self.backSimFrame, text = "Save", width = 6,
 		 command = self.saveState)
-		self.saveButton.pack(side = Tk.LEFT, padx = 6, pady = 4)
+		self.saveButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
+		#Options button
+		self.optionsButton = ttk.Button(master = self.backSimFrame, text = "Options", width = 7, 
+			command	= self.displayOptions)
+		self.optionsButton.pack(side = Tk.LEFT, padx = 2)
 		#seperator for column
 		self.col1Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col1Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, pady = 1)
@@ -670,19 +690,6 @@ class Application(ttk.Frame):
 		self.histogramLimitTkVar = Tk.StringVar()
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
 		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
-		#Frame for dyad
-		self.dyadFrame = ttk.Frame(master = self.column2Frame)
-		self.dyadFrame.pack(side = Tk.TOP)
-		#label for dyad
-		self.dyadLabel = ttk.Label(master = self.dyadFrame, text = "Enable Homodyad Detection:")
-		self.dyadLabel.pack(side = Tk.LEFT)
-		#checkbox for dyad
-		self.dyadCheckButton = ttk.Checkbutton(master = self.dyadFrame, text = None)
-		self.dyadCheckButton.pack(side = Tk.LEFT, padx = 5)
-		#Setting penultimateTkVar to PENULTIMATE global variable
-		self.dyadTkVar = Tk.IntVar()
-		self.dyadCheckButton["variable"] = self.dyadTkVar
-		self.dyadTkVar.set(DYAD)
 		#seperator for column2
 		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
@@ -1089,7 +1096,8 @@ class Application(ttk.Frame):
 			self.canvas.get_tk_widget().destroy()
 			self.toolbar.destroy()
 		#style to use
-		style.use("bmh")
+		styleToUse = self.styleTkVar.get()
+		style.use(styleToUse)
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
@@ -1100,19 +1108,19 @@ class Application(ttk.Frame):
 		if self.graph1Type == "None":
 			self.subplot1 = self.plotFigure.add_subplot(111)
 			self.subplot2 = self.plotFigure.add_subplot(122)
-			self.subplot1.set_color_cycle(self.colorArray)
+			self.subplot1.set_color_cycle(COLORARRAY)
 			self.subplot1.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot1, 1)
 		elif self.graph2Type == "None":
 			self.subplot1 = self.plotFigure.add_subplot(111)
-			self.subplot1.set_color_cycle(self.colorArray)
+			self.subplot1.set_color_cycle(COLORARRAY)
 			self.subplot1.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
 		else:
 			self.subplot1 = self.plotFigure.add_subplot(121)
 			self.subplot2 = self.plotFigure.add_subplot(122)
-			self.subplot1.set_color_cycle(self.colorArray)
-			self.subplot2.set_color_cycle(self.colorArray)
+			self.subplot1.set_color_cycle(COLORARRAY)
+			self.subplot2.set_color_cycle(COLORARRAY)
 			self.subplot1.tick_params(labelsize = 7)
 			self.subplot2.tick_params(labelsize = 7)
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
@@ -1162,7 +1170,7 @@ class Application(ttk.Frame):
 		visualizeCanvas.pack()
 		#colors
 		#line colors to use
-		self.colorArray = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
+		#COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
 		#Pad Parameters
 		ulx = 20
 		uly = 10
@@ -1170,7 +1178,7 @@ class Application(ttk.Frame):
 		for row in range(0, numRows):
 			#iterates through an array representation of monomer and adds a square with corresponding color
 			for monomer in polymerArrayToUse[row]:
-				color = self.colorArray[monomer - 1]
+				color = COLORARRAY[monomer - 1]
 				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
@@ -1343,7 +1351,10 @@ class Application(ttk.Frame):
 					curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
-			lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
+			global LEGEND
+			LEGEND = int(self.legendTkVar.get())
+			if LEGEND:
+				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 		elif graphType == "Monomer Separation":
 			#obtain histogram limit
@@ -1364,7 +1375,7 @@ class Application(ttk.Frame):
 			#print(histogramData)
 			binwidth = 1
 			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
-			 color = self.colorArray[histogramMonomer - 1], normed = True)
+			 color = COLORARRAY[histogramMonomer - 1], normed = True)
 			subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
 			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
@@ -1427,11 +1438,75 @@ class Application(ttk.Frame):
 		infoMessage("Save Successful", "State successfully saved into setting %i!" %nextSetting, 300)
 		#self.saveButton.update()
 		return
+	#displays toplevel options window
+	def displayOptions(self):
+		self.optionsWindow = Tk.Toplevel()
+		self.optionsWindow.grab_set()
+		self.optionsWindow.focus_force()
+		self.optionsWindow.title("Options")
+		self.options1Frame = ttk.Frame(master = self.optionsWindow)
+		self.options1Frame.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		self.styleFrame = ttk.Frame(master = self.options1Frame)
+		self.styleFrame.pack(side = Tk.TOP)
+		self.styleLabel = ttk.Label(master = self.styleFrame, text = "Style: ")
+		self.styleLabel.pack(side = Tk.LEFT)
+		self.styleComboBox = ttk.Combobox(master = self.styleFrame, values = ("bmh", "classic", "dark_background", "fivethirtyeight", "ggplot", 
+			"grayscale", "seaborn-colorblind", "seaborn-dark", "seaborn-dark-pallete", "seaborn-darkgrid", "seaborn-deep", "seaborn-muted", "seaborn-notebook",
+			"seaborn-paper", "seaborn-pastel", "seaborn-poster", "seaborn-talk", "seaborn-ticks", "seaborn-white", "seaborn-whitegrid"), 
+		state = "readonly", textvariable = self.styleTkVar)
+		self.styleComboBox.pack(side = Tk.LEFT)
+		self.legendFrame = ttk.Frame(master = self.options1Frame)
+		self.legendFrame.pack(side = Tk.TOP)
+		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
+		self.legendLabel.pack(side = Tk.LEFT)
+		self.legendCheckButton = ttk.Checkbutton(master = self.legendFrame, text = None)
+		self.legendCheckButton.pack(side = Tk.LEFT, padx = 5)
+		self.legendTkVar = Tk.IntVar()
+		self.legendCheckButton["variable"] = self.legendTkVar
+		self.legendTkVar.set(LEGEND)
+		#Frame for dyad
+		self.dyadFrame = ttk.Frame(master = self.options1Frame)
+		self.dyadFrame.pack(side = Tk.TOP)
+		#label for dyad
+		self.dyadLabel = ttk.Label(master = self.dyadFrame, text = "Enable Homodyad Detection:")
+		self.dyadLabel.pack(side = Tk.LEFT)
+		#checkbox for dyad
+		self.dyadCheckButton = ttk.Checkbutton(master = self.dyadFrame, text = None)
+		self.dyadCheckButton.pack(side = Tk.LEFT, padx = 5)
+		#Setting penultimateTkVar to PENULTIMATE global variable
+		self.dyadTkVar = Tk.IntVar()
+		self.dyadCheckButton["variable"] = self.dyadTkVar
+		self.dyadTkVar.set(DYAD)
+		self.options1Sep = ttk.Separator(master = self.optionsWindow, orient = Tk.VERTICAL)
+		self.options1Sep.pack(side = Tk.LEFT, padx = 2, expand = True, fill = Tk.BOTH)
+		self.options2Frame = ttk.Frame(master = self.optionsWindow)
+		self.options2Frame.pack(side = Tk.LEFT, padx = 5, pady = 5)
+		for monomer in range(1, self.numMonomers + 1):
+			colorFrame = ttk.Frame(master = self.options2Frame)
+			colorFrame.pack(side = Tk.TOP, pady = 2)
+			colorLabel = ttk.Label(master = colorFrame, text = "Monomer %s Color :" %monomer)
+			colorLabel.pack(side = Tk.LEFT)
+			colorCanvas = Tk.Canvas(master = colorFrame, width = 15, height = 15)
+			colorCanvas.pack(side = Tk. LEFT)
+			colorCanvas.create_rectangle(0, 0, 20, 20, fill = COLORARRAY[monomer - 1])
+			colorButton = ttk.Button(master = colorFrame, text = "Change", width = 8,
+			 command = lambda monomer = monomer, canvas = colorCanvas:self.displayColorChooser(monomer, canvas))
+			colorButton.pack(side = Tk.LEFT, padx = 5)
+	def displayColorChooser(self, monomerID, canvas):
+		color = askcolor()
+		self.changeColor(color, monomerID)
+		canvas.create_rectangle(0, 0, 20, 20, fill = color[1])
+	def changeColor(self, color, monomerID):
+		global COLORARRAY
+		COLORARRAY[monomerID - 1] = color[1]
+		print("monomerID:", monomerID)
+
 
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
+	top.grab_set()
 	top.wm_title("Error")
 	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
 	#Message
