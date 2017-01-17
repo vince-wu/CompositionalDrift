@@ -66,7 +66,8 @@ CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
- ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0]]
+ ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0],
+ ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -76,6 +77,8 @@ def generateConfigFile():
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
 		file.write("Total Starting Monomers = 1000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \n")
+		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
+		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
@@ -356,6 +359,30 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Percent Conversion":
 		global CONVERSION
 		CONVERSION = configValue
+	elif configType == "Color1":
+		global COLOR1
+		COLOR1 = configValue
+	elif configType == "Color2":
+		global COLOR2
+		COLOR2 = configValue
+	elif configType == "Color3":
+		global COLOR3
+		COLOR3 = configValue
+	elif configType == "Color4":
+		global COLOR4
+		COLOR4 = configValue
+	elif configType == "Color5":
+		global COLOR5
+		COLOR5 = configValue
+	elif configType == "Color6":
+		global COLOR6
+		COLOR6 = configValue
+	elif configType == "Color7":
+		global COLOR7
+		COLOR7 = configValue
+	elif configType == "Color8":
+		global COLOR8
+		COLOR8 = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -537,6 +564,9 @@ class Application(ttk.Frame):
 			except:
 				errorMessage("Please input valid parameters!", 220)
 				return
+		global COLORARRAY
+		COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
+		#print("ColorArray: ", COLORARRAY)
 		#Destroys or edits current widgets
 		self.initFrame.destroy()
 		self.loadButton.destroy()
