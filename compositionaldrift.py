@@ -955,10 +955,11 @@ class Application(ttk.Frame):
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
 		#print(self.totalMonomers)
 		#print(self.raftRatio)
+		self.fullPolymerLength = int(self.raftRatio)
 		self.polymerLength = int(self.raftRatio * CONVERSION / 100)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
-		self.numPolymers = int(self.totalMonomers / self.polymerLength)
+		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
 		#Asserting valid inputs for RAFT ration and totalMonomers
 		try:
 			assert self.numPolymers > 0
