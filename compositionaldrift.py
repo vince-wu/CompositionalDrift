@@ -63,7 +63,7 @@ COLOR7 = '#B276B2'
 COLOR8 = '#FAA43A'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.6"
+VERSION = "v1.6.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
@@ -428,11 +428,12 @@ class Application(ttk.Frame):
 		self.subplot1Exists = False
 		self.subplot2Exists = False
 		self.visualizationFrameExists = False
-
+		self.compFrameExists = False
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
 		self.visualizationFrame.destroy()
+		self.visualizationFrameExists = False
 		if self.canvasExists:
 			self.canvas.get_tk_widget().destroy()
 			self.toolbar.destroy()
@@ -766,6 +767,10 @@ class Application(ttk.Frame):
 		self.coefficientList = [] 
 		#a list of the ttk.Entry objects for monomer input
 		self.monomerAmountTkVarArray = []
+		#a list of ttk.Label Objects for ratios
+		self.ratiosLabelList = []
+		#a list of ttk.Label Objects for coefficients
+		self.coeffLabelList = []
 		#variable for keeping track of monomer ratio loop
 		createCount = 0;
 		#While loop creating number of neccesary amount Entry boxes
@@ -773,11 +778,9 @@ class Application(ttk.Frame):
 			#Label for inputAmount
 			monomerAmountFrame = ttk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-			if alias:
-				inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = self.aliasList[createCount] + " Ratio:")
-			else:
-				inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
-					+ str(createCount + 1) + " Ratio:")
+			inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
+				+ str(createCount + 1) + " Ratio:")
+			self.ratiosLabelList.append(inputAmountLabel)
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
 			amount = Tk.IntVar()
@@ -809,6 +812,7 @@ class Application(ttk.Frame):
 				#Appends to coefficient list a list containing coefficients for the polymer index
 				singleMonoCoeffList = []
 				self.coefficientList.append(singleMonoCoeffList)
+				self.coeffLabelList.append([])
 				#Frame for Coefficients for Single Monomer
 				singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
 				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
@@ -816,11 +820,9 @@ class Application(ttk.Frame):
 					#Label for inputAmount
 					coeffValFrame = ttk.Frame(master = singleCoeffFrame)
 					coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
-					if alias:
-						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = self.aliasList[createCount2] + "-" + self.aliasList[combinations] + " Constant:" )
-					else:
-						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-						 + "-" + str(combinations + 1) + " Constant:" )
+					inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+					 + "-" + str(combinations + 1) + " Constant:" )
+					self.coeffLabelList[createCount2].append(inputCoeffLabel)
 					inputCoeffLabel.pack(side = Tk.LEFT)
 					#Entry for inputAmount
 					inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
@@ -1161,6 +1163,36 @@ class Application(ttk.Frame):
 		text_file = open("polymerArray.txt", "w")
 		json.dump(self.polymerArray, text_file)
 		text_file.close()
+		self.compositionList = self.getComposition(self.polymerArray)
+		if not self.compFrameExists:
+			self.col3Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+			self.col3Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, pady = 1)
+			self.compFrame = ttk.Frame(master = self.inputFrame)
+			self.compFrame.pack(side = Tk.LEFT, padx = 0)
+			self.compTkVarArray = []
+			self.compLabelList = []
+			for monomer in range(1, self.numMonomers + 1):
+				dispCompFrame = ttk.Frame(master = self.compFrame)
+				dispCompFrame.pack(side = Tk.TOP, pady = 3)
+				if ALIAS:
+					label = self.aliasList[monomer - 1]
+				else:
+					label = "Monomer " + str(monomer)
+				fullLabel = label + " Composition: "
+				compLabel = ttk.Label(master = dispCompFrame, text = fullLabel)
+				self.compLabelList.append(compLabel)
+				compLabel.pack(side = Tk.LEFT)
+				compTkVar = Tk.DoubleVar()
+				compTkVar.set(round(self.compositionList[monomer - 1], 2))
+				self.compTkVarArray.append(compTkVar)
+				compEntry = ttk.Entry(master = dispCompFrame, textvariable = compTkVar, width = 4)
+				compEntry.pack(side = Tk.LEFT, padx = 5)
+				self.compFrameExists = True
+		else:
+			monomerID = 1
+			for item in self.compTkVarArray:
+				item.set(round(self.compositionList[monomerID - 1], 2))
+				monomerID += 1
 		self.visualizePolymers(self.polymerArray)
 		self.plotCompositions(False)
 		#destroy progress bar
@@ -1508,6 +1540,22 @@ class Application(ttk.Frame):
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
+	#Returns a list of the percent compostion of each monomer, in monomerID order
+	def getComposition(self, polymerArray):
+		compositionList = [0] * self.numMonomers
+		for monomerID in range(1, self.numMonomers + 1):
+			for polymer in polymerArray:
+				for monomer in polymer:
+					if monomer == monomerID:
+						compositionList[monomerID - 1] += 1
+		totalMonomers = sum(compositionList)
+		print("precomp: ", compositionList)
+		print("totalMonomers: ", totalMonomers)
+		for monomerID in range(1, self.numMonomers + 1):
+			compositionList[monomerID - 1] = compositionList[monomerID - 1] / totalMonomers
+		print("compositionList: ", compositionList)
+		return compositionList
+
 	def saveState(self):
 		ratiosList = []
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
@@ -1711,11 +1759,28 @@ class Application(ttk.Frame):
 				return
 				print("reached here!")
 				return
+		ratioLabelCount = 0
+		for ratioLabel in self.ratiosLabelList:
+			ratioLabel.configure(text = self.aliasList[ratioLabelCount] + " Ratio:")
+			ratioLabelCount += 1
+		compLabelCount = 0
+		for compLabel in self.compLabelList:
+			compLabel.configure(text = self.aliasList[compLabelCount] + " Composition: ")
+			compLabelCount += 1
+		coeffLabelCount = 0
+		for column in self.coeffLabelList:
+			combinations = 0
+			for coeffLabel in column:
+				coeffLabel.configure(text = self.aliasList[coeffLabelCount] + "-" + self.aliasList[combinations] + " Constant:")
+				coeffLabelCount += 1
+				combinations += 1
+			coeffLabelCount = 0
+
 		global ALIAS
 		ALIAS = True
-		self.amountFrame.destroy()
-		self.coefficientFrame.destroy()
-		self.createIterativeInputs(True)
+		#self.amountFrame.destroy()
+		#self.coefficientFrame.destroy()
+		#self.createIterativeInputs(True)
 
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
