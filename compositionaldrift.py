@@ -703,6 +703,19 @@ class Application(ttk.Frame):
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
 			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly")
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
+		#Frame for histogramLimit
+		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
+		self.histogramLimitFrame.pack(side = Tk.TOP)
+		#Label for histogramLimit
+		self.histogramLimitLabel = ttk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
+		self.histogramLimitLabel.pack(side = Tk.LEFT)
+		#entry for histogramLimit
+		self.histogramLimitEntry = ttk.Entry(master = self.histogramLimitFrame, width = 4)
+		self.histogramLimitEntry.pack(side = Tk.LEFT)
+		#tkvar for histogramLimit
+		self.histogramLimitTkVar = Tk.StringVar()
+		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
+		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
 		#Spinbox for graphType2
 		#self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
 		#"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
@@ -737,19 +750,6 @@ class Application(ttk.Frame):
 		#setting spinbox to default value
 		self.histogramMonomer2Spinbox["textvariable"] = self.histogramMonomer2TkVar
 		self.histogramMonomer2TkVar.set(HISTOGRAM2_MONOMER)
-		#Frame for histogramLimit
-		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
-		self.histogramLimitFrame.pack(side = Tk.TOP)
-		#Label for histogramLimit
-		self.histogramLimitLabel = ttk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
-		self.histogramLimitLabel.pack(side = Tk.LEFT)
-		#entry for histogramLimit
-		self.histogramLimitEntry = ttk.Entry(master = self.histogramLimitFrame, width = 4)
-		self.histogramLimitEntry.pack(side = Tk.LEFT)
-		#tkvar for histogramLimit
-		self.histogramLimitTkVar = Tk.StringVar()
-		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
-		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
 		#seperator for column2
 		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
@@ -920,7 +920,6 @@ class Application(ttk.Frame):
 		#a lock
 		if self.simulateLocked == True:
 			return
-		self.simulateLocked = True
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
@@ -948,6 +947,7 @@ class Application(ttk.Frame):
 			errorMessage("Please input valid parameters!", 220)
 			return
 		#progress bar widget setup
+		self.simulateLocked = True
 		simulationProgressTkVar = Tk.IntVar()
 		self.simulationProgressBar = ttk.Progressbar(master = self.column2Frame, mode = "determinate", 
 			variable = simulationProgressTkVar, maximum = self.numSimulations, length = 200)
@@ -1786,7 +1786,7 @@ class Application(ttk.Frame):
 def errorMessage(message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
-	top.grab_set()
+	#top.grab_set()
 	top.wm_title("Error")
 	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
 	#Message
