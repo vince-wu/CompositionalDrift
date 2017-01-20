@@ -1,5 +1,6 @@
 #All neccesary imports
 import matplotlib
+import matplotlib.pyplot as plt
 import random
 import math
 import json
@@ -409,9 +410,7 @@ class Application(ttk.Frame):
 		#Creates Input Widgets
 		self.createInputWidgets()
 		#Creates dummy visualization Frame
-		self.visualizationFrame = ttk.Frame(master = root)
-		self.destroyCanvas = False
-		self.destroyCanvas2 = False
+		self.canvasExists = False
 		self.destroyHide = False
 		self.styleTkVar = Tk.StringVar()
 		self.styleTkVar.set(STYLE)
@@ -426,14 +425,18 @@ class Application(ttk.Frame):
 		self.conversionTkVar = Tk.DoubleVar()
 		self.conversionTkVar.set(CONVERSION)
 		self.aliasList = []
+		self.subplot1Exists = False
+		self.subplot2Exists = False
+		self.visualizationFrameExists = False
+
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
 		self.visualizationFrame.destroy()
-		if self.destroyCanvas:
+		if self.canvasExists:
 			self.canvas.get_tk_widget().destroy()
 			self.toolbar.destroy()
-		self.destroyCanvas = False
+		self.canvasExists = False
 		self.destroyHide = False
 	#Creates input widgets
 	def createInputWidgets(self):
@@ -1158,12 +1161,6 @@ class Application(ttk.Frame):
 		text_file = open("polymerArray.txt", "w")
 		json.dump(self.polymerArray, text_file)
 		text_file.close()
-		#destroys canvas if necessary
-		if self.destroyCanvas:
-			self.canvas.get_tk_widget().destroy()
-			self.toolbar.destroy()
-		self.destroyCanvas = True
-		self.visualizationFrame.destroy()
 		self.visualizePolymers(self.polymerArray)
 		self.plotCompositions(False)
 		#destroy progress bar
@@ -1179,9 +1176,6 @@ class Application(ttk.Frame):
 			errorMessage("Please simulate first!", 300)
 			return
 		#destroys canvas if necessary
-		if update:
-			self.canvas.get_tk_widget().destroy()
-			self.toolbar.destroy()
 		#style to use
 		styleToUse = self.styleTkVar.get()
 		style.use(styleToUse)
@@ -1189,38 +1183,74 @@ class Application(ttk.Frame):
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
 		#Plot and Figure formatting
-		self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
+		if not self.canvasExists:
+			self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
+		if self.canvasExists:
+			if self.subplot1Exists:
+				self.subplot1.clear()
+			if self.subplot2Exists:
+				self.subplot2.clear()
 		if self.graph1Type == "None" and self.graph2Type == "None":
 			return
 		if self.graph1Type == "None":
-			self.subplot1 = self.plotFigure.add_subplot(111)
-			self.subplot2 = self.plotFigure.add_subplot(122)
+			if not self.canvasExists:
+				self.subplot1 = self.plotFigure.add_subplot(111)
+			else:
+				if self.subplot2Exists:
+					self.plotFigure.delaxes(self.subplot1)
+					self.plotFigure.delaxes(self.subplot2)
+					self.subplot1 = self.plotFigure.add_subplot(111)
 			self.subplot1.set_color_cycle(COLORARRAY)
 			self.subplot1.tick_params(labelsize = 7)
+			self.subplot1Exists = True
+			self.subplot2Exists = False
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot1, 1)
 		elif self.graph2Type == "None":
-			self.subplot1 = self.plotFigure.add_subplot(111)
+			if not self.canvasExists:
+				self.subplot1 = self.plotFigure.add_subplot(111)
+			else:
+				if self.subplot2Exists:
+					self.plotFigure.delaxes(self.subplot1)
+					self.plotFigure.delaxes(self.subplot2)
+					self.subplot1 = self.plotFigure.add_subplot(111)
 			self.subplot1.set_color_cycle(COLORARRAY)
 			self.subplot1.tick_params(labelsize = 7)
+			self.subplot1Exists = True
+			self.subplot2Exists = False
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
 		else:
-			self.subplot1 = self.plotFigure.add_subplot(121)
-			self.subplot2 = self.plotFigure.add_subplot(122)
+			if not self.canvasExists:
+				self.subplot1 = self.plotFigure.add_subplot(121)
+				self.subplot2 = self.plotFigure.add_subplot(122)
+				self.subplot1.tick_params(labelsize = 7)
+				self.subplot2.tick_params(labelsize = 7)
+			else:
+				if not self.subplot1Exists:
+					self.subplot1 = self.plotFigure.add_subplot(121)
+					self.subplot1.tick_params(labelsize = 7)
+				if not self.subplot2Exists:
+					self.subplot2 = self.plotFigure.add_subplot(121)
+					self.subplot2.tick_params(labelsize = 7)
 			self.subplot1.set_color_cycle(COLORARRAY)
 			self.subplot2.set_color_cycle(COLORARRAY)
-			self.subplot1.tick_params(labelsize = 7)
-			self.subplot2.tick_params(labelsize = 7)
+			self.subplot1Exists = True
+			self.subplot2Exists = True
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot2, 2)	
 		# A tk.DrawingArea
 		#imbedding matplotlib graph onto canvas
-		self.canvas = FigureCanvasTkAgg(self.plotFigure, master = root)
+		if not self.canvasExists:
+			self.canvas = FigureCanvasTkAgg(self.plotFigure, master = root)
+		else:
+			self.canvas.draw()
 		self.canvas.show()
 		#Imbedding matplotlib toolbar onto canvas
-		self.toolbar = NavigationToolbar2TkAgg(self.canvas, root)
-		self.toolbar.update()
-		self.canvas._tkcanvas.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
-		self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
+		if not self.canvasExists:
+			self.toolbar = NavigationToolbar2TkAgg(self.canvas, root)
+			self.toolbar.update()
+			self.canvas._tkcanvas.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
+			self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
+		self.canvasExists = True
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
 		if DYAD:
@@ -1229,9 +1259,12 @@ class Application(ttk.Frame):
 		else:
 			polymerArrayToUse = polymerArray
 			monomerRange = self.numMonomers + 1
-		#LabelFrame for visualizeCanvas
-		self.visualizationFrame = ttk.LabelFrame(master = root, text = "Polymer Visualization")
-		self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0, padx = 7, pady = 0)
+		if not self.visualizationFrameExists:
+			#LabelFrame for visualizeCanvas
+			self.visualizationFrame = ttk.LabelFrame(master = root, text = "Polymer Visualization")
+			self.visualizationFrame.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 0, padx = 7, pady = 0)
+		if self.visualizationFrameExists:
+			self.visualizeCanvas.destroy()
 		#update visuals to get correct sizing
 		self.visualizationFrame.update()
 		#variable to keep track of frame width
@@ -1252,8 +1285,8 @@ class Application(ttk.Frame):
 			canvasHeight = numRows * size + 10
 		self.visualFrameWidth = self.visualizationFrame.winfo_height()
 		#Canvas for visualization
-		visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
-		visualizeCanvas.pack()
+		self.visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
+		self.visualizeCanvas.pack()
 		#colors
 		#line colors to use
 		#COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
@@ -1265,9 +1298,10 @@ class Application(ttk.Frame):
 			#iterates through an array representation of monomer and adds a square with corresponding color
 			for monomer in polymerArrayToUse[row]:
 				color = COLORARRAY[monomer - 1]
-				visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
+				self.visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
 				ulx += size
 			ulx = 20
+		self.visualizationFrameExists = True
 	#Converts an array of ttk.Entrys of ratios into an int array of starting monomer amounts
 	#Note: might have result in total amount fo momoners being slightly more than inital total monomers due to ceiling divide
 	def getMonomerAmounts(self):
