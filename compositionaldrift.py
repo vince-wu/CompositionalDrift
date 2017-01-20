@@ -61,6 +61,7 @@ COLOR6 = '#F17CB0'
 COLOR7 = '#B276B2'
 COLOR8 = '#FAA43A'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
+DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 VERSION = "v1.6"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
@@ -424,6 +425,7 @@ class Application(ttk.Frame):
 		self.initialSetTkVar.set("Weighted")
 		self.conversionTkVar = Tk.DoubleVar()
 		self.conversionTkVar.set(CONVERSION)
+		self.aliasList = []
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
@@ -1535,7 +1537,7 @@ class Application(ttk.Frame):
 		self.optionsWindow.focus_force()
 		self.optionsWindow.title("Options")
 		self.allOptionsFrame = ttk.Frame(master = self.optionsWindow)
-		self.allOptionsFrame.pack(side = Tk.TOP, pady = 5)
+		self.allOptionsFrame.pack(side = Tk.TOP, pady = 5, padx = 5)
 		self.options1Frame = ttk.Frame(master = self.allOptionsFrame)
 		self.options1Frame.pack(side = Tk.LEFT, padx = 5, pady = 5)
 		self.styleFrame = ttk.Frame(master = self.options1Frame)
@@ -1596,7 +1598,7 @@ class Application(ttk.Frame):
 		for monomer in range(1, self.numMonomers + 1):
 			colorFrame = ttk.Frame(master = self.options2Frame)
 			colorFrame.pack(side = Tk.TOP, pady = 2)
-			colorLabel = ttk.Label(master = colorFrame, text = "Monomer %s Color :" %monomer)
+			colorLabel = ttk.Label(master = colorFrame, text = "Monomer %s Color:  " %monomer)
 			colorLabel.pack(side = Tk.LEFT)
 			colorCanvas = Tk.Canvas(master = colorFrame, width = 15, height = 15)
 			colorCanvas.pack(side = Tk. LEFT)
@@ -1604,6 +1606,17 @@ class Application(ttk.Frame):
 			colorButton = ttk.Button(master = colorFrame, text = "Change", width = 8,
 			 command = lambda monomer = monomer, canvas = colorCanvas:self.displayColorChooser(monomer, canvas))
 			colorButton.pack(side = Tk.LEFT, padx = 5)
+		for monomer in range(1, self.numMonomers + 1):
+			dyadcolorFrame = ttk.Frame(master = self.options2Frame)
+			dyadcolorFrame.pack(side = Tk.TOP, pady = 2)
+			dyadcolorLabel = ttk.Label(master = dyadcolorFrame, text = "Homodyad %s Color:" %monomer)
+			dyadcolorLabel.pack(side = Tk.LEFT)
+			dyadcolorCanvas = Tk.Canvas(master = dyadcolorFrame, width = 15, height = 15)
+			dyadcolorCanvas.pack(side = Tk. LEFT)
+			dyadcolorCanvas.create_rectangle(0, 0, 20, 20, fill = DYADCOLORARRAY[monomer - 1 + self.numMonomers])
+			dyadcolorButton = ttk.Button(master = dyadcolorFrame, text = "Change", width = 8,
+			 command = lambda monomer = monomer, canvas = colorCanvas:self.displayDyadColorChooser(monomer, canvas))
+			dyadcolorButton.pack(side = Tk.LEFT, padx = 5)
 		self.options2Sep = ttk.Separator(master = self.allOptionsFrame, orient = Tk.VERTICAL)
 		self.options2Sep.pack(side = Tk.LEFT, padx = 2, expand = True, fill = Tk.BOTH)
 		self.options3Frame = ttk.Frame(master = self.allOptionsFrame)
@@ -1620,35 +1633,47 @@ class Application(ttk.Frame):
 			aliasEntry = ttk.Entry(master = aliasFrame, width = 6, textvariable = aliasTkVar)
 			self.aliasTkVarList.append(aliasTkVar)
 			aliasEntry.pack(side = Tk.LEFT)
-		self.okButton = ttk.Button(master = self.optionsWindow, text = "Apply", width = 14, command = lambda:self.applyAlias())
+		self.okButton = ttk.Button(master = self.optionsWindow, text = "Apply", width = 14, command = lambda:self.apply())
 		self.okButton.pack(side = Tk.TOP, pady = 3)
 	def displayColorChooser(self, monomerID, canvas):
 		color = askcolor()
 		self.changeColor(color, monomerID)
+		canvas.create_rectangle(0, 0, 20, 20, fill = color[1])
+	def displayDyadColorChooser(self, monomerID, canvas):
+		color = askcolor()
+		self.changeDyadColor(color, monomerID)
 		canvas.create_rectangle(0, 0, 20, 20, fill = color[1])
 	def changeColor(self, color, monomerID):
 		if color[1]:
 			global COLORARRAY
 			COLORARRAY[monomerID - 1] = color[1]
 			print("color: ", color[1])
-	def applyAlias(self):
+	def changeDyadColor(self, color, monomerID):
+		if color[1]:
+			global DYADCOLORARRAY
+			DYADCOLORARRAY[monomerID - 1] = color[1]
+	def apply(self):
 		global DYAD
 		DYAD = self.dyadTkVar.get()
 		global LEGEND
 		LEGEND = int(self.legendTkVar.get())
 		global CONVERSION
 		CONVERSION = float(self.conversionTkVar.get())
-		self.aliasList = []
+		self.newAliasList = []
+		applyAlias = False
 		for tkVar in self.aliasTkVarList:
-			self.aliasList.append(tkVar.get())
+			self.newAliasList.append(tkVar.get())
+		if self.aliasList != self.newAliasList:
+			self.aliasList = self.newAliasList
+			applyAlias = True
 		self.optionsWindow.destroy()
+		if not applyAlias:
+			return
 		for alias in self.aliasList:
 			if alias == "":
 				global ALIAS
 				ALIAS = False
-				self.amountFrame.destroy()
-				self.coefficientFrame.destroy()
-				self.createIterativeInputs(False)
+				return
 				print("reached here!")
 				return
 		global ALIAS
