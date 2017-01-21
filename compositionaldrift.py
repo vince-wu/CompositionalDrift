@@ -34,10 +34,10 @@ else:
 #Static Final variables
 MONOMER_CAP = 5000000
 NUM_UNIQUE_MONOMERS = 2
-NUM_SIMULATIONS = 200
+NUM_SIMULATIONS = 1
 NUM_POLYMERS_SHOW = 8
 GRAPH_TYPE = 1
-TOTAL_STARTING_MONOMERS = 1000
+TOTAL_STARTING_MONOMERS = 200000
 DP = 100
 SETTING = 1
 LOAD_SUCCESSFUL = False
@@ -74,10 +74,10 @@ CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
 		file = open("config.txt", "w")
-		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 200 \nNumber of Polymers to Show = 8 \n")
+		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 1 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
-		file.write("Total Starting Monomers = 1000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
+		file.write("Total Starting Monomers = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
 		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
@@ -432,7 +432,8 @@ class Application(ttk.Frame):
 	#Destroys unneccesary widgets
 	def destroyWidgets(self):
 		self.inputFrame.destroy()
-		self.visualizationFrame.destroy()
+		if self.visualizationFrameExists:
+			self.visualizationFrame.destroy()
 		self.visualizationFrameExists = False
 		if self.canvasExists:
 			self.canvas.get_tk_widget().destroy()
@@ -599,7 +600,7 @@ class Application(ttk.Frame):
 		self.totalMonomersLabel = ttk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
 		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for totalMonomers
-		self.totalMonomersEntry = ttk.Entry(master = self.totalMonomersFrame, width = 5)
+		self.totalMonomersEntry = ttk.Entry(master = self.totalMonomersFrame, width = 7)
 		self.totalMonomersEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
 		#Setting totalMonomers to 1000
 		self.totalMonomersTkVar = Tk.IntVar()
@@ -617,19 +618,15 @@ class Application(ttk.Frame):
 		self.raftRatioTkVar = Tk.StringVar()
 		self.raftRatioEntry["textvariable"] = self.raftRatioTkVar
 		self.raftRatioTkVar.set(DP)
-		#Frame for numSimulations label and Entry
-		self.numSimsFrame = ttk.Frame(master = self.columnFrame)
-		self.numSimsFrame.pack(side = Tk.TOP)
-		#Label for numSims Entry
-		self.numSimsLabel = ttk.Label(master = self.numSimsFrame, text = "Number of Simulations:   ")
-		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
-		#Entry for numSimulations
-		self.numSimsEntry = ttk.Entry(master = self.numSimsFrame, width = 5)
-		self.numSimsEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
-		#Setting number of simulations to 1000
-		self.numSimsTkVar = Tk.IntVar()
-		self.numSimsEntry["textvariable"] = self.numSimsTkVar
-		self.numSimsTkVar.set(NUM_SIMULATIONS)
+		#Frame for conversion
+		self.conversionFrame = ttk.Frame(master = self.columnFrame)
+		self.conversionFrame.pack(side = Tk.TOP, pady = 3)
+		self.conversionLabel = ttk.Label(master = self.conversionFrame, text = "Percent Conversion: ")
+		self.conversionLabel.pack(side = Tk.LEFT)
+		self.conversionTkVar = Tk.DoubleVar()
+		self.conversionEntry = ttk.Entry(master	= self.conversionFrame, width = 4, textvariable = self.conversionTkVar)
+		self.conversionTkVar.set(int(CONVERSION))
+		self.conversionEntry.pack(side = Tk.LEFT)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = ttk.Frame(master = self.columnFrame)
 		self.numPolyToShowFrame.pack(side = Tk.TOP, pady = 2)
@@ -777,9 +774,9 @@ class Application(ttk.Frame):
 		while createCount < self.numMonomers:
 			#Label for inputAmount
 			monomerAmountFrame = ttk.Frame(master = self.amountFrame)
-			monomerAmountFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+			monomerAmountFrame.pack(side = Tk.TOP, padx = 0, pady = 3)
 			inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
-				+ str(createCount + 1) + " Ratio:")
+				+ str(createCount + 1) + " Ratio: ")
 			self.ratiosLabelList.append(inputAmountLabel)
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
@@ -819,9 +816,9 @@ class Application(ttk.Frame):
 				while combinations < self.numMonomers:				
 					#Label for inputAmount
 					coeffValFrame = ttk.Frame(master = singleCoeffFrame)
-					coeffValFrame.pack(side = Tk.TOP, padx = 5, pady = 3)
+					coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
 					inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-					 + "-" + str(combinations + 1) + " Constant:" )
+					 + "-" + str(combinations + 1) + " Reactivity:" )
 					self.coeffLabelList[createCount2].append(inputCoeffLabel)
 					inputCoeffLabel.pack(side = Tk.LEFT)
 					#Entry for inputAmount
@@ -928,15 +925,17 @@ class Application(ttk.Frame):
 				singleCoeffList = self.getCoefficients()
 			else:
 				singleCoeffList = self.getPenultimateCoeff()
-			self.numSimulations = int(self.numSimsTkVar.get())
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
+			CONVERSION = float(self.conversionTkVar.get())
 			assert(self.histogramLimit <= 1)
+			assert(CONVERSION > 0)
+			assert(CONVERSION <= 100)
 			assert(self.histogramLimit > 0)
 			assert(self.totalMonomers > 0)
-			assert(self.numSimulations > 0)
+			assert(NUM_SIMULATIONS > 0)
 			assert(self.raftRatio > 0)
-			assert(self.totalMonomers * self.numSimulations <= MONOMER_CAP)
+			assert(self.totalMonomers * NUM_SIMULATIONS <= MONOMER_CAP)
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
 			return
@@ -946,11 +945,17 @@ class Application(ttk.Frame):
 		except AssertionError:
 			errorMessage("Please input valid parameters!", 220)
 			return
+		self.numSimulations = NUM_SIMULATIONS
+		self.fullPolymerLength = int(self.raftRatio)
+		self.polymerLength = int(self.raftRatio * CONVERSION / 100)
+		if self.polymerLength == 0:
+			self.polymerLength = 1
+		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
 		#progress bar widget setup
 		self.simulateLocked = True
 		simulationProgressTkVar = Tk.IntVar()
 		self.simulationProgressBar = ttk.Progressbar(master = self.column2Frame, mode = "determinate", 
-			variable = simulationProgressTkVar, maximum = self.numSimulations, length = 200)
+			variable = simulationProgressTkVar, maximum = self.polymerLength * NUM_SIMULATIONS, length = 200)
 		self.simulationProgressBar.pack(side = Tk.TOP, padx = 5, pady = 2)
 		self.simulationProgressBar.update()
 		simulationProgressTkVar.set(0)
@@ -960,11 +965,6 @@ class Application(ttk.Frame):
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
 		#print(self.totalMonomers)
 		#print(self.raftRatio)
-		self.fullPolymerLength = int(self.raftRatio)
-		self.polymerLength = int(self.raftRatio * CONVERSION / 100)
-		if self.polymerLength == 0:
-			self.polymerLength = 1
-		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
 		#Asserting valid inputs for RAFT ration and totalMonomers
 		try:
 			assert self.numPolymers > 0
@@ -1103,6 +1103,11 @@ class Application(ttk.Frame):
 						#print("monomerAmounts: ", monomerAmounts)
 						#Attaches next monomer to polymer chain
 						polymer.append(nextMonomer)
+					#increase progress
+					currProgress += 1
+					simulationProgressTkVar.set(currProgress)
+					self.simulationProgressBar.update()
+
 			#case for non-penultimate simulation
 			else:
 				while currPolymerLength < self.polymerLength:
@@ -1144,15 +1149,16 @@ class Application(ttk.Frame):
 						polymer.append(nextMonomer)
 					#increase current polymer length by 1
 					currPolymerLength += 1
+					#increase progress
+					currProgress += 1
+					simulationProgressTkVar.set(currProgress)
+					self.simulationProgressBar.update()
+					#print("currProgress: ", currProgress)
 			#print("simCounter: ", simCounter)
 			#adds local polymer array to global polymer array
 			self.polymerArray = self.polymerArray + localPolymerArray
 			#increases simCounter by 1
 			simCounter += 1
-			#increase progress
-			currProgress += 1
-			simulationProgressTkVar.set(currProgress)
-			self.simulationProgressBar.update()
 			#print(currProgress)
 		#Debugging purposes
 		"""Important Debug: Prints out array of polymers"""
@@ -1458,14 +1464,14 @@ class Application(ttk.Frame):
 					#y-axis array initation
 					monomercounts = [0] * self.polymerLength
 					#inputs counts into y-axis array
-						#adjust axis title
-					subplot.set_ylabel("Average Total Monomer Occurences", labelpad=5, fontsize = 9)
+					#adjust axis title
+					subplot.set_ylabel("Normalized Monomer Occurences", labelpad=5, fontsize = 9)
 					for index in polymerIndex:
 						count = 0
 						for polymer in polymerArrayToUse:
 							if polymer[index - 1] == monomer:
 								count += 1
-						monomercounts[index - 1] = float(float(count) / float(self.numSimulations))
+						monomercounts[index - 1] = float(float(count) / float(self.numSimulations) / float(self.numPolymers))
 					if monomer > self.numMonomers:
 						if ALIAS:
 							label = self.aliasList[monomer - self.numMonomers - 1] + " Homodyad"
@@ -1477,6 +1483,8 @@ class Application(ttk.Frame):
 						else:
 							label = "Monomer " + str(monomer)
 					curve = subplot.plot(polymerIndex, monomercounts, label = label)
+					#setting axis limits
+					subplot.set_ylim([0,1])
 			#graphs Percentage of Monomer Remaining
 			if graphType == "Percentage Monomer":
 				for monomer in range(1, self.numMonomers + 1):
@@ -1634,7 +1642,7 @@ class Application(ttk.Frame):
 		self.styleComboBox.pack(side = Tk.LEFT)
 		#Frame for dyad
 		self.dyadFrame = ttk.Frame(master = self.options1Frame)
-		self.dyadFrame.pack(side = Tk.TOP)
+		self.dyadFrame.pack(side = Tk.TOP, pady = 3)
 		#label for dyad
 		self.dyadLabel = ttk.Label(master = self.dyadFrame, text = "Enable Homodyad Detection:")
 		self.dyadLabel.pack(side = Tk.LEFT)
@@ -1657,14 +1665,19 @@ class Application(ttk.Frame):
 			textvariable = self.initialSetTkVar, width = 11)
 		self.initialSetTkVar.set(self.initialSetOptions[SETINITIAL])
 		self.initialSetComboBox.pack(side = Tk.LEFT)
-		self.conversionFrame = ttk.Frame(master = self.options1Frame)
-		self.conversionFrame.pack(side = Tk.TOP, pady = 3)
-		self.conversionLabel = ttk.Label(master = self.conversionFrame, text = "Percent Conversion: ")
-		self.conversionLabel.pack(side = Tk.LEFT)
-		self.conversionTkVar = Tk.DoubleVar()
-		self.conversionEntry = ttk.Entry(master	= self.conversionFrame, width = 5, textvariable = self.conversionTkVar)
-		self.conversionTkVar.set(CONVERSION)
-		self.conversionEntry.pack(side = Tk.LEFT)
+		#Frame for numSimulations label and Entry
+		self.numSimsFrame = ttk.Frame(master = self.options1Frame)
+		self.numSimsFrame.pack(side = Tk.TOP)
+		#Label for numSims Entry
+		self.numSimsLabel = ttk.Label(master = self.numSimsFrame, text = "Number of Simulations:   ")
+		self.numSimsLabel.pack(side = Tk.LEFT, pady = 3)
+		#Entry for numSimulations
+		self.numSimsEntry = ttk.Entry(master = self.numSimsFrame, width = 3)
+		self.numSimsEntry.pack(side = Tk.LEFT, padx = 3, pady = 3)
+		#Setting number of simulations to 1000
+		self.numSimsTkVar = Tk.IntVar()
+		self.numSimsEntry["textvariable"] = self.numSimsTkVar
+		self.numSimsTkVar.set(NUM_SIMULATIONS)
 		self.legendFrame = ttk.Frame(master = self.options1Frame)
 		self.legendFrame.pack(side = Tk.TOP)
 		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
@@ -1740,8 +1753,8 @@ class Application(ttk.Frame):
 		DYAD = self.dyadTkVar.get()
 		global LEGEND
 		LEGEND = int(self.legendTkVar.get())
-		global CONVERSION
-		CONVERSION = float(self.conversionTkVar.get())
+		global NUM_SIMULATIONS
+		NUM_SIMULATIONS = int(self.numSimsTkVar.get())
 		self.newAliasList = []
 		applyAlias = False
 		for tkVar in self.aliasTkVarList:
