@@ -438,6 +438,9 @@ class Application(ttk.Frame):
 		if self.canvasExists:
 			self.canvas.get_tk_widget().destroy()
 			self.toolbar.destroy()
+		if self.compFrameExists:
+			self.compFrame.destroy()
+			self.compFrameExists = False
 		self.canvasExists = False
 		self.destroyHide = False
 	#Creates input widgets
@@ -610,7 +613,7 @@ class Application(ttk.Frame):
 		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Monomers to RAFT Ratio:")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Monomers to RAFT Ratio:   ")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
 		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
@@ -621,7 +624,7 @@ class Application(ttk.Frame):
 		#Frame for conversion
 		self.conversionFrame = ttk.Frame(master = self.columnFrame)
 		self.conversionFrame.pack(side = Tk.TOP, pady = 3)
-		self.conversionLabel = ttk.Label(master = self.conversionFrame, text = "Percent Conversion: ")
+		self.conversionLabel = ttk.Label(master = self.conversionFrame, text = "Percent Conversion:")
 		self.conversionLabel.pack(side = Tk.LEFT)
 		self.conversionTkVar = Tk.DoubleVar()
 		self.conversionEntry = ttk.Entry(master	= self.conversionFrame, width = 4, textvariable = self.conversionTkVar)
@@ -629,9 +632,9 @@ class Application(ttk.Frame):
 		self.conversionEntry.pack(side = Tk.LEFT)
 		#Frame for numPolyToShow SpinBox
 		self.numPolyToShowFrame = ttk.Frame(master = self.columnFrame)
-		self.numPolyToShowFrame.pack(side = Tk.TOP, pady = 2)
+		self.numPolyToShowFrame.pack(side = Tk.TOP, pady = 3)
 		#Label for numPolyToShow spinbox
-		self.numPolyToShowLabel = ttk.Label(master = self.numPolyToShowFrame, text = "Number of Polymers to Show:")
+		self.numPolyToShowLabel = ttk.Label(master = self.numPolyToShowFrame, text = "Polymers to Show:")
 		self.numPolyToShowLabel.pack(side = Tk.LEFT, padx = 0, pady = 0)
 		#numPolyToShow spinbox
 		self.numPolyToShowBox = Tk.Spinbox(master = self.numPolyToShowFrame, from_ = 1, to = 12, width = 2)
@@ -1571,7 +1574,7 @@ class Application(ttk.Frame):
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
 			singleCoeffList = self.getCoefficients()
-			self.numSimulations = int(self.numSimsTkVar.get())
+			self.numSimulations = NUM_SIMULATIONS
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
 			#Converts a list of Tkvars to a list of floats
