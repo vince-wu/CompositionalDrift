@@ -41,7 +41,7 @@ TOTAL_STARTING_MONOMERS = 200000
 DP = 100
 SETTING = 1
 LOAD_SUCCESSFUL = False
-GRAPH1_TYPE = "Monomer Occurences"
+GRAPH1_TYPE = "Monomer Occurrences"
 GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
@@ -52,6 +52,7 @@ LEGEND = 1
 ALIAS = 0
 SETINITIAL = 0
 CONVERSION = 100
+MAINTAIN = 0
 STYLE = "bmh"
 COLOR1 = '#4D4D4D'
 COLOR2 = '#5DA5DA'
@@ -63,13 +64,13 @@ COLOR7 = '#B276B2'
 COLOR8 = '#FAA43A'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.6.1"
+VERSION = "v1.6.2"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0],
- ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2]]
+ ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2], ["Maintain", 1]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -78,7 +79,7 @@ def generateConfigFile():
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
 		file.write("Total Starting Monomers = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
-		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \n")
+		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
 		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
 		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
@@ -316,7 +317,7 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Graph 1 Type":
 		global GRAPH1_TYPE
 		if configValue == 0:
-			GRAPH1_TYPE = "Monomer Occurences"
+			GRAPH1_TYPE = "Monomer Occurrences"
 		elif configValue == 1:
 			GRAPH1_TYPE = "Percentage Monomer"
 		elif configValue == 2:
@@ -328,7 +329,7 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Graph 2 Type":
 		global GRAPH2_TYPE
 		if configValue == 0:
-			GRAPH2_TYPE = "Monomer Occurences"
+			GRAPH2_TYPE = "Monomer Occurrences"
 		elif configValue == 1:
 			GRAPH2_TYPE = "Percentage Monomer"
 		elif configValue == 2:
@@ -385,6 +386,9 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Color8":
 		global COLOR8
 		COLOR8 = configValue
+	elif configType == "Maintain":
+		global MAINTAIN
+		MAINTAIN = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -689,19 +693,19 @@ class Application(ttk.Frame):
 		self.graphType2Label = ttk.Label(master = self.graphFrame2, text = "Graph 2 Type:")
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
-		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly")
+		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
+			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
 		#Spinbox for graphType1
-		#self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurences", "Percentage Monomer", 
+		#self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
 		#	"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
 		#self.graphType1Spinbox.pack(side = Tk.LEFT)
 		#setting default variable for graphType1
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
-		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly")
+		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
+			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
@@ -717,7 +721,7 @@ class Application(ttk.Frame):
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
 		self.histogramLimitTkVar.set(HISTOGRAM_LIMIT)
 		#Spinbox for graphType2
-		#self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurences", "Percentage Monomer", 
+		#self.graphType2Spinbox = Tk.Spinbox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
 		#"Monomer Separation", "None"), width = 20, textvariable = self.graphType2TkVar, state = "readonly")
 		#self.graphType2Spinbox.pack(side = Tk.LEFT)
 		#setting default variable for graphType2
@@ -1032,8 +1036,9 @@ class Application(ttk.Frame):
 				#Starts a new polymer with startingMonomer, represented by an array, 
 				#and adds that array to polymerArray
 				localPolymerArray.append([startingMonomer])
-				#Uses up one monomer of the startingMonomer
-				monomerAmounts[startingMonomer - 1] -= 1
+				#Uses up one monomer of the startingMonomer if MAINTAIN is false, else maintains composition
+				if not MAINTAIN:
+					monomerAmounts[startingMonomer - 1] -= 1
 				#increases number of polymers by 1
 				currNumPolymers += 1
 			#debugging starting monomers
@@ -1068,8 +1073,9 @@ class Application(ttk.Frame):
 							choices.append([monomerID, monomerAmounts[monomerID - 1]])
 							monomerID += 1
 						nextMonomer = weighted_choice(choices)
-					#Reduces number of nextMonomer by 1, since it is being used up in reaction
-					monomerAmounts[nextMonomer - 1] -= 1
+					#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+					if not MAINTAIN:
+						monomerAmounts[nextMonomer - 1] -= 1
 					#print("monomerAmounts: ", monomerAmounts)
 					#Attaches next monomer to polymer chain
 					polymer.append(nextMonomer)
@@ -1101,8 +1107,9 @@ class Application(ttk.Frame):
 								choices.append([monomerID, monomerAmounts[monomerID - 1]])
 								monomerID += 1
 							nextMonomer = weighted_choice(choices)
-						#Reduces number of nextMonomer by 1, since it is being used up in reaction
-						monomerAmounts[nextMonomer - 1] -= 1
+						#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+						if not MAINTAIN:
+							monomerAmounts[nextMonomer - 1] -= 1
 						#print("monomerAmounts: ", monomerAmounts)
 						#Attaches next monomer to polymer chain
 						polymer.append(nextMonomer)
@@ -1145,8 +1152,9 @@ class Application(ttk.Frame):
 								choices.append([monomerID, monomerAmounts[monomerID - 1]])
 								monomerID += 1
 							nextMonomer = weighted_choice(choices)
-						#Reduces number of nextMonomer by 1, since it is being used up in reaction
-						monomerAmounts[nextMonomer - 1] -= 1
+						#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+						if not MAINTAIN:
+							monomerAmounts[nextMonomer - 1] -= 1
 						#print("monomerAmounts: ", monomerAmounts)
 						#Attaches next monomer to polymer chain
 						polymer.append(nextMonomer)
@@ -1452,8 +1460,8 @@ class Application(ttk.Frame):
 
 
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
-		if graphType == "Percentage Monomer" or graphType == "Monomer Occurences":
-			if graphType == "Monomer Occurences":
+		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences":
+			if graphType == "Monomer Occurrences":
 				if DYAD:
 					polymerArrayToUse = self.getDyad(polymerArray)
 					monomerRange = self.numMonomers * 2 + 1
@@ -1468,7 +1476,7 @@ class Application(ttk.Frame):
 					monomercounts = [0] * self.polymerLength
 					#inputs counts into y-axis array
 					#adjust axis title
-					subplot.set_ylabel("Normalized Monomer Occurences", labelpad=5, fontsize = 9)
+					subplot.set_ylabel("Normalized Monomer Occurrences", labelpad=5, fontsize = 9)
 					for index in polymerIndex:
 						count = 0
 						for polymer in polymerArrayToUse:
@@ -1681,6 +1689,15 @@ class Application(ttk.Frame):
 		self.numSimsTkVar = Tk.IntVar()
 		self.numSimsEntry["textvariable"] = self.numSimsTkVar
 		self.numSimsTkVar.set(NUM_SIMULATIONS)
+		self.maintainFrame = ttk.Frame(master = self.options1Frame)
+		self.maintainFrame.pack(side = Tk.TOP)
+		self.maintainLabel = ttk.Label(master = self.maintainFrame, text = "Maintain Composition")
+		self.maintainLabel.pack(side = Tk.LEFT)
+		self.maintainCheckButton = ttk.Checkbutton(master = self.maintainFrame, text = None)
+		self.maintainCheckButton.pack(side = Tk.LEFT, padx = 5)
+		self.maintainTkVar = Tk.IntVar()
+		self.maintainCheckButton["variable"] = self.maintainTkVar
+		self.maintainTkVar.set(MAINTAIN)
 		self.legendFrame = ttk.Frame(master = self.options1Frame)
 		self.legendFrame.pack(side = Tk.TOP)
 		self.legendLabel = ttk.Label(master = self.legendFrame, text = "Enable Legend")
@@ -1758,6 +1775,8 @@ class Application(ttk.Frame):
 		LEGEND = int(self.legendTkVar.get())
 		global NUM_SIMULATIONS
 		NUM_SIMULATIONS = int(self.numSimsTkVar.get())
+		global MAINTAIN
+		MAINTAIN = int(self.maintainTkVar.get())
 		self.newAliasList = []
 		applyAlias = False
 		for tkVar in self.aliasTkVarList:
