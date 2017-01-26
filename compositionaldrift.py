@@ -1417,7 +1417,8 @@ class Application(ttk.Frame):
 			#iterate through each polymer until monomerLimit is hit and count consecutive polymers
 			for monomer in polymer:
 				#if index limit is reached, add any consecutives to histogram, and break from for loop
-				if polymerIndex > indexLimit:
+				if polymerIndex == indexLimit:
+					#print(numConsecutive)
 					if numConsecutive > 0:
 						count = 0
 						while count < numConsecutive:
@@ -1548,7 +1549,8 @@ class Application(ttk.Frame):
 				histogramMonomer = int(self.histogramMonomer1TkVar.get())
 			if number == 2:
 				histogramMonomer = int(self.histogramMonomer2TkVar.get())
-			histogramNumberLimit = self.histogramLimit * self.polymerLength
+			histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
+			print("histogramLimit: ", histogramNumberLimit)
 			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
 			#print(histogramData)
 			binwidth = 1
