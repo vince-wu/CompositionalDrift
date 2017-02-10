@@ -1351,7 +1351,7 @@ class Application(ttk.Frame):
 		#Canvas for visualization
 		self.visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
 		self.visualizeCanvas.pack()
-		self.polymerImage = Image.new("RGB", (int(canvasWidth) + 10, int(canvasHeight)+10), "white")
+		self.polymerImage = Image.new("RGB", (int(canvasWidth) + 10, int(canvasHeight)+10))
 		draw = ImageDraw.Draw(self.polymerImage)
 		#colors
 		#line colors to use
