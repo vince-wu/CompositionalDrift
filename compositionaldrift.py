@@ -26,6 +26,10 @@ else:
     import tkinter.filedialog
     import tkinter.messagebox
     print(sys.version_info[0])
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from PIL import Image, ImageDraw
+from openpyxl.drawing.image import Image as xlImage
 """
     Created by Vincent Wu on 8/17/16:
     This program uses the Mayo-Lewis equation and Monte Carlo method to simulate copolymer growth, and
@@ -62,7 +66,16 @@ COLOR5 = '#60BD68'
 COLOR6 = '#F17CB0'
 COLOR7 = '#B276B2'
 COLOR8 = '#FAA43A'
+DCOLOR1 = '#353535'
+DCOLOR2 = '#4a84ae'
+DCOLOR3 = '#c04643'
+DCOLOR4 = '#b1a532'
+DCOLOR5 = '#4c9753'
+DCOLOR6 = '#c0638c'
+DCOLOR7 = '#8e5e8e'
+DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
+DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 VERSION = "v1.6.2"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
@@ -1319,12 +1332,14 @@ class Application(ttk.Frame):
 		#variable to keep track of frame width
 		self.visualFrameWidth = self.visualizationFrame.winfo_width()
 		#print("Width", self.visualFrameWidth)
+
 		numRows = self.numPolyToShow.get()
 		if numRows > self.numPolymers * self.numSimulations: 
 			numRows = self.numPolymers * self.numSimulations
 		#parameters for canvas height and width
 		canvasHeight = 130
 		canvasWidth = self.visualFrameWidth
+
 		#Maximizes size of squares
 		if (canvasHeight - 25) / numRows <= (canvasWidth - 40) / self.polymerLength:
 			size = (canvasHeight - 25) / numRows
@@ -1336,10 +1351,13 @@ class Application(ttk.Frame):
 		#Canvas for visualization
 		self.visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
 		self.visualizeCanvas.pack()
+		self.polymerImage = Image.new("RGB", (int(canvasWidth) + 10, int(canvasHeight)+10), "white")
+		draw = ImageDraw.Draw(self.polymerImage)
 		#colors
 		#line colors to use
 		#COLORARRAY = ['#4D4D4D','#5DA5DA', '#F15854', '#DECF3F', '#60BD68', '#F17CB0', '#B276B2', '#FAA43A']
 		#Pad Parameters
+
 		ulx = 20
 		uly = 10
 		#Visualizes polymers, number of polymers visualized based on numRows
@@ -1347,12 +1365,15 @@ class Application(ttk.Frame):
 			#iterates through an array representation of monomer and adds a square with corresponding color
 			for monomer in polymerArrayToUse[row]:
 				color = COLORARRAY[monomer - 1]
-				self.visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color)
+				dcolor = DCOLORARRAY[monomer - 1]
+				self.visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color, activefill = dcolor)
+				draw.rectangle(((ulx, uly + size * row), (ulx + size, uly + size * (row + 1))), fill = color, outline = "black")
 				ulx += size
 			ulx = 20
 		self.visualizationFrameExists = True
+		self.polymerImage.save("polymerImage.jpg")
 	#Converts an array of ttk.Entrys of ratios into an int array of starting monomer amounts
-	#Note: might have result in total amount fo momoners being slightly more than inital total monomers due to ceiling divide
+	#Note: might have result in total amount fo momoners being slightly more tcanvashan inital total monomers due to ceiling divide
 	def getMonomerAmounts(self):
 		#A list of starting monomer amounts
 		monomerAmounts = []
