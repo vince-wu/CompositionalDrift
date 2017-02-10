@@ -1351,7 +1351,7 @@ class Application(ttk.Frame):
 		#Canvas for visualization
 		self.visualizeCanvas = Tk.Canvas(master = self.visualizationFrame, width = canvasWidth, height = canvasHeight)
 		self.visualizeCanvas.pack()
-		self.polymerImage = Image.new("RGB", (int(canvasWidth) + 10, int(canvasHeight)+10))
+		self.polymerImage = Image.new("RGB", (int(size*self.polymerLength) + 1, int(size*numRows) + 1), "white")
 		draw = ImageDraw.Draw(self.polymerImage)
 		#colors
 		#line colors to use
@@ -1360,6 +1360,8 @@ class Application(ttk.Frame):
 
 		ulx = 20
 		uly = 10
+		ulx2 = 0
+		uly2 = 0
 		#Visualizes polymers, number of polymers visualized based on numRows
 		for row in range(0, numRows):
 			#iterates through an array representation of monomer and adds a square with corresponding color
@@ -1367,9 +1369,11 @@ class Application(ttk.Frame):
 				color = COLORARRAY[monomer - 1]
 				dcolor = DCOLORARRAY[monomer - 1]
 				self.visualizeCanvas.create_rectangle(ulx, uly + size * row, ulx + size, uly + size * (row + 1), fill = color, activefill = dcolor)
-				draw.rectangle(((ulx, uly + size * row), (ulx + size, uly + size * (row + 1))), fill = color, outline = "black")
+				draw.rectangle(((ulx2, uly2 + size * row), (ulx2 + size, uly2 + size * (row + 1))), fill = color, outline = "black")
 				ulx += size
+				ulx2 += size
 			ulx = 20
+			ulx2 = 0
 		self.visualizationFrameExists = True
 		self.polymerImage.save("polymerImage.jpg")
 	#Converts an array of ttk.Entrys of ratios into an int array of starting monomer amounts
