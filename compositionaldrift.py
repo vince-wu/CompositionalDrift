@@ -429,8 +429,6 @@ class Application(ttk.Frame):
 		#Creates dummy visualization Frame
 		self.canvasExists = False
 		self.destroyHide = False
-		self.styleTkVar = Tk.StringVar()
-		self.styleTkVar.set(STYLE)
 		self.dyadTkVar = Tk.IntVar()
 		self.dyadTkVar.set(DYAD)
 		self.legendTkVar = Tk.IntVar()
@@ -1239,8 +1237,8 @@ class Application(ttk.Frame):
 			return
 		#destroys canvas if necessary
 		#style to use
-		styleToUse = self.styleTkVar.get()
-		style.use(styleToUse)
+		style.use('classic')
+		style.use(STYLE)
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
@@ -1804,6 +1802,8 @@ class Application(ttk.Frame):
 		NUM_SIMULATIONS = int(self.numSimsTkVar.get())
 		global MAINTAIN
 		MAINTAIN = int(self.maintainTkVar.get())
+		global STYLE
+		STYLE = str(self.styleTkVar.get())
 		self.newAliasList = []
 		applyAlias = False
 		for tkVar in self.aliasTkVarList:
