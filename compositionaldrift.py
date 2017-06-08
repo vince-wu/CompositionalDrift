@@ -1671,10 +1671,12 @@ class Application(ttk.Frame):
 		self.styleFrame.pack(side = Tk.TOP)
 		self.styleLabel = ttk.Label(master = self.styleFrame, text = "Style: ")
 		self.styleLabel.pack(side = Tk.LEFT)
+		self.styleTkVar = Tk.StringVar()
 		self.styleComboBox = ttk.Combobox(master = self.styleFrame, values = ["bmh", "classic", "dark_background", "fivethirtyeight", "ggplot", 
 			"grayscale", "seaborn-colorblind", "seaborn-dark", "seaborn-dark-pallete", "seaborn-darkgrid", "seaborn-deep", "seaborn-muted", "seaborn-notebook",
 			"seaborn-paper", "seaborn-pastel", "seaborn-poster", "seaborn-talk", "seaborn-ticks", "seaborn-white", "seaborn-whitegrid"], 
 		state = "readonly", textvariable = self.styleTkVar)
+		self.styleTkVar.set(STYLE)
 		self.styleComboBox.pack(side = Tk.LEFT)
 		#Frame for dyad
 		self.dyadFrame = ttk.Frame(master = self.options1Frame)
