@@ -92,10 +92,17 @@ def generateConfigFile():
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
 		file.write("Total Starting Monomers = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
-		file.write("Dyad = 0 \nStyle = bmh \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
+		file.write("Dyad = 0 \nStyle = classic \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
 		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
-		file.write("Setting 1 \nNumber of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
+		file.close()
+#generates a save file if needed
+def generateSaveFile():
+	if not os.path.exists("state1.txt"):
+		file = open("state1.txt", "w")
+		file.write("# use the '#' character followed by a space to denote a line you want to use as a comment, \n")
+		file.write("# it will not be read by the config file and won't mess up your settings. \n# Sample Save File \n")
+		file.write("Number of Unique Monomers = 4 \nMonomer 1 Ratio = 50 \nMonomer 2 Ratio = 25 \nMonomer 3 Ratio = 20 \nMonomer 4 Ratio = 5 \n") 
 		file.write("1-1 = 0.89 \n1-2 = 1 \n1-3 = 1 \n1-4 = 1 \n2-1 = 1 \n2-2 = 1.1 \n2-3 = 1.1 \n2-4 = 1.1 \n3-1 = 1 \n3-2 = 1.1 \n3-3 = 1.1 \n3-4 = 1.1 \n")
 		file.write("4-1 = 1 \n4-2 = 1.1 \n4-3 = 1.1 \n4-4 = 1.1 \nend")
 		file.close()
@@ -162,116 +169,125 @@ def readConfigFile():
 	for line in file:
 		line = line.strip()
 		#If line is end, read next lines as regular config line
-		if line == "end":
-			if settingConfig == True and parseSetting == True:
-				#test to see that the settings are all valid and can be loaded properly
-				try:
-					#test to see that ratios for all monomers are given
-					for monomerID in numMonomerArray:
-						assert(numMonomerArray[monomerID -1] == monomerID)
-					#test to see that all ratios are valid (> 0)
-					for ratio in RATIO_ARRAY:
-						assert(ratio > 0)
-					for column in COEFF_ARRAY:
-						for coeff in column:
-							assert(coeff >= 0)
-				except AssertionError:
-					parseSetting = False
-					LOAD_SUCCESSFUL = False
-					continue
-				except IndexError:
-					parseSetting = False
-					LOAD_SUCCESSFUL = False
-				LOAD_SUCCESSFUL = True
-			settingConfig = False
-			parseSetting = False
-			continue
 		#handling for setting config line
-		if settingConfig:
-			#if not relevant setting number, skip
-			if not parseSetting:
+		try:
+			#gets the config header
+			configType = (line.split("="))[0].strip()
+			#gets the config value
+			configStringValue = (line.split("="))[1].strip()
+		except:
+			invalidLines += 1
+			continue
+		if (not setConfigVariable(configType, configStringValue)):
+			invalidLines += 1
+			continue
+	LOAD_SUCCESSFUL = True
+	file.close()
+	print("Number of invalid config lines: ", invalidLines)
+def readSaveFile(stateNumber):
+	file = open("state%i.txt" %(stateNumber), "r")
+	#parses each line in the file. If it is a valid configuration line, it sets that correspondin static variable accordingly
+	#variable to keep track of number of invalid config lines
+	invalidLines = 0 
+	#variable to keep track of whether or not line is a setting config line
+	settingConfig = False
+	#variable to keep track of whether to parse setting config
+	parseSetting = False
+	#variable to keep track of number of monomers
+	global numMonomers
+	numMonomers = 0
+	#global array to keep track of monomer ratios, initalized as an array of -1
+	global RATIO_ARRAY
+	#global array to keep track monomer coefficients, initialized of an array of arrays of -1
+	global COEFF_ARRAY
+	#global variable to shwo whether or not a setting loaded successfully
+	global LOAD_SUCCESSFUL
+	#global variable to kep track of last setting number
+	global LAST_SETTING
+	LAST_SETTING = 0
+	LOAD_SUCCESSFUL = False
+	for line in file:
+		line = line.strip()
+		lineArray = line.split(" ")
+		if lineArray[0] == '#':
+			continue
+		if line == "end":
+			#test to see that the settings are all valid and can be loaded properly
+			try:
+				#test to see that ratios for all monomers are given
+				for monomerID in numMonomerArray:
+					assert(numMonomerArray[monomerID -1] == monomerID)
+				#test to see that all ratios are valid (> 0)
+				for ratio in RATIO_ARRAY:
+					assert(ratio > 0)
+				for column in COEFF_ARRAY:
+					for coeff in column:
+						assert(coeff >= 0)
+			except AssertionError:
+				parseSetting = False
+				LOAD_SUCCESSFUL = False
 				continue
-			lineArray = line.split(" ")
-			#first line of setting config must state number of monomers
-			if len(lineArray) == 6:
-				try:
-					assert(lineArray[0] == "Number")
-					assert(lineArray[1] == "of")
-					assert(lineArray[2] == "Unique")
-					assert(lineArray[3] == "Monomers")
-					assert(lineArray[4] == "=")
-					numMonomers = int(lineArray[5])
-					RATIO_ARRAY = [-1] * numMonomers
-					#array to keep track of all neccesary monomers
-					numMonomerArray = [0] * numMonomers
-					COEFF_ARRAY = [-1] * numMonomers
-					COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
-				except AssertionError:
-					invalidLines += 1
-				except ValueError:
-					invalidLines += 1
-				continue
-			if len(lineArray) == 5:
-				#checking that line is correct syntax
-				try:
-					assert(lineArray[0] == "Monomer")
-					assert(lineArray[2] == "Ratio")
-					assert(lineArray[3] == "=")
-					#adding monomer number to numMonomerArray
-					numMonomerArray[int(lineArray[1]) - 1] = int(lineArray[1])
-					#add monomer ratio to RATIO_ARRAY
-					RATIO_ARRAY[int(lineArray[1]) - 1] = float(lineArray[4])
-				except AssertionError:
-					invalidLines += 1
-					continue
-				except ValueError:
-					invalidLines += 1
-					continue 
-				except IndexError:
-					invalidLines += 1
-					continue
-			if len(lineArray) == 3:
-				#add the coefficient to the correct place in COEFF_ARRAY
-				try:
-					assert(len(lineArray[0]) == 3)
-					assert(lineArray[1] == "=")
-					coeffTag = lineArray[0]
-					assert(coeffTag[1] == "-")
-					column = int(coeffTag[0]) - 1
-					row = int(coeffTag[2]) - 1
-					COEFF_ARRAY[column][row] = float(lineArray[2])
-				except AssertionError:
-					invalidLines += 1
-					continue
-				except ValueError:
-					invalidLines += 1
-					continue
-				except IndexError:
-					invalidLines += 1
-					continue
-			else:
+			except IndexError:
+				parseSetting = False
+				LOAD_SUCCESSFUL = False
+			LOAD_SUCCESSFUL = True
+		if len(lineArray) == 6:
+			try:
+				assert(lineArray[0] == "Number")
+				assert(lineArray[1] == "of")
+				assert(lineArray[2] == "Unique")
+				assert(lineArray[3] == "Monomers")
+				assert(lineArray[4] == "=")
+				numMonomers = int(lineArray[5])
+				RATIO_ARRAY = [-1] * numMonomers
+				#array to keep track of all neccesary monomers
+				numMonomerArray = [0] * numMonomers
+				COEFF_ARRAY = [-1] * numMonomers
+				COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
+			except AssertionError:
+				invalidLines += 1
+			except ValueError:
+				invalidLines += 1
+			continue
+		if len(lineArray) == 5:
+			#checking that line is correct syntax
+			try:
+				assert(lineArray[0] == "Monomer")
+				assert(lineArray[2] == "Ratio")
+				assert(lineArray[3] == "=")
+				#adding monomer number to numMonomerArray
+				numMonomerArray[int(lineArray[1]) - 1] = int(lineArray[1])
+				#add monomer ratio to RATIO_ARRAY
+				RATIO_ARRAY[int(lineArray[1]) - 1] = float(lineArray[4])
+			except AssertionError:
 				invalidLines += 1
 				continue
-		#If line is a "Setting X", read next lines as setting config line
-		intermediate = line.split("=")
-		if len(intermediate) == 1:
-			intermediate2 = intermediate[0].split(" ")
-			#cehck if line is two words
-			if len(intermediate2) == 2:
-				#check if line starts with "Setting"
-				if intermediate2[0] == "Setting":
-					settingConfig = True
-				#check if setting number is integer and if it matches SETTING
-				try:
-					#check if setting is bigger than the last setting
-					if int(intermediate2[1]) > LAST_SETTING:
-						LAST_SETTING = int(intermediate2[1])
-					if int(intermediate2[1]) == SETTING:
-						print("true setting", SETTING)
-						parseSetting = True
-				except AssertionError:
-					invalidLines += 1
+			except ValueError:
+				invalidLines += 1
+				continue 
+			except IndexError:
+				invalidLines += 1
 				continue
+		if len(lineArray) == 3:
+			#add the coefficient to the correct place in COEFF_ARRAY
+			try:
+				assert(len(lineArray[0]) == 3)
+				assert(lineArray[1] == "=")
+				coeffTag = lineArray[0]
+				assert(coeffTag[1] == "-")
+				column = int(coeffTag[0]) - 1
+				row = int(coeffTag[2]) - 1
+				COEFF_ARRAY[column][row] = float(lineArray[2])
+			except AssertionError:
+				invalidLines += 1
+				continue
+			except ValueError:
+				invalidLines += 1
+				continue
+			except IndexError:
+				invalidLines += 1
+				continue
+		else:
 			invalidLines += 1
 			continue
 		try:
@@ -285,8 +301,11 @@ def readConfigFile():
 		if (not setConfigVariable(configType, configStringValue)):
 			invalidLines += 1
 			continue
+	print("ran loadSave")
+	print("unique monomers: ", NUM_UNIQUE_MONOMERS)
+	print("ratio array: ", RATIO_ARRAY)
+	print("coeff array: ", COEFF_ARRAY)
 	file.close()
-	print("Number of invalid config lines: ", invalidLines)
 #helper method to set the static variable. Returns 1 if successful, 0 if not
 def setConfigVariable(configType, configStringValue):
 	for config in CONFIGS:
@@ -422,6 +441,11 @@ class Application(ttk.Frame):
 			earlyConfigRead()
 		except:
 			errorMessage("Unable to read config file!", 220)
+		try:
+			#create sample save file
+			generateSaveFile()
+		except:
+			errorMessage("Unable to generate save file!", 220)
 		#Creates the init screen
 		self.initScreen()
 		#Creates Input Widgets
@@ -471,10 +495,15 @@ class Application(ttk.Frame):
 			except:
 				errorMessage("Please input valid parameters!", 220)
 				return
+			#error checking to see if config file exists
+			if not os.path.exists("state%i.txt" %(SETTING)):
+				errorMessage("state%i.txt does not exist!" %(SETTING), 220)
+				return
 			#reads config file
 			try:
 				readConfigFile()
-			except:
+				readSaveFile(SETTING)
+			except :
 				pass
 			if LOAD_SUCCESSFUL:
 				print("Load successful!")
@@ -1639,15 +1668,15 @@ class Application(ttk.Frame):
 		# checking to see what state to save into
 		stateNumber = 1
 		while True:
-		if not os.path.exists("state%i.txt" %(stateNumber)):
-			errorMessage("config.txt does not exist!", 220)
-			stateNumber += 1
-			continue
-		else:
-			break
+			if os.path.exists("state%i.txt" %(stateNumber)):
+				#errorMessage("config.txt does not exist!", 220)
+				stateNumber += 1
+				continue
+			else:
+				break
 		print("stateNumber: ", stateNumber)
 		nextSetting = LAST_SETTING + 1
-		file = open("config.txt", "a")
+		file = open("state%i.txt" %(stateNumber), "w")
 		file.write("\nSetting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
 		monomerIndex = 1
 		while monomerIndex <= self.numMonomers:
@@ -1666,7 +1695,7 @@ class Application(ttk.Frame):
 		file.close()
 		global LAST_SETTING
 		LAST_SETTING += 1
-		infoMessage("Save Successful", "State successfully saved into setting %i!" %nextSetting, 300)
+		infoMessage("Save Successful", "State successfully saved into state %i!" %stateNumber, 300)
 		#self.saveButton.update()
 		return
 	#displays toplevel options window
