@@ -204,6 +204,8 @@ def readSaveFile(stateNumber):
 	global LOAD_SUCCESSFUL
 	#global variable to kep track of last setting number
 	global LAST_SETTING
+	#variable to keep track of model (penultimate vs standard)
+	model = "standard"
 	LAST_SETTING = 0
 	LOAD_SUCCESSFUL = False
 	for line in file:
@@ -213,24 +215,40 @@ def readSaveFile(stateNumber):
 			continue
 		if line == "end":
 			#test to see that the settings are all valid and can be loaded properly
-			try:
-				#test to see that ratios for all monomers are given
-				for monomerID in numMonomerArray:
-					assert(numMonomerArray[monomerID -1] == monomerID)
-				#test to see that all ratios are valid (> 0)
-				for ratio in RATIO_ARRAY:
-					assert(ratio > 0)
-				for column in COEFF_ARRAY:
-					for coeff in column:
-						assert(coeff >= 0)
-			except AssertionError:
-				parseSetting = False
-				LOAD_SUCCESSFUL = False
-				continue
-			except IndexError:
-				parseSetting = False
-				LOAD_SUCCESSFUL = False
-			LOAD_SUCCESSFUL = True
+			#standard case:
+			if model == "standard":
+				try:
+					#test to see that ratios for all monomers are given
+					for monomerID in numMonomerArray:
+						assert(numMonomerArray[monomerID -1] == monomerID)
+					#test to see that all ratios are valid (> 0)
+					for ratio in RATIO_ARRAY:
+						assert(ratio > 0)
+					for column in COEFF_ARRAY:
+						for coeff in column:
+							assert(coeff >= 0)
+				except AssertionError:
+					parseSetting = False
+					LOAD_SUCCESSFUL = False
+					continue
+				except IndexError:
+					parseSetting = False
+					LOAD_SUCCESSFUL = False
+				LOAD_SUCCESSFUL = True
+			if model == "penultimate":
+				LOAD_SUCCESSFUL = True
+		#setting correct models
+		if line == "Standard":
+			model = "standard"
+			global PENULTIMATE
+			PENULTIMATE = False
+		if line == "Penultimate":
+			model = "penultimate"
+			#setting global variable
+			global PENULTIMATE
+			PENULTIMATE = True
+			#readjust structure of nested array to penultimate structure
+			COEFF_ARRAY = [[[-1 for i in range(numMonomers)] for j in range(numMonomers)] for k in range(numMonomers)]
 		if len(lineArray) == 6:
 			try:
 				assert(lineArray[0] == "Number")
@@ -270,23 +288,55 @@ def readSaveFile(stateNumber):
 				continue
 		if len(lineArray) == 3:
 			#add the coefficient to the correct place in COEFF_ARRAY
-			try:
-				assert(len(lineArray[0]) == 3)
-				assert(lineArray[1] == "=")
-				coeffTag = lineArray[0]
-				assert(coeffTag[1] == "-")
-				column = int(coeffTag[0]) - 1
-				row = int(coeffTag[2]) - 1
-				COEFF_ARRAY[column][row] = float(lineArray[2])
-			except AssertionError:
-				invalidLines += 1
-				continue
-			except ValueError:
-				invalidLines += 1
-				continue
-			except IndexError:
-				invalidLines += 1
-				continue
+			#standard case
+			if model == "standard":
+				try:
+					assert(len(lineArray[0]) == 3)
+					assert(lineArray[1] == "=")
+					coeffTag = lineArray[0]
+					assert(coeffTag[1] == "-")
+					column = int(coeffTag[0]) - 1
+					row = int(coeffTag[2]) - 1
+					COEFF_ARRAY[column][row] = float(lineArray[2])
+				except AssertionError:
+					invalidLines += 1
+					continue
+				except ValueError:
+					invalidLines += 1
+					continue
+				except IndexError:
+					invalidLines += 1
+					continue
+			#penultimate case
+			if model == "penultimate":
+				try:
+					#check to see if number of character is 5 (1-2-3 has 5 characters, as should all penultimate coefficients)
+					assert(len(lineArray[0]) == 5)
+					#check to see if second character is rquals sign (1-2-1 = 5, the second character should always be '=')
+					assert(lineArray[1] == "=")
+					#getting the place where the coefficient should go
+					coeffTag = lineArray[0]
+					#asserting that there are 2 dashes in the right place
+					assert(coeffTag[1] == "-")
+					assert(coeffTag[3] == "-")
+					#use the coeffTag to determing correct placement in nested array
+					penultimate = int(coeffTag[0]) - 1
+					ultimate = int(coeffTag[2]) - 1
+					nextMonomer = int(coeffTag[4]) - 1
+					print("penultimate: ", penultimate)
+					print("ultimate: ", ultimate)
+					print("nextMonomer: ", nextMonomer)
+					#adding value of coeff to correct place in nested array
+					COEFF_ARRAY[nextMonomer][ultimate][penultimate] = float(lineArray[2])
+				except AssertionError:
+					invalidLines += 1
+					continue
+				except ValueError:
+					invalidLines += 1
+					continue
+				except IndexError:
+					invalidLines += 1
+					continue
 		else:
 			invalidLines += 1
 			continue
@@ -885,6 +935,7 @@ class Application(ttk.Frame):
 					combinations += 1
 				createCount2 += 1
 		#if PENULTIMATE is true, create input entries for penultimate model
+		#format: penultimate-ultimate-next , so 1-2-3 is 1 (penultimate), 2 (ultimate), 3 (next)
 		if PENULTIMATE:
 			self.coeffTkVarArray = []
 			#for loop creating neccesary number of penultimate coefficient entry boxes
@@ -914,7 +965,7 @@ class Application(ttk.Frame):
 						coeff = Tk.IntVar()
 						inputCoeff["textvariable"] = coeff
 						if LOAD_SUCCESSFUL and useLoadedSettings:
-							coeff.set(COEFF_ARRAY[createCount2][combinations])
+							coeff.set(COEFF_ARRAY[nextMonomer][ultimate][penultimate])
 						else:
 							coeff.set(1)
 						self.coeffTkVarArray.append(coeff)
@@ -1342,6 +1393,7 @@ class Application(ttk.Frame):
 			self.canvas._tkcanvas.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 			self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 		self.canvasExists = True
+		return
 		#very bad fix for draggable, should correct
 		#self.plotCompositions(True)
 	#Visualizes the polymers with colored squares representing monomers
@@ -1640,7 +1692,10 @@ class Application(ttk.Frame):
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
-			singleCoeffList = self.getCoefficients()
+			if PENULTIMATE:
+				singleCoeffList = self.getPenultimateCoeff()
+			else:
+				singleCoeffList = self.getCoefficients()
 			self.numSimulations = NUM_SIMULATIONS
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
@@ -1677,22 +1732,36 @@ class Application(ttk.Frame):
 		print("stateNumber: ", stateNumber)
 		nextSetting = LAST_SETTING + 1
 		file = open("state%i.txt" %(stateNumber), "w")
-		file.write("\nSetting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
+		file.write("\n# Setting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
 		monomerIndex = 1
+		#Writing starting ratios
 		while monomerIndex <= self.numMonomers:
 			file.write("\nMonomer %i Ratio = %i" %(monomerIndex, ratiosList[monomerIndex - 1]))
 			monomerIndex += 1
 		monomerIndex = 1
 		print("single:", singleCoeffList)
-		while monomerIndex <= self.numMonomers:
-			innerIndex = 1
-			while innerIndex <= self.numMonomers:
-				coefflist = singleCoeffList[monomerIndex - 1]
-				file.write("\n%i-%i = %f" %(monomerIndex, innerIndex, (coefflist[innerIndex - 1])))
-				innerIndex += 1
-			monomerIndex += 1
-		file.write("\nend")
-		file.close()
+		#writing coefficients for penultimate model
+		if PENULTIMATE:
+			file.write("\nPenultimate")
+			for nextMonomer in range(1, self.numMonomers + 1):
+				for ultimate in range(1, self.numMonomers + 1):
+					for penultimate in range(1, self.numMonomers + 1):
+						coeff = singleCoeffList[nextMonomer - 1][ultimate - 1][penultimate - 1]
+						file.write("\n%i-%i-%i = %f" %(penultimate, ultimate, nextMonomer, coeff))
+			file.write("\nend")
+			file.close()
+		#writing coefficients for normal model
+		else:
+			file.write("\nStandard")
+			while monomerIndex <= self.numMonomers:
+				innerIndex = 1
+				while innerIndex <= self.numMonomers:
+					coefflist = singleCoeffList[monomerIndex - 1]
+					file.write("\n%i-%i = %f" %(monomerIndex, innerIndex, (coefflist[innerIndex - 1])))
+					innerIndex += 1
+				monomerIndex += 1
+			file.write("\nend")
+			file.close()
 		global LAST_SETTING
 		LAST_SETTING += 1
 		infoMessage("Save Successful", "State successfully saved into state %i!" %stateNumber, 300)
