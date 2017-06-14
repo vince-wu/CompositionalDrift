@@ -1636,9 +1636,16 @@ class Application(ttk.Frame):
 			return
 		startingWeightList = []
 		#error checking to see if config file exists
-		if not os.path.exists("config.txt"):
+		# checking to see what state to save into
+		stateNumber = 1
+		while True:
+		if not os.path.exists("state%i.txt" %(stateNumber)):
 			errorMessage("config.txt does not exist!", 220)
-			return
+			stateNumber += 1
+			continue
+		else:
+			break
+		print("stateNumber: ", stateNumber)
 		nextSetting = LAST_SETTING + 1
 		file = open("config.txt", "a")
 		file.write("\nSetting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
