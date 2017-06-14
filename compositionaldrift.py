@@ -1,6 +1,7 @@
 #All neccesary imports
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 import random
 import math
 import json
@@ -501,6 +502,23 @@ class Application(ttk.Frame):
 		#Creates Input Widgets
 		self.createInputWidgets()
 		#Creates dummy visualization Frame
+
+	#Destroys unneccesary widgets
+	def destroyWidgets(self):
+		self.inputFrame.destroy()
+		if self.visualizationFrameExists:
+			self.visualizationFrame.destroy()
+		self.visualizationFrameExists = False
+		if self.canvasExists:
+			self.canvas.get_tk_widget().destroy()
+			self.toolbar.destroy()
+		if self.compFrameExists:
+			self.compFrame.destroy()
+			self.compFrameExists = False
+		self.canvasExists = False
+		self.destroyHide = False
+	#Creates input widgets
+	def createInputWidgets(self):
 		self.canvasExists = False
 		self.destroyHide = False
 		self.dyadTkVar = Tk.IntVar()
@@ -518,22 +536,7 @@ class Application(ttk.Frame):
 		self.subplot2Exists = False
 		self.visualizationFrameExists = False
 		self.compFrameExists = False
-	#Destroys unneccesary widgets
-	def destroyWidgets(self):
-		self.inputFrame.destroy()
-		if self.visualizationFrameExists:
-			self.visualizationFrame.destroy()
-		self.visualizationFrameExists = False
-		if self.canvasExists:
-			self.canvas.get_tk_widget().destroy()
-			self.toolbar.destroy()
-		if self.compFrameExists:
-			self.compFrame.destroy()
-			self.compFrameExists = False
-		self.canvasExists = False
-		self.destroyHide = False
-	#Creates input widgets
-	def createInputWidgets(self):
+		self.plotted = False
 		def loadSettings(self):
 			global useLoadedSettings
 			useLoadedSettings = True
@@ -744,10 +747,6 @@ class Application(ttk.Frame):
 		self.simulateButton = ttk.Button(master = self.backSimFrame, text = "Simulate", width = 8,
 		 command = self.simulate)
 		self.simulateButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
-		#A back button to enter a diff number of monomers
-		self.backButton = ttk.Button(master = self.backSimFrame, text = "Back", width = 6,
-		 command = lambda:back(self))
-		self.backButton.pack(side = Tk.LEFT, padx = 2, pady = 4)	
 		#An Update Button Widget
 		updateButton = ttk.Button(master = self.backSimFrame, text = "Update",
 		 command = lambda:self.plotCompositions(True), width = 7)
@@ -756,8 +755,18 @@ class Application(ttk.Frame):
 		self.saveButton = ttk.Button(master = self.backSimFrame, text = "Save", width = 6,
 		 command = self.saveState)
 		self.saveButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
+		self.lastRowFrame = ttk.Frame(master = self.columnFrame)
+		self.lastRowFrame.pack(side = Tk.TOP)
+		#A back button to enter a diff number of monomers
+		self.backButton = ttk.Button(master = self.lastRowFrame, text = "Back", width = 6,
+		 command = lambda:_quit())
+		self.backButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
+		#Export button
+		self.exportButton = ttk.Button(master = self.lastRowFrame, text = "Export", width = 7, 
+			command	= self.export)
+		self.exportButton.pack(side = Tk.LEFT, padx = 2)	
 		#Options button
-		self.optionsButton = ttk.Button(master = self.backSimFrame, text = "Options", width = 7, 
+		self.optionsButton = ttk.Button(master = self.lastRowFrame, text = "Options", width = 7, 
 			command	= self.displayOptions)
 		self.optionsButton.pack(side = Tk.LEFT, padx = 2)
 		#seperator for column
@@ -971,7 +980,6 @@ class Application(ttk.Frame):
 						self.coeffTkVarArray.append(coeff)
 						#Add a ttk.Entry object to singleMonoCoeffList
 						CoeffList.append(inputCoeff)
-
 
 		# Syntax": for i in range(0,x)
 		# fpr i in iterable
@@ -1393,6 +1401,7 @@ class Application(ttk.Frame):
 			self.canvas._tkcanvas.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 			self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 		self.canvasExists = True
+		self.plotted = True
 		return
 		#very bad fix for draggable, should correct
 		#self.plotCompositions(True)
@@ -1955,6 +1964,51 @@ class Application(ttk.Frame):
 		#self.amountFrame.destroy()
 		#self.coefficientFrame.destroy()
 		#self.createIterativeInputs(True)
+	def export(self):
+		if not self.plotted:
+			errorMessage("Please simulate before exporting data!" , 330)
+			return
+		self.histDataList = []
+		class histData:
+			def __init__(self, name, data):
+				self.name =  name
+				self.data = data
+		histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
+		binwidth = 1
+		for polymerID in range(1, self.numMonomers + 1):
+			data, bins = np.histogram(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit),
+				bins=range(1, max(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)) + binwidth + 1, binwidth))
+			data = data / self.totalMonomers
+			name = "Monomer %i Block Size" %(polymerID)
+			currHistData = histData(name, data)
+			self.histDataList.append(currHistData)
+		wb = Workbook()
+		ws = wb.active
+		colCount = 1
+		maxRow = 0
+		for histData in self.histDataList:
+			ws.cell(row = 1, column = colCount, value = histData.name)
+			ws.column_dimensions[get_column_letter(colCount)].width = len(histData.name) - 1
+			ws.cell(row = 1, column = colCount + 1, value = "Normalized Frequency")
+			ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+			columnCount = 1
+			maxRow = max(len(histData.data), maxRow)
+			for column in ws.iter_cols(min_row = 2, max_row = len(histData.data) + 1, min_col = colCount, max_col = colCount):
+				for cell in column:
+					cell.value = columnCount
+					columnCount += 1
+			dataCount = 0
+			for column in ws.iter_cols(min_row = 2, max_row = len(histData.data) + 1,min_col = colCount + 1, max_col = colCount + 1):
+				for cell in column:
+					cell.value = histData.data[dataCount]
+					dataCount += 1
+			colCount += 3
+		startRow = maxRow + 3
+		name = "graphData"
+		wb.save(name + ".xlsx")
+		errorMessage("Successfully Exported Data!", 330)
+		return
+		
 
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
