@@ -1244,7 +1244,7 @@ class Application(ttk.Frame):
 		self.graph2Type = self.graphType2TkVar.get()
 		#Plot and Figure formatting
 		if not self.canvasExists:
-			self.plotFigure = Figure(figsize=(5.5, 3.3), dpi=100)
+			self.plotFigure = plt.figure(figsize=(5.5, 3.3),dpi =100)
 		if self.canvasExists:
 			if self.subplot1Exists:
 				self.subplot1.clear()
@@ -1297,6 +1297,8 @@ class Application(ttk.Frame):
 			self.subplot2Exists = True
 			self.graphSubPlot(polymerArray, self.graph1Type, self.subplot1, 1)
 			self.graphSubPlot(polymerArray, self.graph2Type, self.subplot2, 2)	
+			#leg = self.subplot1.legend()
+			#leg.draggable()
 		# A tk.DrawingArea
 		#imbedding matplotlib graph onto canvas
 		if not self.canvasExists:
@@ -1311,6 +1313,8 @@ class Application(ttk.Frame):
 			self.canvas._tkcanvas.pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 			self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 		self.canvasExists = True
+		#very bad fix for draggable, should correct
+		#self.plotCompositions(True)
 	#Visualizes the polymers with colored squares representing monomers
 	def visualizePolymers(self, polymerArray):
 		if DYAD:
@@ -1557,6 +1561,7 @@ class Application(ttk.Frame):
 			handles, labels = subplot.get_legend_handles_labels()
 			if LEGEND:
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
+				lgd.draggable(state = True)
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
 		elif graphType == "Monomer Separation":
 			#obtain histogram limit
