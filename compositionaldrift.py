@@ -565,6 +565,8 @@ class Application(ttk.Frame):
 				errorMessage("Unable to load config settings! Please fix config file.", 300)
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
+			#errorMessage("Please vemno Vincent Wu @shinyxspoon $15 for continued use of this program.", 500)
+			#return
 			#read config file
 			try:
 				readConfigFile()
@@ -793,7 +795,7 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Block Size", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
 		#Spinbox for graphType1
@@ -804,7 +806,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Block Size", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
@@ -1653,7 +1655,7 @@ class Application(ttk.Frame):
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 				lgd.draggable(state = True)
 			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
-		elif graphType == "Monomer Separation":
+		elif graphType == "Monomer Separation" or "Block Size":
 			#obtain histogram limit
 			try:
 				self.histogramLimit = float(self.histogramLimitTkVar.get())
@@ -1669,16 +1671,56 @@ class Application(ttk.Frame):
 				histogramMonomer = int(self.histogramMonomer2TkVar.get())
 			histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
 			print("histogramLimit: ", histogramNumberLimit)
+			#get all the histogram data so can set max for histogram
+			histDataList = []
+			for monomerID in range(1, self.numMonomers + 1):
+				histDataList.append(self.getHistogramData(polymerArray, monomerID, histogramNumberLimit))
 			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
+			maxList = []
+			#finding maximum 
+			for data in histDataList:
+				maxList.append(max(data))
+			maximum = max(maxList)
+			print('maximum: ', maximum)
 			#print(histogramData)
+
 			binwidth = 1
-			subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
-			 color = COLORARRAY[histogramMonomer - 1], normed = True)
-			subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
-			subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
+			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
+			print("hist: ", hist)
+			print("bins: ", bins)
+			#first normalization step
+			hist = hist / self.totalMonomers
+			#case for monomer separation
+			if graphType == "Monomer Separation":
+				multiplier = 1
+				weightedHist = []
+				#multiply each value in hist by consecutive number to get block size
+				for count in hist:
+					weightedHist.append(count * multiplier)
+					#print(count)
+					#multiplier += 1
+				normFactor = sum(weightedHist)
+				weightedHist[:] = [count/normFactor for count in weightedHist]
+				yUpperLim = max(weightedHist)
+				hist = weightedHist
+				#print("histafter: ", weightedHist)
+			widths = np.diff(bins)
+			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[histogramMonomer - 1])
+			#subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
+			 #color = COLORARRAY[histogramMonomer - 1], normed = True)
+			if graphType == "Monomer Separation":
+				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
+				subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
+				subplot.set_ylim([0,yUpperLim])
+			elif graphType == "Block Size":
+				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
+				subplot.set_ylabel("Normalized Count", labelpad=5, fontsize = 9)
+				#subplot.set_ylim([0,yUpperLim])
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
+		
+
 	#Returns a list of the percent compostion of each monomer, in monomerID order
 	def getComposition(self, polymerArray):
 		compositionList = [0] * self.numMonomers
