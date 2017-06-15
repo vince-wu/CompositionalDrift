@@ -565,8 +565,8 @@ class Application(ttk.Frame):
 				errorMessage("Unable to load config settings! Please fix config file.", 300)
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
-			errorMessage("Please vemno Vincent Wu @shinyxspoon $15 for continued use of this program.", 500)
-			return
+			#errorMessage("Please vemno Vincent Wu @shinyxspoon $15 for continued use of this program.", 500)
+			#return
 			#read config file
 			try:
 				readConfigFile()
@@ -859,7 +859,10 @@ class Application(ttk.Frame):
 		self.col2Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
 		self.createIterativeInputs(False)
+	def key(self):
+		self.simulate()
 	def createIterativeInputs(self, alias):
+		root.bind("<Return>", lambda e: self.key())
 		#Frame for Monomer Amounts
 		self.amountFrame = ttk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 0)
@@ -2030,6 +2033,7 @@ class Application(ttk.Frame):
 			self.histDataList.append(currHistData)
 		wb = Workbook()
 		ws = wb.active
+		ws.title = "Monomer Block Size"
 		colCount = 1
 		maxRow = 0
 		for histData in self.histDataList:
