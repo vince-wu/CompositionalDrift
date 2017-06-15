@@ -565,8 +565,8 @@ class Application(ttk.Frame):
 				errorMessage("Unable to load config settings! Please fix config file.", 300)
 		#Confirms number of monomers, creates more input widgets
 		def enter(self):
-			#errorMessage("Please vemno Vincent Wu @shinyxspoon $15 for continued use of this program.", 500)
-			#return
+			errorMessage("Please vemno Vincent Wu @shinyxspoon $15 for continued use of this program.", 500)
+			return
 			#read config file
 			try:
 				readConfigFile()
@@ -1021,6 +1021,7 @@ class Application(ttk.Frame):
 		self.showButton.pack(side = Tk.TOP)
 	#Simulates polymer reaction based on input values
 	def simulate(self):
+		root.wm_state('zoomed')
 		#print("Simulating!")
 		#a lock
 		if self.simulateLocked == True:
@@ -1404,6 +1405,9 @@ class Application(ttk.Frame):
 			self.canvas.get_tk_widget().pack(side = Tk.BOTTOM, fill = Tk.BOTH, expand = 1)
 		self.canvasExists = True
 		self.plotted = True
+		#w = root.winfo_screenwidth()
+		#h = root.winfo_screenheight()
+		#root.geometry("%dx%d+0+0" % (w, h))
 		return
 		#very bad fix for draggable, should correct
 		#self.plotCompositions(True)
