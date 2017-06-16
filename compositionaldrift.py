@@ -795,7 +795,7 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Block Size", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
 		#Spinbox for graphType1
@@ -806,7 +806,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Block Size", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
@@ -1543,7 +1543,7 @@ class Application(ttk.Frame):
 			#iterate through each polymer until monomerLimit is hit and count consecutive polymers
 			for monomer in polymer:
 				#if index limit is reached, add any consecutives to histogram, and break from for loop
-				if polymerIndex == indexLimit:
+				if polymerIndex > indexLimit:
 					#print(numConsecutive)
 					if numConsecutive > 0:
 						count = 0
@@ -1558,13 +1558,15 @@ class Application(ttk.Frame):
 						histogramData.append(numConsecutive)
 						count += 1
 					numConsecutive = 0
-					polymerIndex += 1
-					continue
+					#polymerIndex += 1
+					#continue
 				#increment consecutive counter by 1 if monomer is consecutive
 				if  monomer == monomerID:
 					numConsecutive += 1
-					polymerIndex += 1
-					continue
+					#polymerIndex += 1
+					#continue
+				polymerIndex += 1
+				#print(polymerIndex)
 		return histogramData
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
 	def getDyad(self, polymerArray):
@@ -1696,20 +1698,7 @@ class Application(ttk.Frame):
 			print("hist: ", hist)
 			print("bins: ", bins)
 			#first normalization step
-			hist = hist / self.totalMonomers
-			#case for monomer separation
-			if graphType == "Monomer Separation":
-				multiplier = 1
-				weightedHist = []
-				#multiply each value in hist by consecutive number to get block size
-				for count in hist:
-					weightedHist.append(count * multiplier)
-					#print(count)
-					#multiplier += 1
-				normFactor = sum(weightedHist)
-				weightedHist[:] = [count/normFactor for count in weightedHist]
-				yUpperLim = max(weightedHist)
-				hist = weightedHist
+			hist = hist / (self.totalMonomers * self.histogramLimit)
 				#print("histafter: ", weightedHist)
 			widths = np.diff(bins)
 			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[histogramMonomer - 1])
@@ -1718,7 +1707,7 @@ class Application(ttk.Frame):
 			if graphType == "Monomer Separation":
 				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 				subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
-				subplot.set_ylim([0,yUpperLim])
+				#subplot.set_ylim([0,yUpperLim])
 			elif graphType == "Block Size":
 				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
 				subplot.set_ylabel("Normalized Count", labelpad=5, fontsize = 9)
@@ -2022,24 +2011,29 @@ class Application(ttk.Frame):
 			def __init__(self, name, data):
 				self.name =  name
 				self.data = data
-		histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
+		histogramNumberLimit = int(self.histogramLimit * self.fullPolymerLength)
 		binwidth = 1
 		for polymerID in range(1, self.numMonomers + 1):
 			data, bins = np.histogram(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit),
 				bins=range(1, max(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)) + binwidth + 1, binwidth))
-			data = data / self.totalMonomers
-			name = "Monomer %i Block Size" %(polymerID)
+			#print(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit))
+			print("data: ", data)
+			print('sum: ', sum(data))
+			print("divider: ", self.totalMonomers*self.histogramLimit)
+			print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
+			data = data / (self.totalMonomers*self.histogramLimit)
+			name = "Monomer %i Separation" %(polymerID)
 			currHistData = histData(name, data)
 			self.histDataList.append(currHistData)
 		wb = Workbook()
 		ws = wb.active
-		ws.title = "Monomer Block Size"
+		ws.title = "Monomer Separation"
 		colCount = 1
 		maxRow = 0
 		for histData in self.histDataList:
 			ws.cell(row = 1, column = colCount, value = histData.name)
 			ws.column_dimensions[get_column_letter(colCount)].width = len(histData.name) - 1
-			ws.cell(row = 1, column = colCount + 1, value = "Normalized Frequency")
+			ws.cell(row = 1, column = colCount + 1, value = "Normalized Separation")
 			ws.column_dimensions[get_column_letter(colCount +1)].width = 20
 			columnCount = 1
 			maxRow = max(len(histData.data), maxRow)
@@ -2049,14 +2043,14 @@ class Application(ttk.Frame):
 					columnCount += 1
 			dataCount = 0
 			for column in ws.iter_cols(min_row = 2, max_row = len(histData.data) + 1,min_col = colCount + 1, max_col = colCount + 1):
-				for cell in column:
+				for cell in column:	
 					cell.value = histData.data[dataCount]
 					dataCount += 1
 			colCount += 3
 		startRow = maxRow + 3
 		name = "graphData"
 		wb.save(name + ".xlsx")
-		errorMessage("Successfully Exported Data!", 330)
+		infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
 		return
 		
 
@@ -2064,6 +2058,8 @@ class Application(ttk.Frame):
 def errorMessage(message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
+	top.grab_set()
+	top.focus_force()
 	#top.grab_set()
 	top.wm_title("Error")
 	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
@@ -2076,6 +2072,8 @@ def errorMessage(message, width):
 def infoMessage(title, message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
+	top.grab_set()
+	top.focus_force()
 	top.wm_title(title)
 	top.geometry("%dx%d%+d%+d" % (width, 70, 250, 125))
 	#Message
