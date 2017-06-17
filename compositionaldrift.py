@@ -2073,23 +2073,61 @@ class Application(ttk.Frame):
 			monomerCountsList.append(monomercounts)
 		colCount = 1
 		ws2.cell(row = 1, column = colCount, value = histData.name)
-		for monomerID in range(1, self.numMonomers + 1):
-			ws2.cell(row = 1, column = colCount + 1, value = "Normalized Monomer %i Occurence" %(monomerID))
-			#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
-			colCount += 1
+		if not DYAD:
+			for monomerID in range(1, self.numMonomers + 1):
+				ws2.cell(row = 1, column = colCount + 1, value = "Normalized Monomer %i Occurence" %(monomerID))
+				#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+				colCount += 1
+		if DYAD:
+			for monomerID in range(1, 2*self.numMonomers + 1):
+				ws2.cell(row = 1, column = colCount + 1, value = "Normalized Dyad %i Occurence" %(monomerID))
+				#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+				colCount += 1
 		colCount = 1
 		indexCount = 0
-		for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
-			for cell in column:
-				cell.value = polymerIndex[indexCount]
-				indexCount += 1
-		for monomerID in range(1, self.numMonomers + 1):
-			monomerIDcount = 0
-			for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+		if not DYAD:
+			for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
 				for cell in column:
-					cell.value = monomerCountsList[monomerID - 1][monomerIDcount]
-					monomerIDcount += 1
-			colCount += 1
+					cell.value = polymerIndex[indexCount]
+					indexCount += 1
+			for monomerID in range(1, self.numMonomers + 1):
+				monomerIDcount = 0
+				for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+					for cell in column:
+						cell.value = monomerCountsList[monomerID - 1][monomerIDcount]
+						monomerIDcount += 1
+				colCount += 1
+		if DYAD:
+			for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+				for cell in column:
+					cell.value = polymerIndex[indexCount]
+					indexCount += 1
+			for monomerID in range(1, 2*self.numMonomers + 1):
+				monomerIDcount = 0
+				for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+					for cell in column:
+						cell.value = monomerCountsList[monomerID - 1][monomerIDcount]
+						monomerIDcount += 1
+				colCount += 1
+		ws3 = wb.create_sheet("Percentage Monomer")
+		for monomer in range(1, self.numMonomers + 1):
+			#x-axis array
+			polymerIndex = list(range(1, self.polymerLength + 1))
+			#y-axis array initation
+			monomercounts = [0] * self.polymerLength
+			#variable to keep track of average number of monomers consumed
+			monomersConsumed = 0
+			for index in polymerIndex:
+				count = 0
+				for polymer in self.polymerArray:
+					if polymer[index - 1] == monomer:
+						count += 1
+				startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
+				#calculates monomer consumed
+				monomersConsumed += count / self.numSimulations
+				#calculated percentage of monomer remaining
+				percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
+				monomercounts[index - 1] = percentageRemaining
 		name = "graphData"
 		wb.save(name + ".xlsx")
 		infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
