@@ -2072,7 +2072,7 @@ class Application(ttk.Frame):
 				monomercounts[index - 1] = float(float(count) / float(self.numSimulations) / float(self.numPolymers))
 			monomerCountsList.append(monomercounts)
 		colCount = 1
-		ws2.cell(row = 1, column = colCount, value = histData.name)
+		ws2.cell(row = 1, column = colCount, value = "Monomer Position Index")
 		if not DYAD:
 			for monomerID in range(1, self.numMonomers + 1):
 				ws2.cell(row = 1, column = colCount + 1, value = "Normalized Monomer %i Occurence" %(monomerID))
@@ -2117,6 +2117,8 @@ class Application(ttk.Frame):
 			monomercounts = [0] * self.polymerLength
 			#variable to keep track of average number of monomers consumed
 			monomersConsumed = 0
+			#list of data for each monomer
+			percentageRemainingList = []
 			for index in polymerIndex:
 				count = 0
 				for polymer in self.polymerArray:
@@ -2128,6 +2130,26 @@ class Application(ttk.Frame):
 				#calculated percentage of monomer remaining
 				percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
 				monomercounts[index - 1] = percentageRemaining
+				percentageRemainingList.append(monomercounts)
+		colCount = 1
+		ws3.cell(row = 1, column = colCount, value = "Monomer Position Index")
+		for monomerID in range(1, self.numMonomers + 1):
+			ws3.cell(row = 1, column = colCount + 1, value = "%" + " of monomer %i remaining" %(monomerID))
+			#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+			colCount += 1
+		colCount = 1
+		indexCount = 0
+		for column in ws3.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+			for cell in column:
+				cell.value = polymerIndex[indexCount]
+				indexCount += 1
+		for monomerID in range(1, self.numMonomers + 1):
+			monomerIDcount = 0
+			for column in ws3.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+				for cell in column:
+					cell.value = percentageRemainingList[monomerID - 1][monomerIDcount]
+					monomerIDcount += 1
+			colCount += 1
 		name = "graphData"
 		wb.save(name + ".xlsx")
 		infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
