@@ -795,7 +795,7 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Polymer Compositions", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
 		#Spinbox for graphType1
@@ -806,7 +806,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Polymer Compositions", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
@@ -1586,10 +1586,43 @@ class Application(ttk.Frame):
 					prevMonomer = monomer
 			dyadArray.append(polymerDyad)
 		return dyadArray
-
+	#Returns a list of the percent compostion of each monomer, in monomerID order
+	def getComposition(self, polymerArray):
+		compositionList = [0] * self.numMonomers
+		for monomerID in range(1, self.numMonomers + 1):
+			for polymer in polymerArray:
+				for monomer in polymer:
+					if monomer == monomerID:
+						compositionList[monomerID - 1] += 1
+		totalMonomers = sum(compositionList)
+		#print("precomp: ", compositionList)
+		#print("totalMonomers: ", totalMonomers)
+		for monomerID in range(1, self.numMonomers + 1):
+			compositionList[monomerID - 1] = compositionList[monomerID - 1] / totalMonomers
+		#print("compositionList: ", compositionList)
+		return compositionList
+	#Returns a list of the percent composition of each monomer at each index, in monomerID order
+	def getFullCompositionAtIndex(self, polymerArray):
+		fullCompList = []
+		compositionList = [0] * self.numMonomers
+		for monomerID in range(1, self.numMonomers + 1):
+			monomerCompList = []
+			for monomerIndex in range(0, self.polymerLength):
+				for monomerID2 in range(1, self.numMonomers + 1):
+					for polymer in polymerArray:
+						if polymer[monomerIndex] == monomerID2:
+							compositionList[monomerID2 - 1] += 1
+				totalMonomers = sum(compositionList)
+				monomerCompList.append(compositionList[monomerID - 1] / totalMonomers)
+			fullCompList.append(monomerCompList)
+			#totalMonomers = sum(compositionList)
+		#print("precomp: ", compositionList)
+		#print("totalMonomers: ", totalMonomers)
+		#print("index: ", index)
+		return fullCompList
 
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
-		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences":
+		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
 			if graphType == "Monomer Occurrences":
 				if DYAD:
 					polymerArrayToUse = self.getDyad(polymerArray)
@@ -1658,6 +1691,27 @@ class Application(ttk.Frame):
 						curve = subplot.plot(polymerIndex, monomercounts, label = labelToUse)
 					else:
 						curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
+			if graphType == "Polymer Compositions":
+				#adjust axis title
+				subplot.set_ylabel("Polymer Composition", labelpad=5, fontsize = 9)
+				#adjust y axis limiys
+				subplot.set_ylim([0,1])
+				#x-axis array
+				polymerIndex = list(range(1, self.polymerLength + 1))
+				#list of data for all monomers
+				fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
+				monomerID = 1
+				for compList in fullCompList:
+					print("complist: ", compList)
+					print("lengthComp: ", len(compList))
+					print("lengthPolymer: ", len(polymerIndex))
+					if ALIAS:
+						labelToUse = self.aliasList[monomer - 1]
+						curve = subplot.plot(polymerIndex, compList, label = labelToUse)
+					else:
+						curve = subplot.plot(polymerIndex, compList, label = "Monomer %i" %(monomerID))
+					monomerID += 1
+
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
 			if LEGEND:
@@ -1715,23 +1769,6 @@ class Application(ttk.Frame):
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
-		
-
-	#Returns a list of the percent compostion of each monomer, in monomerID order
-	def getComposition(self, polymerArray):
-		compositionList = [0] * self.numMonomers
-		for monomerID in range(1, self.numMonomers + 1):
-			for polymer in polymerArray:
-				for monomer in polymer:
-					if monomer == monomerID:
-						compositionList[monomerID - 1] += 1
-		totalMonomers = sum(compositionList)
-		print("precomp: ", compositionList)
-		print("totalMonomers: ", totalMonomers)
-		for monomerID in range(1, self.numMonomers + 1):
-			compositionList[monomerID - 1] = compositionList[monomerID - 1] / totalMonomers
-		print("compositionList: ", compositionList)
-		return compositionList
 
 	def saveState(self):
 		ratiosList = []
@@ -2017,10 +2054,10 @@ class Application(ttk.Frame):
 			data, bins = np.histogram(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit),
 				bins=range(1, max(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)) + binwidth + 1, binwidth))
 			#print(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit))
-			print("data: ", data)
-			print('sum: ', sum(data))
-			print("divider: ", self.totalMonomers*self.histogramLimit)
-			print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
+			#print("data: ", data)
+			#print('sum: ', sum(data))
+			#print("divider: ", self.totalMonomers*self.histogramLimit)
+			#print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
 			data = data / (self.totalMonomers*self.histogramLimit)
 			name = "Monomer %i Separation" %(polymerID)
 			currHistData = histData(name, data)
@@ -2046,7 +2083,7 @@ class Application(ttk.Frame):
 				for cell in column:	
 					cell.value = histData.data[dataCount]
 					dataCount += 1
-			colCount += 3
+			colCount += 2
 		startRow = maxRow + 3
 		ws2 = wb.create_sheet("Monomer Occurences")
 		if DYAD:
