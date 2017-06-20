@@ -78,7 +78,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.6.3"
+VERSION = "v1.7"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
@@ -407,6 +407,8 @@ def setConfigVariableHelper(configType, configValue):
 			GRAPH1_TYPE = "Monomer Separation"
 		elif configValue == 3:
 			GRAPH1_TYPE = "None"
+		elif configValue == 4:
+			GRAPH1_TYPE = "Polymer Compositions"
 		else:
 			assert False
 	elif configType == "Graph 2 Type":
@@ -419,6 +421,8 @@ def setConfigVariableHelper(configType, configValue):
 			GRAPH2_TYPE = "Monomer Separation"
 		elif configValue == 3:
 			GRAPH2_TYPE = "None"
+		elif configValue == 4:
+			GRAPH2_TYPE = "Polymer Compositions"
 		else:
 			assert False
 	elif configType == "Histogram 1 Monomer":
@@ -761,7 +765,7 @@ class Application(ttk.Frame):
 		self.lastRowFrame.pack(side = Tk.TOP)
 		#A back button to enter a diff number of monomers
 		self.backButton = ttk.Button(master = self.lastRowFrame, text = "Back", width = 6,
-		 command = lambda:_quit())
+		 command = lambda:back(self))
 		self.backButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
 		#Export button
 		self.exportButton = ttk.Button(master = self.lastRowFrame, text = "Export", width = 7, 
@@ -1604,8 +1608,8 @@ class Application(ttk.Frame):
 	#Returns a list of the percent composition of each monomer at each index, in monomerID order
 	def getFullCompositionAtIndex(self, polymerArray):
 		fullCompList = []
-		compositionList = [0] * self.numMonomers
 		for monomerID in range(1, self.numMonomers + 1):
+			compositionList = [0] * self.numMonomers
 			monomerCompList = []
 			for monomerIndex in range(0, self.polymerLength):
 				for monomerID2 in range(1, self.numMonomers + 1):
@@ -1702,9 +1706,9 @@ class Application(ttk.Frame):
 				fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
 				monomerID = 1
 				for compList in fullCompList:
-					print("complist: ", compList)
-					print("lengthComp: ", len(compList))
-					print("lengthPolymer: ", len(polymerIndex))
+					#print("complist: ", compList)
+					#print("lengthComp: ", len(compList))
+					#print("lengthPolymer: ", len(polymerIndex))
 					if ALIAS:
 						labelToUse = self.aliasList[monomer - 1]
 						curve = subplot.plot(polymerIndex, compList, label = labelToUse)
@@ -2185,6 +2189,30 @@ class Application(ttk.Frame):
 			for column in ws3.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
 				for cell in column:
 					cell.value = percentageRemainingList[monomerID - 1][monomerIDcount]
+					monomerIDcount += 1
+			colCount += 1
+		#x-axis array
+		polymerIndex = list(range(1, self.polymerLength + 1))
+		#list of data for all monomers
+		fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
+		ws4 = wb.create_sheet("Polymer Compositions")
+		colCount = 1
+		ws4.cell(row = 1, column = colCount, value = "Monomer Position Index")
+		for monomerID in range(1, self.numMonomers + 1):
+			ws4.cell(row = 1, column = colCount + 1, value = "%" + "  Composition of Monomer %i" %(monomerID))
+			#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+			colCount += 1
+		colCount = 1
+		indexCount = 0
+		for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+			for cell in column:
+				cell.value = polymerIndex[indexCount]
+				indexCount += 1
+		for monomerID in range(1, self.numMonomers + 1):
+			monomerIDcount = 0
+			for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+				for cell in column:
+					cell.value = fullCompList[monomerID - 1][monomerIDcount]
 					monomerIDcount += 1
 			colCount += 1
 		name = "graphData"
