@@ -50,7 +50,7 @@ GRAPH1_TYPE = "Monomer Occurrences"
 GRAPH2_TYPE = "Percentage Monomer"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
-HISTOGRAM_LIMIT = 0.8
+HISTOGRAM_LIMIT = 1
 PENULTIMATE = 0
 DYAD = 0
 LEGEND = 1
@@ -91,7 +91,7 @@ def generateConfigFile():
 		file = open("config.txt", "w")
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 1 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
-		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 0.8 \n")
+		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 1 \n")
 		file.write("Total Starting Monomers = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Dyad = 0 \nStyle = classic \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
@@ -815,12 +815,12 @@ class Application(ttk.Frame):
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
 		self.histogramLimitFrame.pack(side = Tk.TOP)
-		#Label for histogramLimit
+		#Label for histogramLimit DEPRECATED
 		self.histogramLimitLabel = ttk.Label(master = self.histogramLimitFrame, text = "Percentage to Analyze for Histogram:")
-		self.histogramLimitLabel.pack(side = Tk.LEFT)
+		#self.histogramLimitLabel.pack(side = Tk.LEFT)
 		#entry for histogramLimit
 		self.histogramLimitEntry = ttk.Entry(master = self.histogramLimitFrame, width = 4)
-		self.histogramLimitEntry.pack(side = Tk.LEFT)
+		#self.histogramLimitEntry.pack(side = Tk.LEFT)
 		#tkvar for histogramLimit
 		self.histogramLimitTkVar = Tk.StringVar()
 		self.histogramLimitEntry["textvariable"] = self.histogramLimitTkVar
