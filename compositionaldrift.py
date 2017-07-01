@@ -901,14 +901,14 @@ class Application(ttk.Frame):
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
 			amount = Tk.IntVar()
-			inputAmount = ttk.Entry(master = monomerAmountFrame, width = 5, textvariable = amount, text = 20)
+			inputAmount = ttk.Entry(master = monomerAmountFrame, width = 5, textvariable = amount, text = 1)
 			inputAmount.pack(side = Tk.LEFT, padx = 2)
-			#Setting Default Value to 20
+			#Setting Default Value to 1
 			inputAmount["textvariable"] = amount
 			if LOAD_SUCCESSFUL and useLoadedSettings:
 				amount.set(RATIO_ARRAY[createCount])
 			else:
-				amount.set(20)
+				amount.set(1)
 			self.monomerAmountTkVarArray.append(amount)
 			#Add ttk.Entry object to startingAmountList
 			self.startingRatiosTkList.append(inputAmount)
@@ -932,15 +932,15 @@ class Application(ttk.Frame):
 					while count < 2:				
 						#Label for inputAmount
 						coeffValFrame = ttk.Frame(master = self.coefficientFrame)
-						if count == 0:
+						if count == monomerIDcount:
 							coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
 						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = "Reactivity Ratio %i:" %(monomerIDcount + 1) )
 						self.coeffLabelList[monomerIDcount].append(inputCoeffLabel)
-						if count == 0:
+						if count == monomerIDcount:
 							inputCoeffLabel.pack(side = Tk.LEFT)
 						#Entry for inputAmount
 						inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
-						if count == 0:
+						if count == monomerIDcount:
 							inputCoeff.pack(side = Tk.LEFT, padx = 5)
 						#Setting Default Coefficient to 1
 						coeff = Tk.IntVar()
@@ -1088,10 +1088,10 @@ class Application(ttk.Frame):
 				singleCoeffList = self.getPenultimateCoeff()
 			self.raftRatio = float(self.raftRatioTkVar.get())
 			self.histogramLimit = float(self.histogramLimitTkVar.get())
-			CONVERSION = float(self.conversionTkVar.get())
+			self.conversion = float(self.conversionTkVar.get())
 			assert(self.histogramLimit <= 1)
-			assert(CONVERSION > 0)
-			assert(CONVERSION <= 100)
+			assert(self.conversion > 0)
+			assert(self.conversion <= 100)
 			assert(self.histogramLimit > 0)
 			assert(self.totalMonomers > 0)
 			assert(NUM_SIMULATIONS > 0)
@@ -1108,7 +1108,7 @@ class Application(ttk.Frame):
 			return
 		self.numSimulations = NUM_SIMULATIONS
 		self.fullPolymerLength = int(self.raftRatio)
-		self.polymerLength = int(self.raftRatio * CONVERSION / 100)
+		self.polymerLength = int(self.raftRatio * self.conversion / 100)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
 		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
@@ -1582,6 +1582,10 @@ class Application(ttk.Frame):
 
 	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
 	def getHistogramData(self, polymerArray, monomerID, indexLimit):
+		#counting number of monomers in polymerArray
+		flat_list = [item for sublist in polymerArray for item in sublist]
+		print('number of monomers used: ' , len(flat_list))
+		print('indexLimit: ', indexLimit)
 		#initializing array to be returned
 		histogramData = []
 		#count through all polymers
@@ -1592,7 +1596,9 @@ class Application(ttk.Frame):
 			#iterate through each polymer until monomerLimit is hit and count consecutive polymers
 			for monomer in polymer:
 				#if index limit is reached, add any consecutives to histogram, and break from for loop
-				if polymerIndex > indexLimit:
+				if polymerIndex >= indexLimit:
+					if  monomer == monomerID:
+						numConsecutive += 1
 					#print(numConsecutive)
 					if numConsecutive > 0:
 						count = 0
@@ -1616,6 +1622,7 @@ class Application(ttk.Frame):
 					#continue
 				polymerIndex += 1
 				#print(polymerIndex)
+		print("length histogramData: ", len(histogramData))
 		return histogramData
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
 	def getDyad(self, polymerArray):
@@ -1800,6 +1807,8 @@ class Application(ttk.Frame):
 			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
 			print("hist: ", hist)
 			print("bins: ", bins)
+			print("sum hist: ", sum(hist))
+			print("normFactor: ", self.polymerLength * self.numPolymers)
 			#first normalization step
 			hist = hist / (self.totalMonomers * self.histogramLimit)
 				#print("histafter: ", weightedHist)
@@ -2097,7 +2106,7 @@ class Application(ttk.Frame):
 			def __init__(self, name, data):
 				self.name =  name
 				self.data = data
-		histogramNumberLimit = int(self.histogramLimit * self.fullPolymerLength)
+		histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
 		binwidth = 1
 		for polymerID in range(1, self.numMonomers + 1):
 			data, bins = np.histogram(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit),
@@ -2107,7 +2116,7 @@ class Application(ttk.Frame):
 			#print('sum: ', sum(data))
 			#print("divider: ", self.totalMonomers*self.histogramLimit)
 			#print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
-			data = data / (self.totalMonomers*self.histogramLimit)
+			data = data / (self.polymerLength * self.numPolymers)
 			name = "Monomer %i Separation" %(polymerID)
 			currHistData = histData(name, data)
 			self.histDataList.append(currHistData)
@@ -2313,6 +2322,9 @@ def center(toplevel):
     x = w/2 - size[0]/2
     y = h/2 - size[1]/2
     toplevel.geometry("%dx%d+%d+%d" % (size + (x, y - 30)))
+def flatten(l):
+	flat_list = [item for sublist in l for item in sublist]
+	return flat_list
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
