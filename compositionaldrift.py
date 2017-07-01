@@ -693,6 +693,11 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
+			debug = True
+			if debug:
+				root.quit()
+				root.destroy()
+				return
 			#Destroys all neccesary widgets
 			self.destroyWidgets()
 			#Re-Initiates
@@ -915,43 +920,82 @@ class Application(ttk.Frame):
 		#Debugging purposes
 		#print("startingAmountList: ", self.startingRatiosTkList) 
 		if not PENULTIMATE:
-			createCount2 = 0
-			#IMPORTANT: list so that inputs can be udated and not trash collected
-			self.coeffTkVarArray = []
-			#While loop creating number of neccesary coefficient Entry boxes
-			while createCount2 < self.numMonomers:
-				combinations = 0
-				#Appends to coefficient list a list containing coefficients for the polymer index
-				singleMonoCoeffList = []
-				self.coefficientList.append(singleMonoCoeffList)
-				self.coeffLabelList.append([])
-				#Frame for Coefficients for Single Monomer
-				singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
-				singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-				while combinations < self.numMonomers:				
-					#Label for inputAmount
-					coeffValFrame = ttk.Frame(master = singleCoeffFrame)
-					coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
-					inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-					 + "-" + str(combinations + 1) + " Reactivity:" )
-					self.coeffLabelList[createCount2].append(inputCoeffLabel)
-					inputCoeffLabel.pack(side = Tk.LEFT)
-					#Entry for inputAmount
-					inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
-					inputCoeff.pack(side = Tk.LEFT, padx = 5)
-					#Setting Default Coefficient to 1
-					coeff = Tk.IntVar()
-					inputCoeff["textvariable"] = coeff
-					if LOAD_SUCCESSFUL and useLoadedSettings:
-						coeff.set(COEFF_ARRAY[createCount2][combinations])
-					else:
-						coeff.set(1)
-					#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
-					self.coeffTkVarArray.append(coeff)
-					#Add a ttk.Entry object to singleMonoCoeffList
-					singleMonoCoeffList.append(inputCoeff)
-					combinations += 1
-				createCount2 += 1
+			#case for 2 monomer system - only need 2 reactivity ratios
+			if self.numMonomers == 2:
+				self.coeffTkVarArray = []
+				monomerIDcount = 0
+				while monomerIDcount < 2:
+					singleMonoCoeffList = []
+					self.coefficientList.append(singleMonoCoeffList)
+					self.coeffLabelList.append([])
+					count = 0
+					while count < 2:				
+						#Label for inputAmount
+						coeffValFrame = ttk.Frame(master = self.coefficientFrame)
+						if count == 0:
+							coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
+						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = "Reactivity Ratio %i:" %(monomerIDcount + 1) )
+						self.coeffLabelList[monomerIDcount].append(inputCoeffLabel)
+						if count == 0:
+							inputCoeffLabel.pack(side = Tk.LEFT)
+						#Entry for inputAmount
+						inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
+						if count == 0:
+							inputCoeff.pack(side = Tk.LEFT, padx = 5)
+						#Setting Default Coefficient to 1
+						coeff = Tk.IntVar()
+						inputCoeff["textvariable"] = coeff
+						if LOAD_SUCCESSFUL and useLoadedSettings:
+							coeff.set(COEFF_ARRAY[monomerIDcount][count])
+						else:
+							coeff.set(1)
+						#Ensures that hetegenous coefficients are always 1
+						#if count == 2:
+						#	coeff.set(1)
+						#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
+						self.coeffTkVarArray.append(coeff)
+						#Add a ttk.Entry object to singleMonoCoeffList
+						singleMonoCoeffList.append(inputCoeff)
+						count += 1
+					monomerIDcount += 1
+			else:
+				#IMPORTANT: list so that inputs can be udated and not trash collected
+				self.coeffTkVarArray = []
+				createCount2 = 0
+				#While loop creating number of neccesary coefficient Entry boxes
+				while createCount2 < self.numMonomers:
+					combinations = 0
+					#Appends to coefficient list a list containing coefficients for the polymer index
+					singleMonoCoeffList = []
+					self.coefficientList.append(singleMonoCoeffList)
+					self.coeffLabelList.append([])
+					#Frame for Coefficients for Single Monomer
+					singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
+					singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
+					while combinations < self.numMonomers:				
+						#Label for inputAmount
+						coeffValFrame = ttk.Frame(master = singleCoeffFrame)
+						coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
+						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
+						 + "-" + str(combinations + 1) + " Reactivity:" )
+						self.coeffLabelList[createCount2].append(inputCoeffLabel)
+						inputCoeffLabel.pack(side = Tk.LEFT)
+						#Entry for inputAmount
+						inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
+						inputCoeff.pack(side = Tk.LEFT, padx = 5)
+						#Setting Default Coefficient to 1
+						coeff = Tk.IntVar()
+						inputCoeff["textvariable"] = coeff
+						if LOAD_SUCCESSFUL and useLoadedSettings:
+							coeff.set(COEFF_ARRAY[createCount2][combinations])
+						else:
+							coeff.set(1)
+						#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
+						self.coeffTkVarArray.append(coeff)
+						#Add a ttk.Entry object to singleMonoCoeffList
+						singleMonoCoeffList.append(inputCoeff)
+						combinations += 1
+					createCount2 += 1
 		#if PENULTIMATE is true, create input entries for penultimate model
 		#format: penultimate-ultimate-next , so 1-2-3 is 1 (penultimate), 2 (ultimate), 3 (next)
 		if PENULTIMATE:
@@ -1039,6 +1083,7 @@ class Application(ttk.Frame):
 			monomerAmounts = self.getMonomerAmounts()
 			if not PENULTIMATE:
 				singleCoeffList = self.getCoefficients()
+				print("singleCoeffList: ", singleCoeffList)
 			else:
 				singleCoeffList = self.getPenultimateCoeff()
 			self.raftRatio = float(self.raftRatioTkVar.get())
