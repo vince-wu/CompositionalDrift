@@ -693,7 +693,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = True
+			debug = False
 			if debug:
 				root.quit()
 				root.destroy()
@@ -1583,9 +1583,9 @@ class Application(ttk.Frame):
 	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
 	def getHistogramData(self, polymerArray, monomerID, indexLimit):
 		#counting number of monomers in polymerArray
-		flat_list = [item for sublist in polymerArray for item in sublist]
-		print('number of monomers used: ' , len(flat_list))
-		print('indexLimit: ', indexLimit)
+		#flat_list = [item for sublist in polymerArray for item in sublist]
+		#print('number of monomers used: ' , len(flat_list))
+		#print('indexLimit: ', indexLimit)
 		#initializing array to be returned
 		histogramData = []
 		#count through all polymers
@@ -1622,7 +1622,7 @@ class Application(ttk.Frame):
 					#continue
 				polymerIndex += 1
 				#print(polymerIndex)
-		print("length histogramData: ", len(histogramData))
+		#print("length histogramData: ", len(histogramData))
 		return histogramData
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
 	def getDyad(self, polymerArray):
@@ -2322,9 +2322,9 @@ def center(toplevel):
     x = w/2 - size[0]/2
     y = h/2 - size[1]/2
     toplevel.geometry("%dx%d+%d+%d" % (size + (x, y - 30)))
-def flatten(l):
-	flat_list = [item for sublist in l for item in sublist]
-	return flat_list
+#def flatten(l):
+#	flat_list = [item for sublist in l for item in sublist]
+#	return flat_list
 class notInEuropeError(Exception):
 	def __init__(self, value):
 		self.value = value
