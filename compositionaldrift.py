@@ -81,7 +81,7 @@ DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8
 VERSION = "v1.7"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
- ["Graph Monomer Occurence", 1], ["Total Starting Monomers", 1], ["Monomers to RAFT Ratio", 1], 
+ ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0],
  ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2], ["Maintain", 1]]
@@ -92,7 +92,7 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 1 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 1 \n")
-		file.write("Total Starting Monomers = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
+		file.write("Monomer Pool Size = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Dyad = 0 \nStyle = classic \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
 		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
@@ -386,7 +386,7 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Number of Polymers to Show":
 		global NUM_POLYMERS_SHOW
 		NUM_POLYMERS_SHOW = configValue	
-	elif configType == "Total Starting Monomers":
+	elif configType == "Monomer Pool Size":
 		global TOTAL_STARTING_MONOMERS
 		TOTAL_STARTING_MONOMERS = configValue
 	elif configType == "Monomers to RAFT Ratio":
@@ -708,7 +708,7 @@ class Application(ttk.Frame):
 		self.totalMonomersFrame = ttk.Frame(master = self.columnFrame)
 		self.totalMonomersFrame.pack(side = Tk.TOP)
 		#Label for totalMonomers Entry
-		self.totalMonomersLabel = ttk.Label(master = self.totalMonomersFrame, text = "Total Starting Monomers:")
+		self.totalMonomersLabel = ttk.Label(master = self.totalMonomersFrame, text = "Monomer Pool Size:")
 		self.totalMonomersLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for totalMonomers
 		self.totalMonomersEntry = ttk.Entry(master = self.totalMonomersFrame, width = 7)
@@ -1766,7 +1766,7 @@ class Application(ttk.Frame):
 			if LEGEND:
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 				lgd.draggable(state = True)
-			subplot.set_xlabel("Monomer Position Index", labelpad = 0, fontsize = 9)
+			subplot.set_xlabel("Conversion", labelpad = 0, fontsize = 9)
 		elif graphType == "Monomer Separation" or "Block Size":
 			#obtain histogram limit
 			try:
