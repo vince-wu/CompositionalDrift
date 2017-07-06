@@ -36,6 +36,7 @@ from openpyxl.drawing.image import Image as xlImage
     This program uses the Mayo-Lewis equation and Monte Carlo method to simulate copolymer growth, and
     represents results both graphically and visually
     """
+ #test
 #Static Final variables
 MONOMER_CAP = 5000000
 NUM_UNIQUE_MONOMERS = 2
@@ -1178,12 +1179,22 @@ class Application(ttk.Frame):
 				#A variable keeping track of current monomer
 				monomerID = 1
 				choices = []
-				while monomerID <= self.numMonomers:
-					#weight chance of monomer initation: (amount of starting monomer)
-					weight = monomerAmounts[monomerID - 1]
-					#Adds a two element list to choices containing monomer and weight
-					choices.append([monomerID, weight])
-					monomerID += 1
+				#For two monomer system, can use Mayo Lewis Equation
+				if self.numMonomers == 2:
+					for monomer in range(1, 3):
+						f1 = monomerAmounts[0]
+						f2 = monomerAmounts[1]
+						r1 = singleCoeffList[0][0]
+						r2 = singleCoeffList[1][0]
+						weight = (r1*f1**2 + r2*f2**2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
+						choices.append([monomer, weight])
+				else:
+					while monomerID <= self.numMonomers:
+						#weight chance of monomer initation: (amount of starting monomer)
+						weight = monomerAmounts[monomerID - 1]
+						#Adds a two element list to choices containing monomer and weight
+						choices.append([monomerID, weight])
+						monomerID += 1
 				#print("choices: ", choices)
 				#Using weighted_choice, selects first monomer
 				startingMonomer = weighted_choice(choices)
@@ -1722,7 +1733,7 @@ class Application(ttk.Frame):
 					#y-axis array initation
 					monomercounts = [0] * self.polymerLength
 					#adjust axis title
-					subplot.set_ylabel("Percentage of Monomer Remaining", labelpad=5, fontsize = 9)
+					subplot.set_ylabel("Monomer Left (M/Mo)", labelpad=5, fontsize = 9)
 					#adjust y axis limiys
 					subplot.set_ylim([0,1])
 					#variable to keep track of average number of monomers consumed
