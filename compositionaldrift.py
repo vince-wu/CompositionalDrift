@@ -1181,13 +1181,13 @@ class Application(ttk.Frame):
 				choices = []
 				#For two monomer system, can use Mayo Lewis Equation
 				if self.numMonomers == 2:
-					for monomer in range(1, 3):
-						f1 = monomerAmounts[0]
-						f2 = monomerAmounts[1]
-						r1 = singleCoeffList[0][0]
-						r2 = singleCoeffList[1][0]
-						weight = (r1*f1**2 + r2*f2**2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
-						choices.append([monomer, weight])
+					f1 = monomerAmounts[0]
+					f2 = monomerAmounts[1]
+					r1 = singleCoeffList[0][0]
+					r2 = singleCoeffList[1][0]
+					weight = (r1*f1**2 + r2*f2**2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
+					choices.append([1, weight])
+					choices.append([2, 1 - weight])
 				else:
 					while monomerID <= self.numMonomers:
 						#weight chance of monomer initation: (amount of starting monomer)
