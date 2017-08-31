@@ -1121,6 +1121,12 @@ class Application(ttk.Frame):
 			assert(NUM_SIMULATIONS > 0)
 			assert(self.raftRatio > 0)
 			assert(self.totalMonomers * NUM_SIMULATIONS <= MONOMER_CAP)
+			self.graph1Type = self.graphType1TkVar.get()
+			self.graph2Type = self.graphType2TkVar.get()
+			if self.graph1Type == "Hydrophobic Blocks" or self.graph1Type == "Hydrophilic Blocks" or self.graph2Type == "Hydrophobic Blocks" or self.graph2Type == "Hydrophilic Blocks":
+				for phobicity in self.hphobList:
+					if phobicity == "None":
+						raise phobicityNotSpecified("hi")
 		except ValueError:
 			errorMessage("Please input valid parameters!", 220)
 			return
@@ -1129,6 +1135,8 @@ class Application(ttk.Frame):
 			return
 		except AssertionError:
 			errorMessage("Please input valid parameters!", 220)
+		except phobicityNotSpecified:
+			errorMessage("Please specficy hydrophobicities in the Options Tab.", 330)
 			return
 		self.numSimulations = NUM_SIMULATIONS
 		self.fullPolymerLength = int(self.raftRatio)
@@ -1724,9 +1732,6 @@ class Application(ttk.Frame):
 					newPolymer.append(0)
 				elif self.hphobList[monomer - 1] == "Hydrophilic":
 					newPolymer.append(1)
-				else:
-					errorMessage("Please specify monomer hydrophobicities in Options tab.", 330)
-					return
 			newPolymerArray.append(newPolymer)
 		return newPolymerArray
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
@@ -2445,6 +2450,9 @@ def center(toplevel):
 #	flat_list = [item for sublist in l for item in sublist]
 #	return flat_list
 class notInEuropeError(Exception):
+	def __init__(self, value):
+		self.value = value
+class phobicityNotSpecified(Exception):
 	def __init__(self, value):
 		self.value = value
 root = Tk.Tk()
