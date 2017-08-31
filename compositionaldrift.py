@@ -45,6 +45,7 @@ NUM_POLYMERS_SHOW = 8
 GRAPH_TYPE = 1
 TOTAL_STARTING_MONOMERS = 200000
 DP = 100
+HYDROPHOBICITY = 0
 SETTING = 1
 LOAD_SUCCESSFUL = False
 GRAPH1_TYPE = "Monomer Occurrences"
@@ -85,7 +86,7 @@ CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0],
- ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2], ["Maintain", 1]]
+ ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2], ["Maintain", 1], ["Hydrophobicity", 0]]
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -93,7 +94,7 @@ def generateConfigFile():
 		file.write("Number of Unique Monomers = 2 \nNumber of Simulations = 1 \nNumber of Polymers to Show = 8 \n")
 		file.write("Graph 1 Type = 0 \nGraph 2 Type = 1 \n")
 		file.write("Histogram 1 Monomer = 1 \nHistogram 2 Monomer = 2 \nPercentage to Analyze for Histogram = 1 \n")
-		file.write("Monomer Pool Size = 200000 \nMonomers to RAFT Ratio = 100 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
+		file.write("Monomer Pool Size = 200000 \nMonomers to RAFT Ratio = 100 \nHydrophobicity = 0 \nDefault Setting = 1 \nMonomer Cap = 5000000 \nPenultimate = 0 \n")
 		file.write("Dyad = 0 \nStyle = classic \nLegend = 1 \nPercent Conversion = 100 \nMaintain = 0 \n")
 		file.write("Color1 = #4D4D4D \nColor2 = #5DA5DA \nColor3 = #F15854 \nColor4 = #DECF3F \nColor5 = #60BD68 \nColor6 = #F17CB0 \n")
 		file.write("Color7 = #B276B2 \nColor8 = #FAA43A \n")
@@ -410,6 +411,10 @@ def setConfigVariableHelper(configType, configValue):
 			GRAPH1_TYPE = "None"
 		elif configValue == 4:
 			GRAPH1_TYPE = "Polymer Compositions"
+		elif configValue == 5:
+			GRAPH1_TYPE = "Hydrophobic Blocks"
+		elif configValue == 6:
+			GRAPH1_TYPE ="Hydrophilic Blocks"
 		else:
 			assert False
 	elif configType == "Graph 2 Type":
@@ -424,6 +429,10 @@ def setConfigVariableHelper(configType, configValue):
 			GRAPH2_TYPE = "None"
 		elif configValue == 4:
 			GRAPH2_TYPE = "Polymer Compositions"
+		elif configValue == 5:
+			GRAPH2_TYPE = "Hydrophobic Blocks"
+		elif configValue == 6:
+			GRAPH2_TYPE = "Hydrophilic Blocks"
 		else:
 			assert False
 	elif configType == "Histogram 1 Monomer":
@@ -477,6 +486,9 @@ def setConfigVariableHelper(configType, configValue):
 	elif configType == "Maintain":
 		global MAINTAIN
 		MAINTAIN = configValue
+	elif configType == "Hydrophobicity":
+		global HYDROPHOBICITY
+		HYDROPHOBICITY = configValue
 	else:
 		assert False, "shouldn't get here"	
 #Main class 
@@ -694,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = False
+			debug = True
 			if debug:
 				root.quit()
 				root.destroy()
@@ -805,7 +817,8 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Polymer Compositions", "None"), textvariable = self.graphType1TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"), 
+		textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
 		#Spinbox for graphType1
@@ -816,7 +829,8 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Polymer Compositions", "None"), textvariable = self.graphType2TkVar, state = "readonly", width = 21)
+			"Monomer Separation", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"),
+			 textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
 		self.histogramLimitFrame = ttk.Frame(master = self.column2Frame)
@@ -873,6 +887,15 @@ class Application(ttk.Frame):
 		self.simulate()
 	def createIterativeInputs(self, alias):
 		root.bind("<Return>", lambda e: self.key())
+		self.hphobList = []
+		if HYDROPHOBICITY == 0:
+			phobicity = "Hydrophobic"
+		elif HYDROPHOBICITY == 1:
+			phobicity = "Hydrophilic"
+		else:
+			phobicity = "None"
+		for count in range(1,self.numMonomers + 1):
+			self.hphobList.append(phobicity)
 		#Frame for Monomer Amounts
 		self.amountFrame = ttk.Frame(master = self.inputFrame) 
 		self.amountFrame.pack(side = Tk.LEFT, padx = 0)
@@ -1396,6 +1419,7 @@ class Application(ttk.Frame):
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
+		print("grpah1type: ", self.graph1Type)
 		#Plot and Figure formatting
 		if not self.canvasExists:
 			self.plotFigure = plt.figure(figsize=(5.5, 3.3),dpi =100)
@@ -1635,6 +1659,7 @@ class Application(ttk.Frame):
 				#print(polymerIndex)
 		#print("length histogramData: ", len(histogramData))
 		return histogramData
+
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
 	def getDyad(self, polymerArray):
 		dyadArray = []
@@ -1687,7 +1712,23 @@ class Application(ttk.Frame):
 		#print("totalMonomers: ", totalMonomers)
 		#print("index: ", index)
 		return fullCompList
-
+	#takes in a polymerArray, an converts monomer number to 0 for hydrophobic, 1 for hydrophilic
+	def convertHydro(self, polymerArray):
+		print("hphobList: ", self.hphobList)
+		newPolymerArray = []
+		for polymer in polymerArray:
+			newPolymer = []
+			for monomer in polymer:
+				#print(monomer)
+				if self.hphobList[monomer - 1] == "Hydrophobic":
+					newPolymer.append(0)
+				elif self.hphobList[monomer - 1] == "Hydrophilic":
+					newPolymer.append(1)
+				else:
+					errorMessage("Please specify monomer hydrophobicities in Options tab.", 330)
+					return
+			newPolymerArray.append(newPolymer)
+		return newPolymerArray
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
 		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
 			if graphType == "Monomer Occurrences":
@@ -1785,7 +1826,7 @@ class Application(ttk.Frame):
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 				lgd.draggable(state = True)
 			subplot.set_xlabel("Conversion", labelpad = 0, fontsize = 9)
-		elif graphType == "Monomer Separation" or "Block Size":
+		elif graphType == "Monomer Separation":
 			#obtain histogram limit
 			try:
 				self.histogramLimit = float(self.histogramLimitTkVar.get())
@@ -1838,7 +1879,48 @@ class Application(ttk.Frame):
 			subplot.set_xticks(arange(min(histogramData), max(histogramData) + 1, 1))
 			#print(min(histogramData))
 			#print(max(histogramData))
-
+		elif graphType == "Hydrophobic Blocks" or graphType == "Hydrophilic Blocks":
+			if graphType == "Hydrophobic Blocks":
+				phobToShow = 0
+			else:
+				phobToShow = 1
+			polymerArray = self.convertHydro(polymerArray)
+			#print(polymerArray)
+			#obtain histogram limit
+			histogramNumberLimit = int(self.polymerLength)
+			#get all the histogram data so can set max for histogram
+			histDataList = []
+			for hphobicity in range(0,2):
+				histDataList.append(self.getHistogramData(polymerArray, hphobicity, histogramNumberLimit))
+			histogramData = self.getHistogramData(polymerArray, phobToShow, histogramNumberLimit)
+			maxList = []
+			#print("histDataList: ", histDataList)
+			#finding maximum 
+			for data in histDataList:
+				if data:
+					maxList.append(max(data))
+			maximum = max(maxList)
+			#print('maximum: ', maximum)
+			#print(histogramData)
+			binwidth = 1
+			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
+			#first normalization step
+			hist = hist / (self.totalMonomers * self.histogramLimit)
+				#print("histafter: ", weightedHist)
+			widths = np.diff(bins)
+			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[phobToShow])
+			if phobToShow == 0:
+				subplot.set_xlabel("Hydrophobic Block Size", labelpad = 0, fontsize = 9)
+			if phobToShow == 1:
+				subplot.set_xlabel("Hydrophilic Block Size", labelpad = 0, fontsize = 9)
+			subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
+			if histogramData:
+				minimum = min(histogramData)
+				maximum = max(histogramData)
+			else:
+				minimum = 0
+				maximum = 0
+			subplot.set_xticks(arange(minimum, maximum + 1, 1))
 	def saveState(self):
 		ratiosList = []
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
@@ -2028,11 +2110,31 @@ class Application(ttk.Frame):
 		self.options3Frame = ttk.Frame(master = self.allOptionsFrame)
 		self.options3Frame.pack(side = Tk.LEFT, padx = 5)
 		self.aliasTkVarList = []
+		self.hphobTkVarList = []
+		for monomer in range(1, self.numMonomers + 1):
+			hydrophobFrame = ttk.Frame(master = self.options3Frame)
+			hydrophobFrame.pack(side = Tk.TOP, pady = 3)
+			hydrophobLabel = ttk.Label(master = hydrophobFrame, text = "Monomer %i: " %monomer)
+			hydrophobLabel.pack(side = Tk.LEFT)
+			hydrophobTkVar = Tk.StringVar()
+			if self.hphobList:
+				hydrophobTkVar.set(self.hphobList[monomer - 1])
+			else:
+				if HYDROPHOBICITY == 0:
+					hydrophobTkVar.set("Hydrophobic")
+				elif HYDROPHOBICITY == 1:
+					hydrophobTkVar.set("Hydrophilic")
+				else:
+					hydrophobTkVar.set("None")
+			hydrophobCombobox = ttk.Combobox(master = hydrophobFrame, values = ("Hydrophobic", "Hydrophilic", "None"),
+			 textvariable = hydrophobTkVar, state = "readonly", width = 12)
+			self.hphobTkVarList.append(hydrophobTkVar)
+			hydrophobCombobox.pack(side = Tk.LEFT)
 		for monomer in range(1, self.numMonomers + 1):
 			aliasFrame = ttk.Frame(master = self.options3Frame)
 			aliasFrame.pack(side = Tk.TOP, pady = 3)
 			aliasLabel = ttk.Label(master = aliasFrame, text = "Monomer %i Alias:" %monomer)
-			aliasLabel.pack(side = Tk.LEFT)
+			aliasLabel.pack(side = Tk.LEFT)	
 			aliasTkVar = Tk.StringVar()
 			if self.aliasList:
 				aliasTkVar.set(self.aliasList[monomer - 1])
@@ -2070,12 +2172,19 @@ class Application(ttk.Frame):
 		global STYLE
 		STYLE = str(self.styleTkVar.get())
 		self.newAliasList = []
+		self.newHphobList = []
 		applyAlias = False
+		applyHphob = False
 		for tkVar in self.aliasTkVarList:
 			self.newAliasList.append(tkVar.get())
 		if self.aliasList != self.newAliasList:
 			self.aliasList = self.newAliasList
 			applyAlias = True
+		for tkVar in self.hphobTkVarList:
+			self.newHphobList.append(tkVar.get())
+		if self.hphobList != self.newHphobList:
+			self.hphobList = self.newHphobList
+			applyHphob = True	
 		self.optionsWindow.destroy()
 		if not applyAlias:
 			return
@@ -2102,7 +2211,6 @@ class Application(ttk.Frame):
 				coeffLabelCount += 1
 				combinations += 1
 			coeffLabelCount = 0
-
 		global ALIAS
 		ALIAS = True
 		#self.amountFrame.destroy()
