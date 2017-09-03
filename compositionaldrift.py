@@ -80,7 +80,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.7.2"
+VERSION = "v1.7.3"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -706,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = True
+			debug = False
 			if debug:
 				root.quit()
 				root.destroy()
@@ -1420,6 +1420,16 @@ class Application(ttk.Frame):
 		except:
 			errorMessage("Please simulate first!", 300)
 			return
+		try:
+			self.graph1Type = self.graphType1TkVar.get()
+			self.graph2Type = self.graphType2TkVar.get()
+			if self.graph1Type == "Hydrophobic Blocks" or self.graph1Type == "Hydrophilic Blocks" or self.graph2Type == "Hydrophobic Blocks" or self.graph2Type == "Hydrophilic Blocks":
+					for phobicity in self.hphobList:
+						if phobicity == "None":
+							raise phobicityNotSpecified("hi")
+		except phobicityNotSpecified:
+			errorMessage("Please specficy hydrophobicities in the Options Tab.", 330)
+			return
 		#destroys canvas if necessary
 		#style to use
 		style.use('classic')
@@ -1666,6 +1676,8 @@ class Application(ttk.Frame):
 				polymerIndex += 1
 				#print(polymerIndex)
 		#print("length histogramData: ", len(histogramData))
+		if not histogramData:
+			histogramData = [0]
 		return histogramData
 
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
@@ -2393,6 +2405,50 @@ class Application(ttk.Frame):
 					cell.value = fullCompList[monomerID - 1][monomerIDcount]
 					monomerIDcount += 1
 			colCount += 1
+		ws5 = wb.create_sheet("Hydrophobicity Blocks")
+		class histData:
+			def __init__(self, name, data):
+				self.name =  name
+				self.data = data
+		self.histDataList = []
+		polymerArray = self.convertHydro(self.polymerArray)
+		histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
+		binwidth = 1
+		for phobicity in range(0, 2):
+			data, bins = np.histogram(self.getHistogramData(polymerArray, phobicity, histogramNumberLimit),
+				bins=range(1, max(self.getHistogramData(polymerArray, phobicity, histogramNumberLimit)) + binwidth + 1, binwidth))
+			#print(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit))
+			#print("data: ", data)
+			#print('sum: ', sum(data))
+			#print("divider: ", self.totalMonomers*self.histogramLimit)
+			#print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
+			data = data / (self.polymerLength * self.numPolymers)
+			if phobicity == 0:
+				name = "Hydrophobic Blocks"
+			elif phobicity == 1:
+				name = "Hydrophilic Blocks"
+			currHistData = histData(name, data)
+			self.histDataList.append(currHistData)
+			print("phobicity %i data: " %(phobicity), data)
+		colCount = 1
+		#indexCount = 0
+		for histData in self.histDataList:
+			ws5.cell(row = 1, column = colCount, value = histData.name)
+			ws5.column_dimensions[get_column_letter(colCount)].width = len(histData.name) - 1
+			ws5.cell(row = 1, column = colCount + 1, value = "Normalized Separation")
+			ws5.column_dimensions[get_column_letter(colCount +1)].width = 20
+			columnCount = 1
+			maxRow = max(len(histData.data), maxRow)
+			for column in ws5.iter_cols(min_row = 2, max_row = len(histData.data) + 1, min_col = colCount, max_col = colCount):
+				for cell in column:
+					cell.value = columnCount
+					columnCount += 1
+			dataCount = 0
+			for column in ws5.iter_cols(min_row = 2, max_row = len(histData.data) + 1,min_col = colCount + 1, max_col = colCount + 1):
+				for cell in column:	
+					cell.value = histData.data[dataCount]
+					dataCount += 1
+			colCount += 2
 		name = "graphData"
 		wb.save(name + ".xlsx")
 		infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
