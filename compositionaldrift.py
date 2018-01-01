@@ -706,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = False
+			debug = True
 			if debug:
 				root.quit()
 				root.destroy()
@@ -953,7 +953,7 @@ class Application(ttk.Frame):
 					self.coefficientList.append(singleMonoCoeffList)
 					self.coeffLabelList.append([])
 					count = 0
-					while count < 2:				
+					while count < 2:			
 						#Label for inputAmount
 						coeffValFrame = ttk.Frame(master = self.coefficientFrame)
 						if count == monomerIDcount:
@@ -1199,7 +1199,7 @@ class Application(ttk.Frame):
 			currNumPolymers = 0
 			#print(self.numMonomers)
 			#Builds number of polymers equal to self.numpolymers
-			while currNumPolymers < self.numPolymers:
+			while currNumPolymers < self.numPolymers:  
 				"""Initiation: Chooses a monomer to initiate the chain based of weighted chance"""
 				#case for setting first monomer
 				if SETINITIAL:
@@ -1215,10 +1215,40 @@ class Application(ttk.Frame):
 					f1 = monomerAmounts[0]
 					f2 = monomerAmounts[1]
 					r1 = singleCoeffList[0][0]
-					r2 = singleCoeffList[1][0]
-					weight = (r1*f1**2 + r2*f2**2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
+					r2 = singleCoeffList[1][1]
+					#print("r1: ", r1)
+					#print("r2: ", r2)
+					weight = (r1*f1**2 + f1*f2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
+					print("weight: ", weight)
 					choices.append([1, weight])
 					choices.append([2, 1 - weight])
+				elif self.numMonomers == 3:
+					m1 = monomerAmounts[0]
+					m2 = monomerAmounts[1]
+					m3 = monomerAmounts[2]
+					F = m1 + m2 + m3
+					f1 = m1/F
+					f2 = m2/F
+					f3 = m3/F
+					r11 = singleCoeffList[0][0]
+					r12 = singleCoeffList[0][1]
+					r13 = singleCoeffList[0][2]
+					r21 = singleCoeffList[1][0]
+					r22 = singleCoeffList[1][1]
+					r23 = singleCoeffList[1][2]
+					r31 = singleCoeffList[2][0]
+					r32 = singleCoeffList[2][1]
+					r33 = singleCoeffList[2][2]
+					R1 = r11 + r12 + r13
+					R2 = r21 + r22 + r23
+					R3 = r31 + r32 + r33
+					a = f1*r11*f1/(r11*f1+r12*f2+r13*f3) + f2*r21*f1/(r21*f1+r22*f2+r23*f3) + f3*r31*f1/(r31*f1+r32*f2+r33*f3)
+					b = f1*r12*f2/(r11*f1+r12*f2+r13*f3) + f2*r22*f2/(r21*f1+r22*f2+r23*f3) + f3*r32*f2/(r31*f1+r32*f2+r33*f3)
+					c = 1 - a - b
+					print("startingRatioList: ", [a, b, c])
+					choices.append([1,a])
+					choices.append([2 ,b])
+					choices.append([3,c])
 				else:
 					while monomerID <= self.numMonomers:
 						#weight chance of monomer initation: (amount of starting monomer)
