@@ -80,7 +80,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.7.3"
+VERSION = "v1.7.4"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -706,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = True
+			debug = False
 			if debug:
 				root.quit()
 				root.destroy()
@@ -1135,6 +1135,7 @@ class Application(ttk.Frame):
 			return
 		except AssertionError:
 			errorMessage("Please input valid parameters!", 220)
+			return
 		except phobicityNotSpecified:
 			errorMessage("Please specficy hydrophobicities in the Options Tab.", 330)
 			return
@@ -1219,7 +1220,7 @@ class Application(ttk.Frame):
 					#print("r1: ", r1)
 					#print("r2: ", r2)
 					weight = (r1*f1**2 + f1*f2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
-					print("weight: ", weight)
+					#print("weight: ", weight)
 					choices.append([1, weight])
 					choices.append([2, 1 - weight])
 				elif self.numMonomers == 3:
@@ -1625,6 +1626,7 @@ class Application(ttk.Frame):
 			#calculates number of monomers from monomer ratio and total monomers, ceiling dividing
 			numMonomers = math.ceil(self.totalMonomers * weight / totalWeight)
 			monomerAmounts.append(numMonomers)
+			assert(weight > 0)
 		#print("monomerAmounts: ", monomerAmounts)
 		return monomerAmounts
 	#Converts a 2D array of ttk.Entrys for coefficients into a 2D double array
