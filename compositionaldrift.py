@@ -1211,7 +1211,7 @@ class Application(ttk.Frame):
 				monomerID = 1
 				choices = []
 				#For two monomer system, can use Mayo Lewis Equation
-				if self.numMonomers == 2:
+				if self.numMonomers == 2 and not PENULTIMATE:
 					f1 = monomerAmounts[0]
 					f2 = monomerAmounts[1]
 					r1 = singleCoeffList[0][0]
