@@ -80,7 +80,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.7.4"
+VERSION = "v1.7.5"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -706,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = True
+			debug = False
 			if debug:
 				root.quit()
 				root.destroy()
@@ -2481,8 +2481,11 @@ class Application(ttk.Frame):
 					dataCount += 1
 			colCount += 2
 		name = "graphData"
-		wb.save(name + ".xlsx")
-		infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
+		try:
+			wb.save(name + ".xlsx")
+			infoMessage("Export Successful", "Data successfully exported to graphData.xlsx!", 330)
+		except: 
+			errorMessage("Cannot export if graphData.xlsx is open!", 300)
 		return
 		
 
