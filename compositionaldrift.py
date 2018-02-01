@@ -706,7 +706,7 @@ class Application(ttk.Frame):
 			root.destroy()
 		# Back Command: goes back to numMonomers Entry
 		def back(self):
-			debug = False
+			debug = True
 			if debug:
 				root.quit()
 				root.destroy()
@@ -1778,6 +1778,31 @@ class Application(ttk.Frame):
 					newPolymer.append(1)
 			newPolymerArray.append(newPolymer)
 		return newPolymerArray
+	def getHistPlotvals(self, histogramMonomer):
+			histogramNumberLimit = int(self.polymerLength)
+			print("histogramLimit: ", histogramNumberLimit)
+			histDataList = []
+			for monomerID in range(1, self.numMonomers + 1):
+				histDataList.append(self.getHistogramData(self.polymerArray, monomerID, histogramNumberLimit))
+			histogramData = self.getHistogramData(self.polymerArray, histogramMonomer, histogramNumberLimit)
+			maxList = []
+			#finding maximum 
+			for data in histDataList:
+				maxList.append(max(data))
+			maximum = max(maxList)
+			print('maximum: ', maximum)
+			#print(histogramData)
+
+			binwidth = 1
+			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
+			print("hist: ", hist)
+			print("bins: ", bins)
+			print("sum hist: ", sum(hist))
+			print("normFactor: ", self.polymerLength * self.numPolymers)
+			#first normalization step
+			hist = hist / (self.polymerLength * self.numPolymers) 
+			print("newHist: ", hist)
+			return [bins, hist, histogramData]
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
 		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
 			if graphType == "Monomer Occurrences":
@@ -1889,30 +1914,12 @@ class Application(ttk.Frame):
 				histogramMonomer = int(self.histogramMonomer1TkVar.get())
 			if number == 2:
 				histogramMonomer = int(self.histogramMonomer2TkVar.get())
-			histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
-			print("histogramLimit: ", histogramNumberLimit)
 			#get all the histogram data so can set max for histogram
-			histDataList = []
-			for monomerID in range(1, self.numMonomers + 1):
-				histDataList.append(self.getHistogramData(polymerArray, monomerID, histogramNumberLimit))
-			histogramData = self.getHistogramData(polymerArray, histogramMonomer, histogramNumberLimit)
-			maxList = []
-			#finding maximum 
-			for data in histDataList:
-				maxList.append(max(data))
-			maximum = max(maxList)
-			print('maximum: ', maximum)
-			#print(histogramData)
-
-			binwidth = 1
-			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
-			print("hist: ", hist)
-			print("bins: ", bins)
-			print("sum hist: ", sum(hist))
-			print("normFactor: ", self.polymerLength * self.numPolymers)
-			#first normalization step
-			hist = hist / (self.totalMonomers * self.histogramLimit)
 				#print("histafter: ", weightedHist)
+			histPlotVals = self.getHistPlotvals(histogramMonomer)
+			bins = histPlotVals[0]
+			hist = histPlotVals[1]
+			histogramData = histPlotVals[2]
 			widths = np.diff(bins)
 			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[histogramMonomer - 1])
 			#subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
@@ -1954,7 +1961,7 @@ class Application(ttk.Frame):
 			binwidth = 1
 			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
 			#first normalization step
-			hist = hist / (self.totalMonomers * self.histogramLimit)
+			hist = hist / (self.polymerLength * self.numPolymers) 
 				#print("histafter: ", weightedHist)
 			widths = np.diff(bins)
 			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[phobToShow])
@@ -2274,17 +2281,9 @@ class Application(ttk.Frame):
 			def __init__(self, name, data):
 				self.name =  name
 				self.data = data
-		histogramNumberLimit = int(self.histogramLimit * self.polymerLength)
-		binwidth = 1
+
 		for polymerID in range(1, self.numMonomers + 1):
-			data, bins = np.histogram(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit),
-				bins=range(1, max(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)) + binwidth + 1, binwidth))
-			#print(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit))
-			#print("data: ", data)
-			#print('sum: ', sum(data))
-			#print("divider: ", self.totalMonomers*self.histogramLimit)
-			#print('length: ', len(self.getHistogramData(self.polymerArray, polymerID, histogramNumberLimit)))
-			data = data / (self.polymerLength * self.numPolymers)
+			data = self.getHistPlotvals(polymerID)[1]
 			name = "Monomer %i Separation" %(polymerID)
 			currHistData = histData(name, data)
 			self.histDataList.append(currHistData)
