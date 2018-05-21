@@ -1,33 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<body>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Compositionaldrift by shinyxspoon</title>
 
-<h2>JavaScript Can Validate Input</h2>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <meta name="viewport" content="width=device-width">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+  <div>
+      <header>
+        <h1>Compositional Drift</h1>
+        <p>This program simulates RAFT polymer growth based on Mayo Lewis equation and Monte Carlo method.</p>
+         <img src="Images/Example.png" class="example-image">
+        <p><a href="https://github.com/shinyxspoon/CompositionalDrift">View the Project on GitHub <small>shinyxspoon/CompositionalDrift</small></a></p>
+        <ul>
+          <li><a href="https://github.com/shinyxspoon/CompositionalDrift/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/shinyxspoon/CompositionalDrift/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/shinyxspoon/CompositionalDrift">View On <strong>GitHub</strong></a></li>
+        </ul>
+        <p>TESTING The project is developed by <a href="https://github.com/shinyxspoon">Vincent Wu.</a><br>
+           This website is maintained by <a href="https://github.com/walterwu">Walter Wu</a>
+           and <a href="https://github.com/shinyxspoon">Vincent Wu</a></p>
+      </header>
 
-<p>Please input a number between 1 and 10:</p>
-
-<input id="numb">
-
-<button type="button" onclick="myFunction()">Submit</button>
-
-<p id="demo"></p>
-
-<script>
-function myFunction() {
-    var x, text;
-
-    // Get the value of the input field with id="numb"
-    x = document.getElementById("numb").value;
-
-    // If x is Not a Number or less than one or greater than 10
-    if (isNaN(x) || x < 1 || x > 10) {
-        text = "Input not valid";
-    } else {
-        text = "Input OK";
-    }
-    document.getElementById("demo").innerHTML = text;
-}
-</script>
-
-</body>
-</html> 
+  </div>
+  </body>
+</html>
