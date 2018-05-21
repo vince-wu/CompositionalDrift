@@ -2545,7 +2545,11 @@ class notInEuropeError(Exception):
 class phobicityNotSpecified(Exception):
 	def __init__(self, value):
 		self.value = value
+def on_closing():
+	root.quit()
+	root.destroy()
 root = Tk.Tk()
+root.protocol("WM_DELETE_WINDOW", on_closing)
 root.wm_title("Compositional Drift %s" % VERSION)
 app = Application(master = root)
 app.mainloop()
