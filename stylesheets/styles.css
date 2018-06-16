@@ -325,7 +325,24 @@ footer {
   }
 
 }
-
+.intro {
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+.inputdiv {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+.buttondiv {
+  border-radius: 5px;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
 .example-image {
   border:5px solid #000000;
   display:block;
@@ -335,4 +352,27 @@ footer {
   margin-bottom:10px;
   padding-bottom:0px;
 }
-
+input[type=text], select {
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+input[type=number], select {
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+button[type=button], select {
+    padding: 12px 30px;
+    margin: 8px 20px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}

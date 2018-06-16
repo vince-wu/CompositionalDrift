@@ -14,40 +14,129 @@
   </head>
   <body>
   <div>
-      <header>
         <h1>Compositional Drift</h1>
-        <p>This program simulates RAFT polymer growth based on Mayo Lewis equation and Monte Carlo method.</p>
-         <img src="Images/Example.png" class="example-image">
-        <p><a href="https://github.com/shinyxspoon/CompositionalDrift">View the Project on GitHub <small>shinyxspoon/CompositionalDrift</small></a></p>
-        <ul>
-          <li><a href="https://github.com/shinyxspoon/CompositionalDrift/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/shinyxspoon/CompositionalDrift/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/shinyxspoon/CompositionalDrift">View On <strong>GitHub</strong></a></li>
-        </ul>
-        <p>The project is developed by <a href="https://github.com/shinyxspoon">Vincent Wu.</a><br>
-           This website is maintained by <a href="https://github.com/walterwu">Walter Wu</a>
-           and <a href="https://github.com/shinyxspoon">Vincent Wu</a></p>
-      </header>
-
+          <div class = "i1">
+            <p>This program simulates RAFT polymer growth based on Mayo Lewis equation and Monte Carlo method.</p>
+          </div>
+          <div class = "i2">
+            <p> This program was created by Vincent Wu </p>
+          </div>
+        <!--<img src="Images/visual.png" alt="visualization of program" class="example-image">-->
+        </div>
+        <div class="inputdiv">
+          <table>
+            <tr>
+              <td>
+                <label for="totalNumMonomers">Monomer Pool Size:</label>
+              </td>
+              <td>
+                <input type="text" name="totalNumMonomers">
+              </td>
+              <td>
+                <label for="graph1Type">Graph 1 Type:</label>
+              </td>
+              <td>
+                <select name="graph1Type">
+                  <option>Monomer Occurences</option>
+                  <option>Percentage Monomer</option>
+                  <option>Monomer Separation</option>
+                  <option>Polymer Compositions</option>
+                  <option>Hydrophillic Blocks</option>
+                  <option>Hydrophobic Blocks</option>
+                </select>
+              </td>
+              <td>
+                <label for="monomer1Ratio">Monomer 1 Ratio:</label>
+              </td>
+              <td>
+                <input type="text" name="monomer1Ratio">
+              </td>
+            <tr>
+              <td>
+                <label for="mRatio">RAFT to Monomers Ratio:</label>
+              </td>
+              <td>
+                <input type="text" name="mRatio">
+              </td>
+              <td>
+                <label for="graph1Type">Graph 2 Type:</label>
+              </td>
+              <td>
+                <select name="graph2Type">
+                  <option>Monomer Occurences</option>
+                  <option>Percentage Monomer</option>
+                  <option>Monomer Separation</option>
+                  <option>Polymer Compositions</option>
+                  <option>Hydrophillic Blocks</option>
+                  <option>Hydrophobic Blocks</option>
+                </select>
+              </td>
+              <td>
+                <label for="monomer2Ratio">Monomer 2 Ratio:</label>
+              </td>
+              <td>
+                <input type="text" name="monomer2Ratio">
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label for="conversion">Percent Conversion:</label>
+              </td>
+              <td>
+                <input type="text" name="conversion">
+              </td>
+              <td>
+                <label for="hist2Monomer">Histogram 1 Monomer:</label>
+              </td>
+              <td>
+                <input type="number" name="hist2Monomer" min=1 max=2>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label for="numRowsToShow">Polymers to Show:</label>
+              </td>
+              <td>
+                <input type="number" name="numRowsToShow" min=8 max=12>
+              </td>
+              <td>
+                <label for="hist2Monomer">Histogram 1 Monomer:</label>
+              </td>
+              <td>
+                <input type="number" name="hist2Monomer" min=1 max=2>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div class="buttondiv">
+          <table>
+            <tr>
+              <button type="button">Simulate</button>
+              <button type="button">Update</button>
+              <button type="button">Export</button>
+              <button type="button">Options</button>
+            </tr>
+          </table>
+        </div>
   </div>
-  <div>
-    <script>
-    function myFunction() {
-        var x, text;
+  <script>
+  function generateMoreInputs() { 
+      var test = document.createElement("FORM");
+      test.setAttribute("id", "testForm");
 
-        // Get the value of the input field with id="numb"
-        x = document.getElementById("numb").value;
+      var testLabel = document.createElement("LABEL");
+      testLabel.setAttribute("for", "testForm");
+      testLabel.innerHTML = "Test: ";
 
-        // If x is Not a Number or less than one or greater than 10
-        if (isNaN(x) || x < 1 || x > 10) {
-            text = "Input not valid";
-        } else {
-            text = "Input OK";
-        }
-        document.getElementById("demo").innerHTML = text;
-    }
-    </script>
-  </div>
+      var testElements = document.createElement("INPUT");
+      testElements.setAttribute("type", "text");
+
+      test.appendChild(testLabel);
+      test.appendChild(testElements);
+      var element = document.getElementById("inputs");
+      element.appendChild(test);
+  }
+  </script>
     <!--<script src="javascripts/scale.fix.js"></script> -->
   </body>
 </html>
