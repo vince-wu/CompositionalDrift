@@ -7,10 +7,9 @@
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/github-light.css">
+    <link href="scripts">
     <meta name="viewport" content="width=device-width">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <script type="text/javascript" src="scripts/simulate.js"></script>
   </head>
   <body>
   <div>
@@ -24,97 +23,111 @@
         <!--<img src="Images/visual.png" alt="visualization of program" class="example-image">-->
         </div>
         <div class="inputdiv">
-          <table>
-            <tr>
-              <td>
-                <label for="totalNumMonomers">Monomer Pool Size:</label>
-              </td>
-              <td>
-                <input type="text" name="totalNumMonomers">
-              </td>
-              <td>
-                <label for="graph1Type">Graph 1 Type:</label>
-              </td>
-              <td>
-                <select name="graph1Type">
-                  <option>Monomer Occurences</option>
-                  <option>Percentage Monomer</option>
-                  <option>Monomer Separation</option>
-                  <option>Polymer Compositions</option>
-                  <option>Hydrophillic Blocks</option>
-                  <option>Hydrophobic Blocks</option>
-                </select>
-              </td>
-              <td>
-                <label for="monomer1Ratio">Monomer 1 Ratio:</label>
-              </td>
-              <td>
-                <input type="text" name="monomer1Ratio">
-              </td>
-            <tr>
-              <td>
-                <label for="mRatio">RAFT to Monomers Ratio:</label>
-              </td>
-              <td>
-                <input type="text" name="mRatio">
-              </td>
-              <td>
-                <label for="graph1Type">Graph 2 Type:</label>
-              </td>
-              <td>
-                <select name="graph2Type">
-                  <option>Monomer Occurences</option>
-                  <option>Percentage Monomer</option>
-                  <option>Monomer Separation</option>
-                  <option>Polymer Compositions</option>
-                  <option>Hydrophillic Blocks</option>
-                  <option>Hydrophobic Blocks</option>
-                </select>
-              </td>
-              <td>
-                <label for="monomer2Ratio">Monomer 2 Ratio:</label>
-              </td>
-              <td>
-                <input type="text" name="monomer2Ratio">
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label for="conversion">Percent Conversion:</label>
-              </td>
-              <td>
-                <input type="text" name="conversion">
-              </td>
-              <td>
-                <label for="hist2Monomer">Histogram 1 Monomer:</label>
-              </td>
-              <td>
-                <input type="number" name="hist2Monomer" min=1 max=2>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <label for="numRowsToShow">Polymers to Show:</label>
-              </td>
-              <td>
-                <input type="number" name="numRowsToShow" min=8 max=12>
-              </td>
-              <td>
-                <label for="hist2Monomer">Histogram 1 Monomer:</label>
-              </td>
-              <td>
-                <input type="number" name="hist2Monomer" min=1 max=2>
-              </td>
-            </tr>
-          </table>
+          <form id=inputForm>
+            <table>
+              <tr>
+                <td>
+                  <label for="totalNumMonomers">Monomer Pool Size:</label>
+                </td>
+                <td>
+                  <input type="number" id="totalNumMonomers" value=200000>
+                </td>
+                <td>
+                  <label for="graph1Type">Graph 1 Type:</label>
+                </td>
+                <td>
+                  <select id="graph1Type">
+                    <option>Monomer Occurences</option>
+                    <option>Percentage Monomer</option>
+                    <option>Monomer Separation</option>
+                    <option>Polymer Compositions</option>
+                    <option>Hydrophillic Blocks</option>
+                    <option>Hydrophobic Blocks</option>
+                  </select>
+                </td>
+                <td>
+                  <label for="monomer1Ratio">Monomer 1 Ratio:</label>
+                </td>
+                <td>
+                  <input type="number" id="monomer1Ratio" value = 1>
+                </td>
+                <td>
+                  <label for="monomer1RR">Reactivity Ratio 1</label>
+                </td>
+                <td>
+                  <input type="number" id="monomer1RR" value=1>
+                </td>
+              <tr>
+                <td>
+                  <label for="mRatio">RAFT to Monomers Ratio:</label>
+                </td>
+                <td>
+                  <input type="number" id="mRatio" value=100>
+                </td>
+                <td>
+                  <label for="graph1Type">Graph 2 Type:</label>
+                </td>
+                <td>
+                    <select id="graph2Type">
+                      <option>Monomer Occurences</option>
+                      <option>Percentage Monomer</option>
+                      <option>Monomer Separation</option>
+                      <option>Polymer Compositions</option>
+                      <option>Hydrophillic Blocks</option>
+                      <option>Hydrophobic Blocks</option>
+                    </select>
+                </td>
+                <td>
+                  <label for="monomer2Ratio">Monomer 2 Ratio:</label>
+                </td>
+                <td>
+                  <input type="number" id="monomer2Ratio" value=1>
+                </td>
+                <td>
+                  <label for="monomer2RR">Reactivity Ratio 2</label>
+                </td>
+                <td>
+                  <input type="number" id="monomer2RR" value=1>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="conversion">Percent Conversion:</label>
+                </td>
+                <td>
+                  <input type="number" id="conversion" value=100>
+                </td>
+                <td>
+                  <label for="hist1Monomer">Histogram 1 Monomer:</label>
+                </td>
+                <td>
+                  <input type="number" id="hist1Monomer" min=1 max=2 value=1>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="numRowsToShow">Polymers to Show:</label>
+                </td>
+                <td>
+                  <input type="number" id="numRowsToShow" min=8 max=12 value=8>
+                </td>
+                <td>
+                  <label for="hist2Monomer">Histogram 2 Monomer:</label>
+                </td>
+                <td>
+                  <input type="number" id="hist2Monomer" min=1 max=2 value=2>
+                </td>
+              </tr>
+            </table>
+          </form>
         </div>
         <div class="buttondiv">
           <table>
             <tr>
-              <button type="button">Simulate</button>
-              <button type="button">Update</button>
-              <button type="button">Export</button>
-              <button type="button">Options</button>
+              <input type="button" value="Simulate" onclick="simulate()"></button>
+              <input type="button" value="Update"></button>
+              <input type="button" value="Export"></button>
+              <input type="button" value="Options"></button>
             </tr>
           </table>
         </div>
@@ -136,6 +149,7 @@
       var element = document.getElementById("inputs");
       element.appendChild(test);
   }
+
   </script>
     <!--<script src="javascripts/scale.fix.js"></script> -->
   </body>

@@ -144,7 +144,7 @@ table {
 
 th, td {
   text-align:left;
-  padding:5px 10px;
+  padding:5px 5px;
   border-bottom:1px solid #e5e5e5;
 }
 
@@ -343,6 +343,14 @@ footer {
   background-color: #f2f2f2;
   padding: 20px;
 }
+.custom-select {
+  padding: 12px 30px;
+  margin: 8px 20px;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
 .example-image {
   border:5px solid #000000;
   display:block;
@@ -361,18 +369,28 @@ input[type=text], select {
     box-sizing: border-box;
 }
 input[type=number], select {
-    padding: 12px 20px;
-    margin: 8px 0;
+    padding: 5px 5px;
+    margin: 5px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    max-width:75px;
+}
+input[type=button], select {
+    padding: 5px 30px;
+    margin: 5px 20px;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
 }
-button[type=button], select {
-    padding: 12px 30px;
-    margin: 8px 20px;
+select {
+    padding: 5px 5px;
+    margin: 5px 0px;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;
     box-sizing: border-box;
+    min-width: 165px;
 }
