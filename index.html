@@ -9,7 +9,13 @@
     <link rel="stylesheet" href="stylesheets/github-light.css">
     <link href="scripts">
     <meta name="viewport" content="width=device-width">
-    <script type="text/javascript" src="scripts/simulate.js"></script>
+    <script src="scripts/simulate.js"></script>
+    <script src="amcharts/amcharts.js"></script>
+    <script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+    <script src="https://www.amcharts.com/lib/3/xy.js"></script>
+    <script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+    <script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+    <script src="amcharts/serial.js"></script>
   </head>
   <body>
   <div>
@@ -17,10 +23,9 @@
           <div class = "i1">
             <p>This program simulates RAFT polymer growth based on Mayo Lewis equation and Monte Carlo method.</p>
           </div>
-          <div class = "i2">
-            <p> This program was created by Vincent Wu </p>
-          </div>
         <!--<img src="Images/visual.png" alt="visualization of program" class="example-image">-->
+        <div id="chartdiv" style="width: 100%; height: 400px;"></div>
+        <script>show()</script>
         </div>
         <div class="inputdiv">
           <form id=inputForm>
@@ -125,7 +130,7 @@
           <table>
             <tr>
               <input type="button" value="Simulate" onclick="simulate()"></button>
-              <input type="button" value="Update"></button>
+              <input type="button" value="Update" onclick="show()"></button>
               <input type="button" value="Export"></button>
               <input type="button" value="Options"></button>
             </tr>
