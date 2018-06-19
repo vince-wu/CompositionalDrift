@@ -219,139 +219,7 @@ function convertToChartData(fullList, numUniqueMonomers, polymerLength) {
 	}
 	return chartData;
 }
-function show() {
-  var chartData = [{
-    "x1": 1,
-    "y1": 0.5,
-    "x2": 1,
-    "y2": 2.2
-  }, {
-    "x1": 2,
-    "y1": 1.3,
-    "x2": 2,
-    "y2": 4.9
-  }, {
-    "x1": 3,
-    "y1": 2.3,
-    "x2": 3,
-    "y2": 5.1
-  }, {
-    "x1": 4,
-    "y1": 2.8,
-    "x2": 4,
-    "y2": 5.3
-  }, {
-    "x1": 5,
-    "y1": 3.5,
-    "x2": 5,
-    "y2": 6.1
-  }, {
-    "x1": 6,
-    "y1": 5.1,
-    "x2": 6,
-    "y2": 8.3
-  }, {
-    "x1": 7,
-    "y1": 6.7,
-    "x2": 7,
-    "y2": 10.5
-  }, {
-    "x1": 8,
-    "y1": 8,
-    "x2": 8,
-    "y2": 12.3
-  }, {
-    "x1": 9,
-    "y1": 8.9,
-    "x2": 9,
-    "y2": 14.5
-  }, {
-    "x1": 10,
-    "y1": 9.7,
-    "x2": 10,
-    "y2": 15
-  }, {
-    "x1": 11,
-    "y1": 10.4,
-    "x2": 11,
-    "y2": 18.8
-  }, {
-    "x1": 12,
-    "y1": 11.7,
-    "x2": 12,
-    "y2": 19
-  }];
-  //console.log("Original chartData: ", chartData);
 
-  // XY CHART
-  chart = new AmCharts.AmXYChart();
-
-  chart.dataProvider = chartData;
-  chart.startDuration = 1;
-
-  // AXES
-  // X
-  var xAxis = new AmCharts.ValueAxis();
-  xAxis.title = "X Axis";
-  xAxis.position = "bottom";
-  xAxis.dashLength = 1;
-  xAxis.axisAlpha = 0;
-  xAxis.autoGridCount = true;
-  chart.addValueAxis(xAxis);
-
-  // Y
-  var yAxis = new AmCharts.ValueAxis();
-  yAxis.position = "left";
-  yAxis.title = "Y Axis";
-  yAxis.dashLength = 1;
-  yAxis.axisAlpha = 0;
-  yAxis.autoGridCount = true;
-  chart.addValueAxis(yAxis);
-
-  // GRAPHS
-  // triangles up
-  var graph1 = new AmCharts.AmGraph();
-  graph1.lineColor = "#FF6600";
-  graph1.balloonText = "x:[[x]] y:[[y]]";
-  graph1.xField = "x1";
-  graph1.yField = "y1";
-  graph1.lineAlpha = 0;
-  graph1.bullet = "triangleUp";
-  graph1.legendValueText = "Monomer 1";
-  chart.addGraph(graph1);
-
-  // triangles down
-  var graph2 = new AmCharts.AmGraph();
-  graph2.lineColor = "#FCD202";
-  graph2.balloonText = "x:[[x]] y:[[y]]";
-  graph2.xField = "x2";
-  graph2.yField = "y2";
-  graph2.lineAlpha = 0;
-  graph2.bullet = "triangleDown";
-  graph1.legendValueText = "Monomer 2";
-  chart.addGraph(graph2);
-
-  //LEGEND
-  var legend = new AmCharts.AmLegend();
-  legend.position = "bottom";
-  legend.align = "center";
-  legend.markerType = "square";
-  legend.useGraphSettings = true;
-  //chart.addLegend(legend);
-
-  // CURSOR
-  var chartCursor = new AmCharts.ChartCursor();
-  chart.addChartCursor(chartCursor);
-
-  // SCROLLBAR
-
-  var chartScrollbar = new AmCharts.ChartScrollbar();
-  chartScrollbar.scrollbarHeight = 5;
-  chartScrollbar.offset = 15
-  chart.addChartScrollbar(chartScrollbar);
-  // WRITE
-  chart.write("chartdiv");
-}
 function switchCharts(chart) {
 	document.getElementById("chartdiv").style.display = "none";
 	document.getElementById("chartdiv2").style.display = "block";
@@ -398,8 +266,74 @@ function createHistChart(chartData, monomerID) {
 	chart2.addGraph(graph);
 	chart2.write("chartdiv2");
 }
+function createXYGraph() {
+	colorArray = ["#FF6600", "#FCD202", "#B0DE09", "#0D8ECF", "#2A0CD0", 
+	"#CD0D74", "#CC0000", "#00CC00", "#0000CC", "#DDDDDD", "#999999", "#333333", "#990000"];
+	var chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
+	// XY CHART
+	chart = new AmCharts.AmXYChart();
+	chart.dataProvider = chartData;
+	chart.startDuration = 0;
+	// AXES
+	// X
+	var xAxis = new AmCharts.ValueAxis();
+	xAxis.title = "X Axis";
+	xAxis.position = "bottom";
+	xAxis.dashLength = 1;
+	xAxis.axisAlpha = 0;
+	xAxis.autoGridCount = true;
+	chart.addValueAxis(xAxis);
+
+	// Y
+	var yAxis = new AmCharts.ValueAxis();
+	yAxis.position = "left";
+	yAxis.title = "Y Axis";
+	yAxis.dashLength = 1;
+	yAxis.axisAlpha = 0;
+	yAxis.autoGridCount = true;
+	chart.addValueAxis(yAxis);
+
+	//Remove all old graphs
+	var graphList = chart.graphs;
+	for (var i = 0; i < graphList.length; i++) {
+		chart.removeGraph(graphList[i]);
+	}
+	//Add graphs depending on number of unique monomers
+	for (var graphNumber = 1; graphNumber <= numUniqueMonomers; graphNumber++) {
+		var graph = new AmCharts.AmGraph();
+	  	graph.lineColor = colorArray[graphNumber - 1];
+		graph.balloonText = "x:[[x]] y:[[y]]";
+		graph.xField = "x" + graphNumber;
+		graph.yField = "y" + graphNumber;
+		graph.lineAlpha = 0;
+		graph.bullet = "triangleDown";
+		chart.addGraph(graph);
+	}
+	//LEGEND
+	var legend = new AmCharts.AmLegend();
+	legend.position = "right";
+	legend.align = "center";
+	legend.markerType = "square";
+	legend.useGraphSettings = true;
+	chart.addLegend(legend);
+
+	// CURSOR
+	var chartCursor = new AmCharts.ChartCursor();
+	chart.addChartCursor(chartCursor);
+
+	// SCROLLBAR
+
+	var chartScrollbar = new AmCharts.ChartScrollbar();
+	chartScrollbar.scrollbarHeight = 5;
+	chartScrollbar.offset = 15
+	chart.addChartScrollbar(chartScrollbar);
+	// WRITE
+	chart.write("chartdiv");
+
+}
 function setGraph(type) {
 	//console.log("type: ", type);
+	createXYGraph();
 	var chartData;
 	switch (type) {
 		case "Monomer Occurences":
@@ -411,6 +345,9 @@ function setGraph(type) {
 			chart.valueAxes[0].maximum = polymerLength;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
+			for (var i = 0; i < numUniqueMonomers; i++) {
+				chart.graphs[i].title = "Monomer " + (i + 1);
+			}
 			chart.validateData();
 			break;
 		case "Percentage Monomer":
@@ -422,6 +359,9 @@ function setGraph(type) {
 			chart.valueAxes[0].maximum = polymerLength;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
+			for (var i = 0; i < numUniqueMonomers; i++) {
+				chart.graphs[i].title = "Monomer " + (i + 1);
+			}
 			chart.validateData();
 			break;
 		case "Polymer Compositions":
@@ -433,6 +373,9 @@ function setGraph(type) {
 			chart.valueAxes[0].maximum = polymerLength;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
+			for (var i = 0; i < numUniqueMonomers; i++) {
+				chart.graphs[i].title = "Monomer " + (i + 1);
+			}
 			chart.validateData();
 			break;
 		case "Monomer Separation":
@@ -458,10 +401,10 @@ function setHistGraph(monomerID) {
 	keyList = Object.keys(obj);
 	chart2.categoryField = keyList[0];
 	chart2.graphs[0].valueField = keyList[1];
-	console.log("keyList[0]: ", keyList[0]);
-	console.log("chartData: ", chartData);
 	chart2.dataProvider = chartData;
-	//chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+	chart2.graphs[0].lineColor = colorArray[monomerID - 1];
+	chart2.graphs[0].fillColors = colorArray[monomerID - 1];
 	chart2.validateData();
 	chart2.validateNow();
 }
