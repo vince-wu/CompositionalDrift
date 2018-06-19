@@ -7,7 +7,6 @@ function simulate() {
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
 	var graphTypeObj = document.getElementById("graph1Type");
 	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
-	var hist1Monomer = parseInt(document.getElementById("hist1Monomer").value);
 	var monomer1Ratio = parseFloat(document.getElementById("monomer1Ratio").value);
 	var monomer2Ratio = parseFloat(document.getElementById("monomer2Ratio").value);
 	var monomer1RR = parseFloat(document.getElementById("monomer1RR").value);
@@ -318,6 +317,7 @@ function show() {
   graph1.yField = "y1";
   graph1.lineAlpha = 0;
   graph1.bullet = "triangleUp";
+  graph1.legendValueText = "Monomer 1";
   chart.addGraph(graph1);
 
   // triangles down
@@ -328,7 +328,16 @@ function show() {
   graph2.yField = "y2";
   graph2.lineAlpha = 0;
   graph2.bullet = "triangleDown";
+  graph1.legendValueText = "Monomer 2";
   chart.addGraph(graph2);
+
+  //LEGEND
+  var legend = new AmCharts.AmLegend();
+  legend.position = "bottom";
+  legend.align = "center";
+  legend.markerType = "square";
+  legend.useGraphSettings = true;
+  //chart.addLegend(legend);
 
   // CURSOR
   var chartCursor = new AmCharts.ChartCursor();
@@ -349,21 +358,36 @@ function switchCharts(chart) {
 	chart.invalidateSize();
 	chart.animateAgain();
 }
-function createHistChart(chartData) {
-	var chart = new AmCharts.AmSerialChart();
+function createHistChart(chartData, monomerID) {
+	chart2 = new AmCharts.AmSerialChart();
 	var obj = chartData[0];
 	keyList = Object.keys(obj);
 	console.log("keyList: ", keyList);
 	//Histogram
-	chart.dataProvider = chartData;
-	chart.categoryField = keyList[0];
-	chart.startDuration = 1;
-	chart.sequencedAnimation = false; 
+	chart2.dataProvider = chartData;
+	chart2.categoryField = keyList[0];
+	chart2.startDuration = 1;
+	chart2.sequencedAnimation = false; 
 
 	//Value Axis
 	var valueAxis = new AmCharts.ValueAxis();
+	valueAxis.position = "bottom";
 	valueAxis.minimum = 0;
-	chart.addValueAxis(valueAxis);
+	valueAxis.title = "Normalized Separation";
+	chart2.addValueAxis(valueAxis);
+
+	//X Axis
+
+	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+
+	//LEGEND
+
+	var legend = new AmCharts.AmLegend();
+	legend.position = "bottom";
+	legend.align = "center";
+	legend.markerType = "square";
+	legend.useGraphSettings = true;
+	//chart2.addLegend(legend);
 
 	//Graph
 	var graph = new AmCharts.AmGraph();
@@ -371,44 +395,75 @@ function createHistChart(chartData) {
 	graph.fillAlphas = 1;
 	graph.valueField = keyList[1];
 	graph.balloonText = "[[value]]";
-	chart.addGraph(graph);
-	chart.write("chartdiv2");
-	return chart;
+	chart2.addGraph(graph);
+	chart2.write("chartdiv2");
 }
 function setGraph(type) {
 	//console.log("type: ", type);
 	var chartData;
 	switch (type) {
 		case "Monomer Occurences":
-			console.log("got here 3");
 			chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
 			chart.dataProvider = chartData;
+			chart.valueAxes[0].title = "Monomer Index";
+			chart.valueAxes[1].title = "Monomer Occurence";
+			chart.valueAxes[0].minimum = 0;
+			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[1].minimum = 0;
+			chart.valueAxes[1].maximum = 1;
 			chart.validateData();
 			break;
 		case "Percentage Monomer":
 			chartData = getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList);
 			chart.dataProvider = chartData;
+			chart.valueAxes[0].title = "Monomer Index";
+			chart.valueAxes[1].title = "Unreacted Monomer Remaining";
+			chart.valueAxes[0].minimum = 0;
+			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[1].minimum = 0;
+			chart.valueAxes[1].maximum = 1;
 			chart.validateData();
 			break;
 		case "Polymer Compositions":
 			chartData = getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength);
 			chart.dataProvider = chartData;
+			chart.valueAxes[0].title = "Monomer index";
+			chart.valueAxes[1].title = "Instantaneous Composition of Polymer Chain";
+			chart.valueAxes[0].minimum = 0;
+			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[1].minimum = 0;
+			chart.valueAxes[1].maximum = 1;
 			chart.validateData();
 			break;
 		case "Monomer Separation":
-			chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, 1);
-			var chart2 = createHistChart(chartData);
+			var histMonomer = parseInt(document.getElementById("hist1Monomer").value);
+			chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, histMonomer);
+			createHistChart(chartData, histMonomer);
 			document.getElementById("chartdiv").style.display = "none";
 			document.getElementById("chartdiv2").style.display = "block";
 			chart2.invalidateSize();
 			chart2.animateAgain();
-			console.log("got here2");
 			return;
 	}
 	document.getElementById("chartdiv2").style.display = "none";
 	document.getElementById("chartdiv").style.display = "block";
 	console.log("got here");
 	chart.invalidateSize();
+}
+function setHistGraph(monomerID) {
+	monomerID = parseInt(monomerID);
+	console.log("monomerID: ", monomerID);
+	var chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID);
+	var obj = chartData[0];
+	keyList = Object.keys(obj);
+	chart2.categoryField = keyList[0];
+	chart2.graphs[0].valueField = keyList[1];
+	console.log("keyList[0]: ", keyList[0]);
+	console.log("chartData: ", chartData);
+	chart2.dataProvider = chartData;
+	//chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+	chart2.validateData();
+	chart2.validateNow();
 }
 //Creates an array from [1, 2, 3,......, N]
 function createRangeArray(length) {

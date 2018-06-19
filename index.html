@@ -39,7 +39,7 @@
                   <input type="number" id="totalNumMonomers" value=200000>
                 </td>
                 <td>
-                  <label for="graph1Type">Graph 1 Type:</label>
+                  <label for="graph1Type">Graph Type:</label>
                 </td>
                 <td>
                   <select id="graph1Type" onchange="setGraph(this.options[this.selectedIndex].value)">
@@ -69,10 +69,10 @@
                   <input type="number" id="mRatio" value=100>
                 </td>
                 <td>
-                  <label for="hist1Monomer">Histogram 1 Monomer:</label>
+                  <label for="hist1Monomer">Histogram Monomer:</label>
                 </td>
                 <td>
-                  <input type="number" id="hist1Monomer" min=1 max=2 value=1>
+                  <input type="number" id="hist1Monomer" min=1 max=2 value=1 onchange="setHistGraph(this.value)">
                 </td>
                 <td>
                   <label for="monomer2Ratio">Monomer 2 Ratio:</label>
