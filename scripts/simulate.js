@@ -1,34 +1,29 @@
-function test() {
-	x = document.getElementById("totalNumMonomers").value
-	alert(x);
-}
 function simulate() {
 	//Get all relevant inputs
-	var numUniqueMonomers = 2
+	numUniqueMonomers = 2
 	var totalNumMonomers = parseInt(document.getElementById("totalNumMonomers").value);
 	var mRatio = parseInt(document.getElementById("mRatio").value);
 	var conversion = parseInt(document.getElementById("conversion").value);
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
-	var graph1TypeObj = document.getElementById("graph1Type");
-	var graph2TypeObj = document.getElementById("graph2Type");
-	var graph1Type = graph1TypeObj.options[graph1TypeObj.selectedIndex].value;
-	var graph2Type = graph2TypeObj.options[graph2TypeObj.selectedIndex].value;
+	var graphTypeObj = document.getElementById("graph1Type");
+	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
 	var hist1Monomer = parseInt(document.getElementById("hist1Monomer").value);
-	var hist2Monomer = parseInt(document.getElementById("hist2Monomer").value);
 	var monomer1Ratio = parseFloat(document.getElementById("monomer1Ratio").value);
 	var monomer2Ratio = parseFloat(document.getElementById("monomer2Ratio").value);
 	var monomer1RR = parseFloat(document.getElementById("monomer1RR").value);
 	var monomer2RR = parseFloat(document.getElementById("monomer2RR").value);
 	//Initial variable calculations
 	console.log("Type of monomer1Ratio: ", typeof(monomer1Ratio));
-	var polymerLength = Math.floor(mRatio * conversion / 100);
+	polymerLength = Math.floor(mRatio * conversion / 100);
 	var numPolymers = Math.floor(totalNumMonomers / mRatio);
 	var monomerRatioList = [monomer1Ratio, monomer2Ratio];
 	var rrList = [[monomer1RR, 1], [1, monomer2RR]];
 	var monomerAmountsList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
-	console.log(monomerAmountsList);
+	initialMonomerAmountList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
+	console.log("initialMonomerAmountList1: ", initialMonomerAmountList);
+	//console.log(monomerAmountsList);
 	//Initiate chains, all polymer chains are represented as arrays and stored in another array, polymerArray
-	var polymerArray = [];
+	polymerArray = [];
 	var currNumPolymers;
 	for (currNumPolymers = 0; currNumPolymers < numPolymers; currNumPolymers++) {
 		var initChoices = [];
@@ -85,11 +80,7 @@ function simulate() {
 			monomerAmountsList[nextMonomer - 1]--;
 		}
 	}
-	//console.log("final polymerArray: ", polymerArray);
-	var chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
-	updateChart(chartData);
-	console.log("chartData: ", chartData);
-
+	setGraph(graphType);
 }
 function updateChart(chartData) {
 	chart.dataProvider = chartData;
@@ -126,27 +117,106 @@ function getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength) {
 		var xyDataPair = [createRangeArray(polymerLength), singleCompositionList];
 		fullCompositionList.push(xyDataPair);
 	}
+	chartData = convertToChartData(fullCompositionList, numUniqueMonomers, polymerLength);
+	return chartData;
+}
+function getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList) {
+	var fullPercentageList = [];
+	for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
+		var singlePercentageList = [];
+		var monomerRemaining = initialMonomerAmountList[monomerID -1];
+		for (var positionIndex = 0; positionIndex < polymerLength; positionIndex++) {
+			for (var i = 0; i < polymerArray.length; i++) {
+				polymer = polymerArray[i];
+				if (polymer[positionIndex] == monomerID) {
+					monomerRemaining--;
+				}
+			}
+			//console.log("initialMonomerAmountList: ", initialMonomerAmountList);
+			var monomerPercentage = monomerRemaining / initialMonomerAmountList[monomerID -1];
+			singlePercentageList.push(monomerPercentage);
+		}
+		var xyDataPair = [createRangeArray(polymerLength), singlePercentageList];
+		fullPercentageList.push(xyDataPair);
+	}
+	chartData = convertToChartData(fullPercentageList, numUniqueMonomers, polymerLength);
+	return chartData;
+}
+function getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID){
+	//console.log("monomerID: ", monomerID);
+	//console.log("typeof monomerID: ", typeof(monomerID));
+	var fullSeparationData = new Array(polymerLength + 1).fill(0)
+	var largestBlock = 0;
+	for (var i = 0; i < polymerArray.length; i++) {
+		polymer = polymerArray[i];
+		var numConsecutive = 0;
+		for (var positionIndex = 0; positionIndex < polymerLength; positionIndex++) {
+			//console.log("numConsecutive: ", numConsecutive);
+			currMonomerID = polymer[positionIndex];
+			//console.log("currMonomerID: ", currMonomerID);
+			if (currMonomerID != monomerID && numConsecutive > 0) {
+				fullSeparationData[numConsecutive] += numConsecutive;
+				if (numConsecutive > largestBlock) {
+					largestBlock = numConsecutive;
+				}
+				numConsecutive = 0;
+			}
+			if (currMonomerID == monomerID) {
+				numConsecutive += 1;
+			}
+			if (positionIndex == polymerLength - 1) {
+				if (numConsecutive != 0) {
+					fullSeparationData[numConsecutive] += numConsecutive;
+				}
+			}
+		}
+	}
+	console.log("largestBlock: ", largestBlock);
+	fullSeparationData = fullSeparationData.slice(0, largestBlock + 2);
 	var chartData = [];
+	for (var blockSize = 0; blockSize < fullSeparationData.length; blockSize++) {
+		var obj = {};
+		var xID = "blockSize" + monomerID;
+		var xCounts = "counts" + monomerID;
+		obj[xID] = blockSize;
+		obj[xCounts] = fullSeparationData[blockSize];
+		chartData.push(obj);
+	}
+	return chartData;		
+}
+function getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength) {
+	var fullCompositionList = [];
+	for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
+		var singleCompositionList = [];
+		var totalMonomerCount = 0;
+		for (var positionIndex = 0; positionIndex < polymerLength; positionIndex++) {
+			for (var i = 0; i < polymerArray.length; i++) {
+				polymer = polymerArray[i];
+				if (polymer[positionIndex] == monomerID) {
+					totalMonomerCount++;
+				}
+			}
+			var polymerComposition = totalMonomerCount / (polymerArray.length * (positionIndex + 1));
+			singleCompositionList.push(polymerComposition);
+		}
+		var xyDataPair = [createRangeArray(polymerLength), singleCompositionList];
+		fullCompositionList.push(xyDataPair);
+	}
+	chartData = convertToChartData(fullCompositionList, numUniqueMonomers, polymerLength);
+	return chartData;
+}
+function convertToChartData(fullList, numUniqueMonomers, polymerLength) {
+	chartData = [];
 	for (var i = 0; i <= polymerLength; i++) {
 		var obj = {};
 		for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
 			var xID = "x" + monomerID;
 			var yID = "y" + monomerID;
-			console.log("xID: ", xID);
-			obj[xID] = fullCompositionList[monomerID - 1][0][i];
-			obj[yID] = fullCompositionList[monomerID - 1][1][i];
+			//console.log("xID: ", xID);
+			obj[xID] = fullList[monomerID - 1][0][i];
+			obj[yID] = fullList[monomerID - 1][1][i];
 		}
 		chartData.push(obj);
-	}
-	return chartData;
-}
-function convertToAmChartData(x, y, id) {
-	var chartData = [];
-	for( var i = 0; i < x.length; i++ ) {
-	  chartData.push( {
-	    "x" : x[ i ],
-	    "y" : y[ i ]
-	  } )
 	}
 	return chartData;
 }
@@ -212,7 +282,7 @@ function show() {
     "x2": 12,
     "y2": 19
   }];
-  console.log("Original chartData: ", chartData);
+  //console.log("Original chartData: ", chartData);
 
   // XY CHART
   chart = new AmCharts.AmXYChart();
@@ -260,24 +330,6 @@ function show() {
   graph2.bullet = "triangleDown";
   chart.addGraph(graph2);
 
-  // first trend line
-  var trendLine = new AmCharts.TrendLine();
-  trendLine.lineColor = "#FF6600";
-  trendLine.initialXValue = 1;
-  trendLine.initialValue = 2;
-  trendLine.finalXValue = 12;
-  trendLine.finalValue = 11;
-  chart.addTrendLine(trendLine);
-
-  // second trend line
-  trendLine = new AmCharts.TrendLine();
-  trendLine.lineColor = "#FCD202";
-  trendLine.initialXValue = 1;
-  trendLine.initialValue = 1;
-  trendLine.finalXValue = 12;
-  trendLine.finalValue = 19;
-  chart.addTrendLine(trendLine);
-
   // CURSOR
   var chartCursor = new AmCharts.ChartCursor();
   chart.addChartCursor(chartCursor);
@@ -290,6 +342,73 @@ function show() {
   chart.addChartScrollbar(chartScrollbar);
   // WRITE
   chart.write("chartdiv");
+}
+function switchCharts(chart) {
+	document.getElementById("chartdiv").style.display = "none";
+	document.getElementById("chartdiv2").style.display = "block";
+	chart.invalidateSize();
+	chart.animateAgain();
+}
+function createHistChart(chartData) {
+	var chart = new AmCharts.AmSerialChart();
+	var obj = chartData[0];
+	keyList = Object.keys(obj);
+	console.log("keyList: ", keyList);
+	//Histogram
+	chart.dataProvider = chartData;
+	chart.categoryField = keyList[0];
+	chart.startDuration = 1;
+	chart.sequencedAnimation = false; 
+
+	//Value Axis
+	var valueAxis = new AmCharts.ValueAxis();
+	valueAxis.minimum = 0;
+	chart.addValueAxis(valueAxis);
+
+	//Graph
+	var graph = new AmCharts.AmGraph();
+	graph.type = "column";
+	graph.fillAlphas = 1;
+	graph.valueField = keyList[1];
+	graph.balloonText = "[[value]]";
+	chart.addGraph(graph);
+	chart.write("chartdiv2");
+	return chart;
+}
+function setGraph(type) {
+	//console.log("type: ", type);
+	var chartData;
+	switch (type) {
+		case "Monomer Occurences":
+			console.log("got here 3");
+			chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
+			chart.dataProvider = chartData;
+			chart.validateData();
+			break;
+		case "Percentage Monomer":
+			chartData = getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList);
+			chart.dataProvider = chartData;
+			chart.validateData();
+			break;
+		case "Polymer Compositions":
+			chartData = getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength);
+			chart.dataProvider = chartData;
+			chart.validateData();
+			break;
+		case "Monomer Separation":
+			chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, 1);
+			var chart2 = createHistChart(chartData);
+			document.getElementById("chartdiv").style.display = "none";
+			document.getElementById("chartdiv2").style.display = "block";
+			chart2.invalidateSize();
+			chart2.animateAgain();
+			console.log("got here2");
+			return;
+	}
+	document.getElementById("chartdiv2").style.display = "none";
+	document.getElementById("chartdiv").style.display = "block";
+	console.log("got here");
+	chart.invalidateSize();
 }
 //Creates an array from [1, 2, 3,......, N]
 function createRangeArray(length) {
