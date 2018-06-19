@@ -266,31 +266,34 @@ function createHistChart(chartData, monomerID) {
 	chart2.addGraph(graph);
 	chart2.write("chartdiv2");
 }
-function createXYGraph() {
+function showDemoGraph() {
 	colorArray = ["#FF6600", "#FCD202", "#B0DE09", "#0D8ECF", "#2A0CD0", 
 	"#CD0D74", "#CC0000", "#00CC00", "#0000CC", "#DDDDDD", "#999999", "#333333", "#990000"];
-	var chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
 	// XY CHART
 	chart = new AmCharts.AmXYChart();
-	chart.dataProvider = chartData;
+	chart.dataProvider = demoData;
 	chart.startDuration = 0;
-	// AXES
-	// X
+
+	//X
 	var xAxis = new AmCharts.ValueAxis();
-	xAxis.title = "X Axis";
+	xAxis.title = "Monomer Index";
 	xAxis.position = "bottom";
 	xAxis.dashLength = 1;
 	xAxis.axisAlpha = 0;
 	xAxis.autoGridCount = true;
+	xAxis.minimum = 0;
+	xAxis.maximum = 100;
 	chart.addValueAxis(xAxis);
 
 	// Y
 	var yAxis = new AmCharts.ValueAxis();
 	yAxis.position = "left";
-	yAxis.title = "Y Axis";
+	yAxis.title = "Monomer Occurence";
 	yAxis.dashLength = 1;
 	yAxis.axisAlpha = 0;
 	yAxis.autoGridCount = true;
+	yAxis.minimum = 0;
+	yAxis.maximum = 1;
 	chart.addValueAxis(yAxis);
 
 	//Remove all old graphs
@@ -299,7 +302,7 @@ function createXYGraph() {
 		chart.removeGraph(graphList[i]);
 	}
 	//Add graphs depending on number of unique monomers
-	for (var graphNumber = 1; graphNumber <= numUniqueMonomers; graphNumber++) {
+	for (var graphNumber = 1; graphNumber <= 2; graphNumber++) {
 		var graph = new AmCharts.AmGraph();
 	  	graph.lineColor = colorArray[graphNumber - 1];
 		graph.balloonText = "x:[[x]] y:[[y]]";
@@ -307,6 +310,7 @@ function createXYGraph() {
 		graph.yField = "y" + graphNumber;
 		graph.lineAlpha = 0;
 		graph.bullet = "triangleDown";
+		graph.title = "Monomer" + graphNumber;
 		chart.addGraph(graph);
 	}
 	//LEGEND
@@ -329,7 +333,29 @@ function createXYGraph() {
 	chart.addChartScrollbar(chartScrollbar);
 	// WRITE
 	chart.write("chartdiv");
+}
+function createXYGraph() {
+	var chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
 
+	//Remove all old graphs
+	var graphList = chart.graphs;
+	//console.log("graphList.length", graphList.length);
+	for (var i = 0; i < graphList.length; i++) {
+		chart.removeGraph(graphList[i]);
+	}
+	console.log("lengthafter: ", graphList.length);
+	//Add graphs depending on number of unique monomers
+	for (var graphNumber = 1; graphNumber <= numUniqueMonomers; graphNumber++) {
+		var graph = new AmCharts.AmGraph();
+	  	graph.lineColor = colorArray[graphNumber - 1];
+		graph.balloonText = "x:[[x]] y:[[y]]";
+		graph.xField = "x" + graphNumber;
+		graph.yField = "y" + graphNumber;
+		graph.lineAlpha = 0;
+		graph.bullet = "triangleDown";
+		chart.addGraph(graph);
+	}
+	chart.removeGraph(graphList[0]);
 }
 function setGraph(type) {
 	//console.log("type: ", type);
@@ -338,6 +364,7 @@ function setGraph(type) {
 	switch (type) {
 		case "Monomer Occurences":
 			chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
+			//console.log("chartData: ", chartData);
 			chart.dataProvider = chartData;
 			chart.valueAxes[0].title = "Monomer Index";
 			chart.valueAxes[1].title = "Monomer Occurence";
@@ -390,7 +417,7 @@ function setGraph(type) {
 	}
 	document.getElementById("chartdiv2").style.display = "none";
 	document.getElementById("chartdiv").style.display = "block";
-	console.log("got here");
+	//console.log("got here");
 	chart.invalidateSize();
 }
 function setHistGraph(monomerID) {
@@ -447,3 +474,203 @@ function weightedRand(list, weight) {
      
     // end of function
 };
+demoData = 
+[{x1: 1, y1: 0.389, x2: 1, y2: 0.611},
+
+{x1: 2, y1: 0.365, x2: 2, y2: 0.635},
+
+{x1: 3, y1: 0.3755, x2: 3, y2: 0.6245},
+
+{x1: 4, y1: 0.3905, x2: 4, y2: 0.6095},
+
+{x1: 5, y1: 0.3635, x2: 5, y2: 0.6365},
+
+{x1: 6, y1: 0.3785, x2: 6, y2: 0.6215},
+
+{x1: 7, y1: 0.386, x2: 7, y2: 0.614},
+
+{x1: 8, y1: 0.371, x2: 8, y2: 0.629},
+
+{x1: 9, y1: 0.3945, x2: 9, y2: 0.6055},
+
+{x1: 10, y1: 0.3705, x2: 10, y2: 0.6295},
+
+{x1: 11, y1: 0.3985, x2: 11, y2: 0.6015},
+
+{x1: 12, y1: 0.4015, x2: 12, y2: 0.5985},
+
+{x1: 13, y1: 0.372, x2: 13, y2: 0.628},
+
+{x1: 14, y1: 0.411, x2: 14, y2: 0.589},
+
+{x1: 15, y1: 0.3755, x2: 15, y2: 0.6245},
+
+{x1: 16, y1: 0.39, x2: 16, y2: 0.61},
+
+{x1: 17, y1: 0.393, x2: 17, y2: 0.607},
+
+{x1: 18, y1: 0.393, x2: 18, y2: 0.607},
+
+{x1: 19, y1: 0.3915, x2: 19, y2: 0.6085},
+
+{x1: 20, y1: 0.386, x2: 20, y2: 0.614},
+
+{x1: 21, y1: 0.3915, x2: 21, y2: 0.6085},
+
+{x1: 22, y1: 0.4015, x2: 22, y2: 0.5985},
+
+{x1: 23, y1: 0.3855, x2: 23, y2: 0.6145},
+
+{x1: 24, y1: 0.419, x2: 24, y2: 0.581},
+
+{x1: 25, y1: 0.385, x2: 25, y2: 0.615},
+
+{x1: 26, y1: 0.4125, x2: 26, y2: 0.5875},
+
+{x1: 27, y1: 0.389, x2: 27, y2: 0.611},
+
+{x1: 28, y1: 0.399, x2: 28, y2: 0.601},
+
+{x1: 29, y1: 0.397, x2: 29, y2: 0.603},
+
+{x1: 30, y1: 0.415, x2: 30, y2: 0.585},
+
+{x1: 31, y1: 0.395, x2: 31, y2: 0.605},
+
+{x1: 32, y1: 0.4115, x2: 32, y2: 0.5885},
+
+{x1: 33, y1: 0.3905, x2: 33, y2: 0.6095},
+
+{x1: 34, y1: 0.409, x2: 34, y2: 0.591},
+
+{x1: 35, y1: 0.4045, x2: 35, y2: 0.5955},
+
+{x1: 36, y1: 0.401, x2: 36, y2: 0.599},
+
+{x1: 37, y1: 0.41, x2: 37, y2: 0.59},
+
+{x1: 38, y1: 0.43, x2: 38, y2: 0.57},
+
+{x1: 39, y1: 0.409, x2: 39, y2: 0.591},
+
+{x1: 40, y1: 0.4235, x2: 40, y2: 0.5765},
+
+{x1: 41, y1: 0.416, x2: 41, y2: 0.584},
+
+{x1: 42, y1: 0.434, x2: 42, y2: 0.566},
+
+{x1: 43, y1: 0.434, x2: 43, y2: 0.566},
+
+{x1: 44, y1: 0.427, x2: 44, y2: 0.573},
+
+{x1: 45, y1: 0.4335, x2: 45, y2: 0.5665},
+
+{x1: 46, y1: 0.4265, x2: 46, y2: 0.5735},
+
+{x1: 47, y1: 0.4335, x2: 47, y2: 0.5665},
+
+{x1: 48, y1: 0.4215, x2: 48, y2: 0.5785},
+
+{x1: 49, y1: 0.4155, x2: 49, y2: 0.5845},
+
+{x1: 50, y1: 0.446, x2: 50, y2: 0.554},
+
+{x1: 51, y1: 0.437, x2: 51, y2: 0.563},
+
+{x1: 52, y1: 0.451, x2: 52, y2: 0.549},
+
+{x1: 53, y1: 0.4515, x2: 53, y2: 0.5485},
+
+{x1: 54, y1: 0.46, x2: 54, y2: 0.54},
+
+{x1: 55, y1: 0.45, x2: 55, y2: 0.55},
+
+{x1: 56, y1: 0.43, x2: 56, y2: 0.57},
+
+{x1: 57, y1: 0.4545, x2: 57, y2: 0.5455},
+
+{x1: 58, y1: 0.458, x2: 58, y2: 0.542},
+
+{x1: 59, y1: 0.466, x2: 59, y2: 0.534},
+
+{x1: 60, y1: 0.4645, x2: 60, y2: 0.5355},
+
+{x1: 61, y1: 0.466, x2: 61, y2: 0.534},
+
+{x1: 62, y1: 0.4655, x2: 62, y2: 0.5345},
+
+{x1: 63, y1: 0.468, x2: 63, y2: 0.532},
+
+{x1: 64, y1: 0.472, x2: 64, y2: 0.528},
+
+{x1: 65, y1: 0.468, x2: 65, y2: 0.532},
+
+{x1: 66, y1: 0.483, x2: 66, y2: 0.517},
+
+{x1: 67, y1: 0.4875, x2: 67, y2: 0.5125},
+
+{x1: 68, y1: 0.499, x2: 68, y2: 0.501},
+
+{x1: 69, y1: 0.4875, x2: 69, y2: 0.5125},
+
+{x1: 70, y1: 0.505, x2: 70, y2: 0.495},
+
+{x1: 71, y1: 0.496, x2: 71, y2: 0.504},
+
+{x1: 72, y1: 0.5115, x2: 72, y2: 0.4885},
+
+{x1: 73, y1: 0.523, x2: 73, y2: 0.477},
+
+{x1: 74, y1: 0.5255, x2: 74, y2: 0.4745},
+
+{x1: 75, y1: 0.517, x2: 75, y2: 0.483},
+
+{x1: 76, y1: 0.533, x2: 76, y2: 0.467},
+
+{x1: 77, y1: 0.548, x2: 77, y2: 0.452},
+
+{x1: 78, y1: 0.551, x2: 78, y2: 0.449},
+
+{x1: 79, y1: 0.532, x2: 79, y2: 0.468},
+
+{x1: 80, y1: 0.555, x2: 80, y2: 0.445},
+
+{x1: 81, y1: 0.5555, x2: 81, y2: 0.4445},
+
+{x1: 82, y1: 0.583, x2: 82, y2: 0.417},
+
+{x1: 83, y1: 0.597, x2: 83, y2: 0.403},
+
+{x1: 84, y1: 0.5935, x2: 84, y2: 0.4065},
+
+{x1: 85, y1: 0.629, x2: 85, y2: 0.371},
+
+{x1: 86, y1: 0.627, x2: 86, y2: 0.373},
+
+{x1: 87, y1: 0.6495, x2: 87, y2: 0.3505},
+
+{x1: 88, y1: 0.663, x2: 88, y2: 0.337},
+
+{x1: 89, y1: 0.7035, x2: 89, y2: 0.2965},
+
+{x1: 90, y1: 0.702, x2: 90, y2: 0.298},
+
+{x1: 91, y1: 0.743, x2: 91, y2: 0.257},
+
+{x1: 92, y1: 0.785, x2: 92, y2: 0.215},
+
+{x1: 93, y1: 0.819, x2: 93, y2: 0.181},
+
+{x1: 94, y1: 0.8575, x2: 94, y2: 0.1425},
+
+{x1: 95, y1: 0.894, x2: 95, y2: 0.106},
+
+{x1: 96, y1: 0.947, x2: 96, y2: 0.053},
+
+{x1: 97, y1: 0.982, x2: 97, y2: 0.018},
+
+{x1: 98, y1: 0.992, x2: 98, y2: 0.008},
+
+{x1: 99, y1: 0.999, x2: 99, y2: 0.001},
+
+{x1: 100, y1: 1, x2: 100, y2: 0}]
