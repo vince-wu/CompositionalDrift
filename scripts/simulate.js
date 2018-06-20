@@ -273,6 +273,7 @@ function showDemoGraph() {
 	chart = new AmCharts.AmXYChart();
 	chart.dataProvider = demoData;
 	chart.startDuration = 0;
+	chart["export"] = {"enabled": true};
 
 	//X
 	var xAxis = new AmCharts.ValueAxis();
@@ -434,6 +435,9 @@ function setHistGraph(monomerID) {
 	chart2.graphs[0].fillColors = colorArray[monomerID - 1];
 	chart2.validateData();
 	chart2.validateNow();
+}
+function exportXLSX() {
+
 }
 //Creates an array from [1, 2, 3,......, N]
 function createRangeArray(length) {
