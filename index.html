@@ -30,13 +30,13 @@
         </div>
         <div class="inputdiv">
           <form id=inputForm>
-            <table>
-              <tr>
+            <table width ="100%" border="0" cellspacing="0" cellpadding="0">
+              <tr id="row1">
                 <td>
-                  <label for="totalNumMonomers">Monomer Pool Size:</label>
+                  <label for="numUniqueMonomers">Number of Unique Monomers:</label>
                 </td>
                 <td>
-                  <input type="number" id="totalNumMonomers" value=200000>
+                  <input type="number" id="numUniqueMonomers" value=2 min=2 onchange="createInputs(this.value)">
                 </td>
                 <td>
                   <label for="graph1Type">Graph Type:</label>
@@ -61,18 +61,18 @@
                 <td>
                   <input type="number" id="monomer1RR" value=0.2>
                 </td>
-              <tr>
+              <tr id="row2">
                 <td>
-                  <label for="mRatio">RAFT to Monomers Ratio:</label>
+                  <label for="totalNumMonomers">Monomer Pool Size:</label>
                 </td>
                 <td>
-                  <input type="number" id="mRatio" value=100>
+                  <input type="number" id="totalNumMonomers" value=200000>
                 </td>
                 <td>
                   <label for="hist1Monomer">Histogram Monomer:</label>
                 </td>
                 <td>
-                  <input type="number" id="hist1Monomer" min=1 max=2 value=1 onchange="setHistGraph(this.value)">
+                  <input type="number" id="hist1Monomer" min=1 max=2 value=1 onchange="formatHistGraph(this.value)">
                 </td>
                 <td>
                   <label for="monomer2Ratio">Monomer 2 Ratio:</label>
@@ -87,15 +87,13 @@
                   <input type="number" id="monomer2RR" value=1>
                 </td>
               </tr>
-              <tr>
+              <tr id="row3">
                 <td>
-                  <label for="conversion">Percent Conversion:</label>
+                  <label for="mRatio">RAFT to Monomers Ratio:</label>
                 </td>
                 <td>
-                  <input type="number" id="conversion" value=100>
+                  <input type="number" id="mRatio" value=100>
                 </td>
-              </tr>
-              <tr>
                 <td>
                   <label for="numRowsToShow">Polymers to Show:</label>
                 </td>
@@ -103,19 +101,27 @@
                   <input type="number" id="numRowsToShow" min=8 max=12 value=8>
                 </td>
               </tr>
+              <tr id="row4">
+                <td>
+                  <label for="conversion">Percent Conversion:</label>
+                </td>
+                <td>
+                  <input type="number" id="conversion" value=100>
+                </td>
+                <td>
+                </td>
+                <td>
+                </td>   
+              </tr>
+              <tr>
+                <td colspan="20" class = "centeredTableElement">
+                  <div class = "buttondiv">
+                    <input type="button" value="Simulate" onclick="simulate()"></button>
+                  </div>
+                </td>
+              </tr>
             </table>
           </form>
-        </div>
-        <div class="buttondiv">
-          <table>
-            <tr>
-              <input type="button" value="Simulate" onclick="simulate()"></button>
-              <input type="button" value="Update" onclick="show()"></button>
-              <input type="button" value="Export"></button>
-              <input type="button" value="Options"></button>
-            </tr>
-          </table>
-        </div>
   </div>
   <script>showDemoGraph()</script>
   <script>

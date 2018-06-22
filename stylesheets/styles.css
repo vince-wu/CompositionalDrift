@@ -334,14 +334,17 @@ footer {
   box-sizing: border-box;
 }
 .inputdiv {
+  width: 100%;
   border-radius: 5px;
   background-color: #f2f2f2;
-  padding: 20px;
+  padding: 0px 5px;
+  overflow: auto;
 }
 .buttondiv {
+  width: 100%;
   border-radius: 5px;
   background-color: #f2f2f2;
-  padding: 20px;
+  padding: 5px 5px;
 }
 .custom-select {
   padding: 12px 30px;
@@ -359,6 +362,11 @@ footer {
   height:400px;
   margin-bottom:10px;
   padding-bottom:0px;
+}
+.centeredTableElement {
+  text-align:center;
+  padding:5px 5px;
+  border-bottom:1px solid #e5e5e5;
 }
 input[type=text], select {
     padding: 12px 20px;
@@ -379,7 +387,7 @@ input[type=number], select {
 }
 input[type=button], select {
     padding: 5px 30px;
-    margin: 5px 20px;
+    margin: 0px 20px;
     display: inline-block;
     border: 1px solid #ccc;
     border-radius: 4px;

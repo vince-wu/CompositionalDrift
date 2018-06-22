@@ -1,3 +1,4 @@
+numUniqueMonomers = 2;
 function simulate() {
 	//Get all relevant inputs
 	numUniqueMonomers = 2
@@ -80,11 +81,97 @@ function simulate() {
 		}
 	}
 	setGraph(graphType);
+};
+
+function createInputs(inputNum) {
+	inputNum = parseFloat(inputNum);
+	if (inputNum < 2) {
+		return;
+	}
+	//Change Monomer Ratio inputs
+
+	for (var index = 1; index <= numUniqueMonomers; index++) {
+		var row = document.getElementById("row" + index);
+		row.deleteCell(4);
+		row.deleteCell(4);
+	}
+
+	for (var index = 1; index <= inputNum; index++) {
+		var labelElement = document.createElement("LABEL");
+		var labelID = "label" + index;
+		labelElement.setAttribute("id", labelID);
+		labelElement.innerHTML = "Monomer " + index + " Ratio:";
+		var inputElement = document.createElement("INPUT");
+		var inputID = "input" + index;
+		inputElement.setAttribute("id", inputID);
+		inputElement.setAttribute("type", "number");
+		inputElement.setAttribute("value", 1);
+		var row = document.getElementById("row" + index);
+		console.log("row: ", "row"+index);
+		if (inputNum == 4) {
+		}	
+		var labelCell = row.insertCell(4);
+		labelCell.appendChild(labelElement);
+		var inputCell = row.insertCell(5);
+		inputCell.appendChild(inputElement);
+	}
+
+	for (var index = 1; index <= numUniqueMonomers; index++) {
+			var row = document.getElementById("row" + index);
+			if (numUniqueMonomers == 2) {
+				row.deleteCell(-1);
+				row.deleteCell(-1);
+			} else {
+				for (var index2 = 1; index2 <= numUniqueMonomers; index2++) { 
+					row.deleteCell(-1);
+					row.deleteCell(-1);
+				}
+			}
+	}
+	if (inputNum > 2) {
+		for (var index = 1; index <= inputNum; index++) {
+			var row = document.getElementById("row" + index);
+			for (var index2 = 1; index2 <= inputNum; index2++) {
+				var labelElement = document.createElement("LABEL");
+				var labelText = index2 + "-" + index + " Reactivity";
+				labelElement.innerHTML = labelText;
+				var inputElement = document.createElement("INPUT");
+				var inputID = index2 + "-" + index + "reactivity";
+				inputElement.setAttribute("id", inputID);
+				inputElement.setAttribute("type", "number");
+				inputElement.setAttribute("value", 1);
+				var labelCell = row.insertCell(-1);
+				labelCell.appendChild(labelElement);
+				var inputCell = row.insertCell(-1);
+				inputCell.appendChild(inputElement);
+			}
+		}
+	}
+	if (inputNum == 2) {
+		for (var index = 1; index <= 2; index++) {
+			var row = document.getElementById("row" + index);
+			var labelElement = document.createElement("LABEL");
+			var labelText = "Monomer " + index + " Reactivity";
+			labelElement.innerHTML = labelText;
+			var inputElement = document.createElement("INPUT");
+			inputElement.setAttribute("type", "number");
+			inputElement.setAttribute("value", 1);
+			var labelCell = row.insertCell(-1);
+			labelCell.appendChild(labelElement);
+			var inputCell = row.insertCell(-1);
+			inputCell.appendChild(inputElement);
+		}
+	}
+
+
+	numUniqueMonomers = inputNum;
+
 }
-function updateChart(chartData) {
-	chart.dataProvider = chartData;
-	chart.validateData();
-}
+
+//=========================================================================================================================================
+//POLYMER ANALYSIS FUNCTIONS
+//=========================================================================================================================================
+
 function getMonomerAmounts(monomerRatioList, totalNumMonomers) {
 	var monomerAmountsList = [];
 	var totalWeight = sumArray(monomerRatioList);
@@ -96,7 +183,7 @@ function getMonomerAmounts(monomerRatioList, totalNumMonomers) {
 		monomerAmountsList.push(monomerAmount);
 	}
 	return monomerAmountsList;
-}
+};
 //Returns chartData formatted information for percent composition of each unique monomer at each index.
 function getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength) {
 	var fullCompositionList = [];
@@ -118,7 +205,7 @@ function getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength) {
 	}
 	chartData = convertToChartData(fullCompositionList, numUniqueMonomers, polymerLength);
 	return chartData;
-}
+};
 function getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList) {
 	var fullPercentageList = [];
 	for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
@@ -140,7 +227,7 @@ function getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, in
 	}
 	chartData = convertToChartData(fullPercentageList, numUniqueMonomers, polymerLength);
 	return chartData;
-}
+};
 function getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID){
 	//console.log("monomerID: ", monomerID);
 	//console.log("typeof monomerID: ", typeof(monomerID));
@@ -182,7 +269,7 @@ function getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, mo
 		chartData.push(obj);
 	}
 	return chartData;		
-}
+};
 function getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength) {
 	var fullCompositionList = [];
 	for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
@@ -203,7 +290,7 @@ function getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength) {
 	}
 	chartData = convertToChartData(fullCompositionList, numUniqueMonomers, polymerLength);
 	return chartData;
-}
+};
 function convertToChartData(fullList, numUniqueMonomers, polymerLength) {
 	chartData = [];
 	for (var i = 0; i <= polymerLength; i++) {
@@ -218,54 +305,12 @@ function convertToChartData(fullList, numUniqueMonomers, polymerLength) {
 		chartData.push(obj);
 	}
 	return chartData;
-}
+};
 
-function switchCharts(chart) {
-	document.getElementById("chartdiv").style.display = "none";
-	document.getElementById("chartdiv2").style.display = "block";
-	chart.invalidateSize();
-	chart.animateAgain();
-}
-function createHistChart(chartData, monomerID) {
-	chart2 = new AmCharts.AmSerialChart();
-	var obj = chartData[0];
-	keyList = Object.keys(obj);
-	console.log("keyList: ", keyList);
-	//Histogram
-	chart2.dataProvider = chartData;
-	chart2.categoryField = keyList[0];
-	chart2.startDuration = 1;
-	chart2.sequencedAnimation = false; 
+//==========================================================================================================================================
+//GRAPHING FUNCTIONS
+//==========================================================================================================================================
 
-	//Value Axis
-	var valueAxis = new AmCharts.ValueAxis();
-	valueAxis.position = "bottom";
-	valueAxis.minimum = 0;
-	valueAxis.title = "Normalized Separation";
-	chart2.addValueAxis(valueAxis);
-
-	//X Axis
-
-	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
-
-	//LEGEND
-
-	var legend = new AmCharts.AmLegend();
-	legend.position = "bottom";
-	legend.align = "center";
-	legend.markerType = "square";
-	legend.useGraphSettings = true;
-	//chart2.addLegend(legend);
-
-	//Graph
-	var graph = new AmCharts.AmGraph();
-	graph.type = "column";
-	graph.fillAlphas = 1;
-	graph.valueField = keyList[1];
-	graph.balloonText = "[[value]]";
-	chart2.addGraph(graph);
-	chart2.write("chartdiv2");
-}
 function showDemoGraph() {
 	colorArray = ["#FF6600", "#FCD202", "#B0DE09", "#0D8ECF", "#2A0CD0", 
 	"#CD0D74", "#CC0000", "#00CC00", "#0000CC", "#DDDDDD", "#999999", "#333333", "#990000"];
@@ -334,8 +379,50 @@ function showDemoGraph() {
 	chart.addChartScrollbar(chartScrollbar);
 	// WRITE
 	chart.write("chartdiv");
-}
-function createXYGraph() {
+};
+
+function createHistChart(chartData, monomerID) {
+	chart2 = new AmCharts.AmSerialChart();
+	var obj = chartData[0];
+	keyList = Object.keys(obj);
+	console.log("keyList: ", keyList);
+	//Histogram
+	chart2.dataProvider = chartData;
+	chart2.categoryField = keyList[0];
+	chart2.startDuration = 1;
+	chart2.sequencedAnimation = false; 
+
+	//Value Axis
+	var valueAxis = new AmCharts.ValueAxis();
+	valueAxis.position = "bottom";
+	valueAxis.minimum = 0;
+	valueAxis.title = "Normalized Separation";
+	chart2.addValueAxis(valueAxis);
+
+	//X Axis
+
+	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+
+	//LEGEND
+
+	var legend = new AmCharts.AmLegend();
+	legend.position = "bottom";
+	legend.align = "center";
+	legend.markerType = "square";
+	legend.useGraphSettings = true;
+	//chart2.addLegend(legend);
+
+	//Graph
+	var graph = new AmCharts.AmGraph();
+	graph.type = "column";
+	graph.fillAlphas = 1;
+	graph.valueField = keyList[1];
+	graph.balloonText = "[[value]]";
+	chart2.addGraph(graph);
+	chart2.write("chartdiv2");
+};
+
+function formatXYGraphs() {
 	var chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
 
 	//Remove all old graphs
@@ -357,10 +444,25 @@ function createXYGraph() {
 		chart.addGraph(graph);
 	}
 	chart.removeGraph(graphList[0]);
-}
+};
+function formatHistGraph(monomerID) {
+	monomerID = parseInt(monomerID);
+	console.log("monomerID: ", monomerID);
+	var chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID);
+	var obj = chartData[0];
+	keyList = Object.keys(obj);
+	chart2.categoryField = keyList[0];
+	chart2.graphs[0].valueField = keyList[1];
+	chart2.dataProvider = chartData;
+	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+	chart2.graphs[0].lineColor = colorArray[monomerID - 1];
+	chart2.graphs[0].fillColors = colorArray[monomerID - 1];
+	chart2.validateData();
+	chart2.validateNow();
+};
 function setGraph(type) {
 	//console.log("type: ", type);
-	createXYGraph();
+	formatXYGraphs();
 	var chartData;
 	switch (type) {
 		case "Monomer Occurences":
@@ -420,25 +522,11 @@ function setGraph(type) {
 	document.getElementById("chartdiv").style.display = "block";
 	//console.log("got here");
 	chart.invalidateSize();
-}
-function setHistGraph(monomerID) {
-	monomerID = parseInt(monomerID);
-	console.log("monomerID: ", monomerID);
-	var chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID);
-	var obj = chartData[0];
-	keyList = Object.keys(obj);
-	chart2.categoryField = keyList[0];
-	chart2.graphs[0].valueField = keyList[1];
-	chart2.dataProvider = chartData;
-	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
-	chart2.graphs[0].lineColor = colorArray[monomerID - 1];
-	chart2.graphs[0].fillColors = colorArray[monomerID - 1];
-	chart2.validateData();
-	chart2.validateNow();
-}
-function exportXLSX() {
+};
 
-}
+//================================================================================================================================
+//UTILITY FUNCTIONS
+//================================================================================================================================
 //Creates an array from [1, 2, 3,......, N]
 function createRangeArray(length) {
 	var array = [];
@@ -446,14 +534,14 @@ function createRangeArray(length) {
 		array.push(i);
 	}
 	return array;
-}
+};
 //Sums the numerical contents of an array
 function sumArray(array) {
 	return array.reduce(sum, 0)
-}
+};
 function sum(a, b) {
 	return a + b;
-}
+};
 function rand(min, max) {
     return Math.random() * (max - min) + min;
 };
@@ -475,9 +563,13 @@ function weightedRand(list, weight) {
             return list[i];
         }
     }
-     
     // end of function
 };
+
+//========================================================================================================================================
+//DATA
+//========================================================================================================================================
+
 demoData = 
 [{x1: 1, y1: 0.389, x2: 1, y2: 0.611},
 
