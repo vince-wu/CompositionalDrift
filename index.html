@@ -30,7 +30,7 @@
         </div>
         <div class="inputdiv">
           <form id=inputForm>
-            <table width ="100%" border="0" cellspacing="0" cellpadding="0">
+            <table width ="100%" border="0" cellspacing="0" cellpadding="0" id = "inputTable">
               <tr id="row1">
                 <td>
                   <label for="numUniqueMonomers">Number of Unique Monomers:</label>
@@ -72,7 +72,7 @@
                   <label for="hist1Monomer">Histogram Monomer:</label>
                 </td>
                 <td>
-                  <input type="number" id="hist1Monomer" min=1 max=2 value=1 onchange="formatHistGraph(this.value)">
+                  <input type="number" id="hist1Monomer" min=1 value=1 onchange="formatHistGraph(this.value)">
                 </td>
                 <td>
                   <label for="monomer2Ratio">Monomer 2 Ratio:</label>

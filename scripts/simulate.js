@@ -1,26 +1,26 @@
 numUniqueMonomers = 2;
 function simulate() {
 	//Get all relevant inputs
-	numUniqueMonomers = 2
+	numUniqueMonomers = parseInt(document.getElementById("numUniqueMonomers").value);
 	var totalNumMonomers = parseInt(document.getElementById("totalNumMonomers").value);
 	var mRatio = parseInt(document.getElementById("mRatio").value);
 	var conversion = parseInt(document.getElementById("conversion").value);
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
 	var graphTypeObj = document.getElementById("graph1Type");
 	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
-	var monomer1Ratio = parseFloat(document.getElementById("monomer1Ratio").value);
-	var monomer2Ratio = parseFloat(document.getElementById("monomer2Ratio").value);
-	var monomer1RR = parseFloat(document.getElementById("monomer1RR").value);
-	var monomer2RR = parseFloat(document.getElementById("monomer2RR").value);
+	//var monomer1RR = parseFloat(document.getElementById("monomer1RR").value);
+	//var monomer2RR = parseFloat(document.getElementById("monomer2RR").value);
 	//Initial variable calculations
-	console.log("Type of monomer1Ratio: ", typeof(monomer1Ratio));
+	//console.log("Type of monomer1Ratio: ", typeof(monomer1Ratio));
 	polymerLength = Math.floor(mRatio * conversion / 100);
 	var numPolymers = Math.floor(totalNumMonomers / mRatio);
-	var monomerRatioList = [monomer1Ratio, monomer2Ratio];
-	var rrList = [[monomer1RR, 1], [1, monomer2RR]];
+	var monomerRatioList = getMonomerRatios(numUniqueMonomers);
+	console.log("monomerRatioList: ", monomerRatioList);
+	//var rrList = [[monomer1RR, 1], [1, monomer2RR]];
 	var monomerAmountsList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	initialMonomerAmountList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	console.log("initialMonomerAmountList1: ", initialMonomerAmountList);
+	rrList = getReactivityRatios(numUniqueMonomers);
 	//console.log(monomerAmountsList);
 	//Initiate chains, all polymer chains are represented as arrays and stored in another array, polymerArray
 	polymerArray = [];
@@ -40,7 +40,16 @@ function simulate() {
 			initChoices.push(2);
 			initWeightList.push(initWeight);
 			initWeightList.push(1 - initWeight);
-		} 
+		} else {
+		//If it is a 3-monomer or more system, use initial starting ratios to determing starting monomers
+			var initChoices = [];
+			var initWeightList = [];
+			for (var monomerID = 1; monomerID <= numUniqueMonomers; monomerID++) {
+				initChoices.push(monomerID);
+				var initWeight = monomerAmountsList[monomerID - 1];
+				initWeightList.push(initWeight);	
+			}
+		}
 		//Use a weighted random selector to choose the starting monomer
 		var startingMonomer = parseInt(weightedRand(initChoices, initWeightList));
 		//console.log("typeof startingMonomer: ", typeof(startingMonomer));
@@ -83,41 +92,93 @@ function simulate() {
 	setGraph(graphType);
 };
 
+//Parses HTML document, returns list of monomer ratios
+function getMonomerRatios(numUniqueMonomers) {
+	var monomerRatioList = [];
+	var inputTable = document.getElementById("inputTable");
+	for (var index = 0; index < numUniqueMonomers; index++) {
+		var row = inputTable.rows[index];
+		var cell = row.cells[5];
+		var inputObj = cell.children[0];
+		var monomerRatio = parseFloat(inputObj.value); 
+		monomerRatioList.push(monomerRatio);
+	}
+	return monomerRatioList;
+};
+
+//Parses HTML document, returns a list of lists of reactivity ratios
+
+function getReactivityRatios(numUniqueMonomers) {
+	var rrList = [];
+	var inputTable = document.getElementById("inputTable");
+	if (numUniqueMonomers == 2) {
+		var row1 = inputTable.rows[0];
+		var cell1 = row1.cells[7];
+		var inputObj1 = cell1.children[0];
+		var rr1 = parseFloat(inputObj1.value);
+		var singleRRList1 = [rr1, 1];
+		var row2 = inputTable.rows[1];
+		var cell2 = row2.cells[7];
+		var inputObj2 = cell2.children[0];
+		var rr2 = parseFloat(inputObj2.value);
+		var singleRRList2 = [1, rr2];
+		rrList = [singleRRList1, singleRRList2];
+		return rrList;
+	}
+	for (var index = 0; index < numUniqueMonomers; index++) {
+		var singleRRList = []; 
+		rrList.push(singleRRList);
+		for (var index2 = 0; index2 < numUniqueMonomers; index2++) {
+			var row = inputTable.rows[index2];
+			var cell = row.cells[7 + 2 * index];
+			var inputObj = cell.children[0];
+			var reactivityRatio = parseFloat(inputObj.value);
+			singleRRList.push(reactivityRatio);
+		}
+	}
+	return rrList;
+};
+
+
 function createInputs(inputNum) {
 	inputNum = parseFloat(inputNum);
 	if (inputNum < 2) {
 		return;
 	}
-	//Change Monomer Ratio inputs
+	var inputTable = document.getElementById("inputTable");
 
-	for (var index = 1; index <= numUniqueMonomers; index++) {
-		var row = document.getElementById("row" + index);
+	//Change HTML Objects for Monomer Ratios
+
+	//Delete all current objects
+
+	for (var index = 0; index < numUniqueMonomers; index++) {
+		var row = inputTable.rows[index];
 		row.deleteCell(4);
 		row.deleteCell(4);
 	}
 
-	for (var index = 1; index <= inputNum; index++) {
-		var labelElement = document.createElement("LABEL");
-		var labelID = "label" + index;
-		labelElement.setAttribute("id", labelID);
-		labelElement.innerHTML = "Monomer " + index + " Ratio:";
+	//Iteratively create objects
+
+	for (var index = 0; index < inputNum; index++) {
+		var labelElement = document.createElement("LABEL");;
+		labelElement.innerHTML = "Monomer " + (index + 1) + " Ratio:";
 		var inputElement = document.createElement("INPUT");
-		var inputID = "input" + index;
-		inputElement.setAttribute("id", inputID);
 		inputElement.setAttribute("type", "number");
 		inputElement.setAttribute("value", 1);
-		var row = document.getElementById("row" + index);
-		console.log("row: ", "row"+index);
-		if (inputNum == 4) {
-		}	
+		var row = inputTable.rows[index];
+		//console.log("row: ", "row"+index);
 		var labelCell = row.insertCell(4);
 		labelCell.appendChild(labelElement);
 		var inputCell = row.insertCell(5);
 		inputCell.appendChild(inputElement);
 	}
 
-	for (var index = 1; index <= numUniqueMonomers; index++) {
-			var row = document.getElementById("row" + index);
+	//Change HTML Objects for Monomer Reactivities
+
+	//Delete all objects
+
+	for (var index = 0; index < numUniqueMonomers; index++) {
+			var row = inputTable.rows[index];
 			if (numUniqueMonomers == 2) {
 				row.deleteCell(-1);
 				row.deleteCell(-1);
@@ -128,16 +189,17 @@ function createInputs(inputNum) {
 				}
 			}
 	}
+
+	//Iteratively create objects 
+
 	if (inputNum > 2) {
-		for (var index = 1; index <= inputNum; index++) {
-			var row = document.getElementById("row" + index);
+		for (var index = 0; index < inputNum; index++) {
+			var row = inputTable.rows[index];
 			for (var index2 = 1; index2 <= inputNum; index2++) {
 				var labelElement = document.createElement("LABEL");
-				var labelText = index2 + "-" + index + " Reactivity";
+				var labelText = index2 + "-" + (index + 1) + " Reactivity";
 				labelElement.innerHTML = labelText;
 				var inputElement = document.createElement("INPUT");
-				var inputID = index2 + "-" + index + "reactivity";
-				inputElement.setAttribute("id", inputID);
 				inputElement.setAttribute("type", "number");
 				inputElement.setAttribute("value", 1);
 				var labelCell = row.insertCell(-1);
@@ -148,10 +210,10 @@ function createInputs(inputNum) {
 		}
 	}
 	if (inputNum == 2) {
-		for (var index = 1; index <= 2; index++) {
-			var row = document.getElementById("row" + index);
+		for (var index = 0; index < 2; index++) {
+			var row = inputTable.rows[index];
 			var labelElement = document.createElement("LABEL");
-			var labelText = "Monomer " + index + " Reactivity";
+			var labelText = "Monomer " + (index + 1) + " Reactivity";
 			labelElement.innerHTML = labelText;
 			var inputElement = document.createElement("INPUT");
 			inputElement.setAttribute("type", "number");
@@ -163,10 +225,11 @@ function createInputs(inputNum) {
 		}
 	}
 
+	//Update numUniquemonomers
 
 	numUniqueMonomers = inputNum;
 
-}
+};
 
 //=========================================================================================================================================
 //POLYMER ANALYSIS FUNCTIONS
@@ -446,6 +509,9 @@ function formatXYGraphs() {
 	chart.removeGraph(graphList[0]);
 };
 function formatHistGraph(monomerID) {
+	if (monomerID > numUniqueMonomers) {
+		return;
+	}
 	monomerID = parseInt(monomerID);
 	console.log("monomerID: ", monomerID);
 	var chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, monomerID);
