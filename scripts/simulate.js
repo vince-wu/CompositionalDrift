@@ -190,8 +190,7 @@ function createInputs(inputNum) {
 			}
 	}
 
-	//Iteratively create objects 
-
+	//Iteratively create objects 	
 	if (inputNum > 2) {
 		for (var index = 0; index < inputNum; index++) {
 			var row = inputTable.rows[index];
@@ -589,6 +588,28 @@ function setGraph(type) {
 	//console.log("got here");
 	chart.invalidateSize();
 };
+
+//=================================================================================================================================
+//VISUALIZING FUNCTIONS
+//=================================================================================================================================
+
+function visualize() {
+	var canvas = document.getElementById("visual");
+	var ctx = canvas.getContext("2d");
+	ctx.translate(0.5, 0.5);
+	ctx.fillStyle = "#FF0000";
+	ctx.lineWidth="1";
+	ctx.strokeStyle = "black";
+	for (var index = 0; index < 90; index++) {
+		ctx.rect(index*10,0,10,10);
+		ctx.fill();
+		ctx.stroke();
+	}
+	// var ctx = canvas.getContext("2d");
+	// ctx.fillRect(0,0,50,50);
+	// ctx.fillRect(100,0,50,50);
+	// ctx.fillRect(200,0,50,50);
+}
 
 //================================================================================================================================
 //UTILITY FUNCTIONS
