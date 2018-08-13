@@ -1139,6 +1139,7 @@ class Application(ttk.Frame):
 			monomerAmounts = self.getMonomerAmounts()
 			if not PENULTIMATE:
 				coeffList = self.getCoefficients()
+				singleCoeffList = self.getReactivity(coeffList, self.numMonomers)
 			else:
 				singleCoeffList = self.getPenultimateCoeff()
 			self.raftRatio = float(self.raftRatioTkVar.get())
@@ -1186,10 +1187,9 @@ class Application(ttk.Frame):
 		except AssertionError:
 			errorMessage("RAFT Ratio too small!", 220)
 			return
-		print("got here!")
 		#print("numMonomers: ", self.numMonomers)
-		singleCoeffList = self.getReactivity(coeffList, self.numMonomers)
-		print("got here2!")
+
+
 		
 		#Progress bar widget setup
 		self.simulateLocked = True
