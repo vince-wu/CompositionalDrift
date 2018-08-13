@@ -37,7 +37,11 @@ from openpyxl.drawing.image import Image as xlImage
     represents results both graphically and visually
     """
  #test
-#Static Final variables
+
+"---------------------------------------------------------------------------------------------------------------------------------"
+"***STATIC FINAL VARIABLES***"
+"---------------------------------------------------------------------------------------------------------------------------------"
+
 MONOMER_CAP = 5000000
 NUM_UNIQUE_MONOMERS = 2
 NUM_SIMULATIONS = 1
@@ -80,13 +84,18 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.7.5"
+VERSION = "v1.8"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
  ["Default Setting", 1], ["Monomer Cap", 1], ["Graph 1 Type", 1], ["Graph 2 Type", 1], ["Histogram 1 Monomer", 1], ["Histogram 2 Monomer", 1],
  ["Percentage to Analyze for Histogram", 0], ["Penultimate", 1], ["Dyad", 1], ["Style", 2], ["Legend", 1], ["Percent Conversion", 0],
  ["Color1", 2], ["Color2", 2], ["Color3", 2], ["Color4", 2], ["Color5", 2], ["Color6", 2], ["Color7", 2], ["Color8", 2], ["Maintain", 1], ["Hydrophobicity", 0]]
+
+"----------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+"***CONFIG FILE READ AND WRITE***"
+"----------------------------------------------------------------------------------------------------------------------------------------------------------------------"
+
 #generates a config file if needed
 def generateConfigFile():
 	if not os.path.exists("config.txt"):
@@ -262,9 +271,14 @@ def readSaveFile(stateNumber):
 				numMonomers = int(lineArray[5])
 				RATIO_ARRAY = [-1] * numMonomers
 				#array to keep track of all neccesary monomers
-				numMonomerArray = [0] * numMonomers
-				COEFF_ARRAY = [-1] * numMonomers
-				COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
+				if numMonomers == 2:
+					numMonomerArray = [0] * numMonomers
+					COEFF_ARRAY = [-1] * numMonomers
+					COEFF_ARRAY = [[-1 for i in range(numMonomers)] for j in range(numMonomers)]
+				else:
+					numMonomerArray = [0] * numMonomers
+					COEFF_ARRAY = [-1] * numMonomers
+					COEFF_ARRAY = [[] for j in range(numMonomers)]
 			except AssertionError:
 				invalidLines += 1
 			except ValueError:
@@ -299,8 +313,11 @@ def readSaveFile(stateNumber):
 					coeffTag = lineArray[0]
 					assert(coeffTag[1] == "-")
 					column = int(coeffTag[0]) - 1
-					row = int(coeffTag[2]) - 1
-					COEFF_ARRAY[column][row] = float(lineArray[2])
+					if numMonomers == 2:
+						row = int(coeffTag[2]) - 1
+						COEFF_ARRAY[column][row] = float(lineArray[2])
+					else:
+						COEFF_ARRAY[column].append(float(lineArray[2]))
 				except AssertionError:
 					invalidLines += 1
 					continue
@@ -491,7 +508,11 @@ def setConfigVariableHelper(configType, configValue):
 		HYDROPHOBICITY = configValue
 	else:
 		assert False, "shouldn't get here"	
-#Main class 
+
+"------------------------------------------------------------------------------------------------------------------------------"
+"***MAIN APPLICATION CLASS***"
+"-------------------------------------------------------------------------------------------------------------------------------"
+
 class Application(ttk.Frame):
 	def __init__(self, master = None):
 		ttk.Frame.__init__(self, master)
@@ -520,20 +541,32 @@ class Application(ttk.Frame):
 		self.createInputWidgets()
 		#Creates dummy visualization Frame
 
-	#Destroys unneccesary widgets
-	def destroyWidgets(self):
-		self.inputFrame.destroy()
-		if self.visualizationFrameExists:
-			self.visualizationFrame.destroy()
-		self.visualizationFrameExists = False
-		if self.canvasExists:
-			self.canvas.get_tk_widget().destroy()
-			self.toolbar.destroy()
-		if self.compFrameExists:
-			self.compFrame.destroy()
-			self.compFrameExists = False
-		self.canvasExists = False
-		self.destroyHide = False
+	"------------------------------------------------------------------------------------------------------------------------------"
+	"***CREATE THE INITIAL SCREEN, PART 1/2***"
+	"------------------------------------------------------------------------------------------------------------------------------"
+		#Frame and contents for opening screen
+	def initScreen(self):
+		root.maxsize(width = 330, height = 270)
+		self.initFrame = ttk.Frame(master = root)
+		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
+		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
+		 text = "Compositional Drift Simulator %s" % VERSION)
+		message1.pack(side = Tk.TOP, padx = 0, pady = 0)
+		message2 = Tk.Message(master = self.initFrame, width = 300,
+			text = "Author: Vincent Wu (vincent.wu@berkeley.edu)")
+		message2.pack(side = Tk.TOP)
+		message3 = Tk.Message(master = self.initFrame, width = 300,
+			text = "Welcome to Compositional Drift Simulator! This program uses the Mayo Lewis Equation and the" 
+			" Monte Carlo method to simulate the growth of a copolymer chain."
+			" Please input your desired number of unique monomers or choose a default setting.")
+		message3.pack(side = Tk.TOP)
+		root.resizable(width=True, height=True)
+		root.sizefrom(who = "program")
+
+	"-------------------------------------------------------------------------------------------------------------------------"
+	"***CREATE THE INTIAL INPUT SCREEN, PART 2/2***"
+	"-------------------------------------------------------------------------------------------------------------------------"		
+	
 	#Creates input widgets
 	def createInputWidgets(self):
 		self.canvasExists = False
@@ -590,6 +623,7 @@ class Application(ttk.Frame):
 			except:
 				pass
 			if LOAD_SUCCESSFUL:
+
 				print("Load Successful!")
 			else:
 				errorMessage("Unable to load settings! Please fix config file.", 300)
@@ -609,15 +643,11 @@ class Application(ttk.Frame):
 		def _quit():
 			root.quit()
 			root.destroy()
+		
 		#The parent LabelFrame for all Input Widgets
+		
 		self.inputFrame = ttk.Frame(master = root, borderwidth = 1, relief = "ridge")
 		self.inputFrame.pack(side = Tk.BOTTOM, fill = Tk.X, expand = 0, padx = 7, pady = 7)
-		#top seperator
-		#self.topSep = ttk.Separator(master = self.inputFrame, orient = Tk.HORIZONTAL)
-		#self.topSep.pack(side = Tk.TOP, fill = Tk.BOTH)
-		#leftmost separator
-		#self.sideSep1 = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
-		#self.sideSep1.pack(side = Tk.LEFT, fill = Tk.BOTH)
 		#A frame for column 1 of inputs
 		self.columnFrame = ttk.Frame(master = self.inputFrame)
 		self.columnFrame.pack(side = Tk.LEFT, padx = 5, pady = 5)
@@ -675,6 +705,31 @@ class Application(ttk.Frame):
 		#self.bottomSep = ttk.Separator(master = self.inputFrame, orient = Tk.HORIZONTAL)
 		#self.bottomSep.pack(side = Tk.BOTTOM, fill = Tk.BOTH)
 	#Creates more input widgets based on numMonomers
+
+
+	"-----------------------------------------------------------------------------------------------------------------------------"
+	"***DESTROY UNECCESARY WIDGETS***"
+	"-----------------------------------------------------------------------------------------------------------------------------"
+	
+	#Destroys unneccesary widgets
+	def destroyWidgets(self):
+		self.inputFrame.destroy()
+		if self.visualizationFrameExists:
+			self.visualizationFrame.destroy()
+		self.visualizationFrameExists = False
+		if self.canvasExists:
+			self.canvas.get_tk_widget().destroy()
+			self.toolbar.destroy()
+		if self.compFrameExists:
+			self.compFrame.destroy()
+			self.compFrameExists = False
+		self.canvasExists = False
+		self.destroyHide = False
+	
+	"-----------------------------------------------------------------------------------------------------------------------------------"
+	"***CREATES SECOND ROUND OF INPUTS AFTER 'ENTER' OR 'LOAD' IS PRESSED"
+	"-----------------------------------------------------------------------------------------------------------------------------------"
+	
 	def createMoreInputs(self):
 		root.maxsize(width = 10000, height = 10000)
 		root.resizable(width = True, height = True)
@@ -734,7 +789,7 @@ class Application(ttk.Frame):
 		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Monomers to RAFT Ratio:   ")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Maximum DP:   ")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
 		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
@@ -817,7 +872,7 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"), 
+			"Run Length", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"), 
 		textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
@@ -829,7 +884,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Monomer Separation", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"),
+			"Run Length", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"),
 			 textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
@@ -885,6 +940,11 @@ class Application(ttk.Frame):
 		self.createIterativeInputs(False)
 	def key(self):
 		self.simulate()
+	
+	"-------------------------------------------------------------------------------------------------------------------------------"
+	"***CREATE ITERATIVE INPUTS: MONOMER RATIOS AND REACTIVITY RATIOS***"
+	"-------------------------------------------------------------------------------------------------------------------------------"
+	
 	def createIterativeInputs(self, alias):
 		root.bind("<Return>", lambda e: self.key())
 		self.hphobList = []
@@ -902,6 +962,7 @@ class Application(ttk.Frame):
 		#Frame for Monomer Coefficients
 		self.coefficientFrame = ttk.Frame(master = self.inputFrame)
 		self.coefficientFrame.pack(side = Tk.LEFT, padx = 0)
+
 		# A list of ttk.Entry objects for Monomer ratios
 		self.startingRatiosTkList = [] 
 		# A 2D list of ttk.Entry objects for Coefficicients
@@ -987,7 +1048,7 @@ class Application(ttk.Frame):
 				self.coeffTkVarArray = []
 				createCount2 = 0
 				#While loop creating number of neccesary coefficient Entry boxes
-				while createCount2 < self.numMonomers:
+				for firstMonomer in range(1, self.numMonomers + 1):
 					combinations = 0
 					#Appends to coefficient list a list containing coefficients for the polymer index
 					singleMonoCoeffList = []
@@ -996,30 +1057,32 @@ class Application(ttk.Frame):
 					#Frame for Coefficients for Single Monomer
 					singleCoeffFrame = ttk.Frame(master = self.coefficientFrame)
 					singleCoeffFrame.pack(side = Tk.LEFT, fill = Tk.X, expand = 1)
-					while combinations < self.numMonomers:				
+					coeffID = 0
+					for secondMonomer in range(1, self.numMonomers + 1):			
 						#Label for inputAmount
-						coeffValFrame = ttk.Frame(master = singleCoeffFrame)
-						coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
-						inputCoeffLabel = ttk.Label(master = coeffValFrame, text = str(createCount2 + 1)
-						 + "-" + str(combinations + 1) + " Reactivity:" )
-						self.coeffLabelList[createCount2].append(inputCoeffLabel)
-						inputCoeffLabel.pack(side = Tk.LEFT)
-						#Entry for inputAmount
-						inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
-						inputCoeff.pack(side = Tk.LEFT, padx = 5)
-						#Setting Default Coefficient to 1
-						coeff = Tk.IntVar()
-						inputCoeff["textvariable"] = coeff
-						if LOAD_SUCCESSFUL and useLoadedSettings:
-							coeff.set(COEFF_ARRAY[createCount2][combinations])
-						else:
-							coeff.set(1)
-						#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
-						self.coeffTkVarArray.append(coeff)
-						#Add a ttk.Entry object to singleMonoCoeffList
-						singleMonoCoeffList.append(inputCoeff)
-						combinations += 1
-					createCount2 += 1
+						if secondMonomer != firstMonomer:
+							coeffValFrame = ttk.Frame(master = singleCoeffFrame)
+							coeffValFrame.pack(side = Tk.TOP, padx = 2, pady = 3)
+							inputCoeffLabel = ttk.Label(master = coeffValFrame, text = " rr" + str(firstMonomer) 
+								+ str(secondMonomer) + ": ")
+							self.coeffLabelList[createCount2].append(inputCoeffLabel)
+							inputCoeffLabel.pack(side = Tk.LEFT)
+							#Entry for inputAmount
+							inputCoeff = ttk.Entry(master = coeffValFrame, width = 4)
+							inputCoeff.pack(side = Tk.LEFT, padx = 5)
+							#Setting Default Coefficient to 1
+							coeff = Tk.IntVar()
+							inputCoeff["textvariable"] = coeff
+							if LOAD_SUCCESSFUL and useLoadedSettings:
+								print("COEFF_ARRAY: ", COEFF_ARRAY)
+								coeff.set(COEFF_ARRAY[firstMonomer - 1][coeffID])
+							else:
+								coeff.set(1)
+							coeffID += 1
+							#IMPORTANT: saves input so won't be garbage collected. DO NOT DELETE THIS LINE< EVEN IF IT SEEMS USELESS
+							self.coeffTkVarArray.append(coeff)
+							#Add a ttk.Entry object to singleMonoCoeffList
+							singleMonoCoeffList.append(inputCoeff)
 		#if PENULTIMATE is true, create input entries for penultimate model
 		#format: penultimate-ultimate-next , so 1-2-3 is 1 (penultimate), 2 (ultimate), 3 (next)
 		if PENULTIMATE:
@@ -1058,42 +1121,10 @@ class Application(ttk.Frame):
 						#Add a ttk.Entry object to singleMonoCoeffList
 						CoeffList.append(inputCoeff)
 
-		# Syntax": for i in range(0,x)
-		# fpr i in iterable
-		#Debugging Purposes: prints the 2D array which should store coefficients 	
-		#print("coefficientList: " , self.coefficientList)
-		#counter = 0
-		"""for coefflist in self.coefficientList:
-			print("list at index " + str(counter) + ": ", coefflist)
-			counter += 1"""
-	#Frame and contents for opening screen
-	def initScreen(self):
-		root.maxsize(width = 330, height = 270)
-		self.initFrame = ttk.Frame(master = root)
-		self.initFrame.pack(side = Tk.TOP, fill = Tk.X, expand = 0, padx = 3, pady = 5)
-		message1 = Tk.Message(master = self.initFrame, width = 250, font = ("Times New Roman", 10, "bold"),
-		 text = "Compositional Drift Simulator %s" % VERSION)
-		message1.pack(side = Tk.TOP, padx = 0, pady = 0)
-		message2 = Tk.Message(master = self.initFrame, width = 200,
-			text = "Author: Vincent Wu")
-		message2.pack(side = Tk.TOP)
-		message3 = Tk.Message(master = self.initFrame, width = 300,
-			text = "Welcome to Compositional Drift Simulator! This program uses the Mayo Lewis Equation and the" 
-			" Monte Carlo method to simulate the growth of a copolymer chain."
-			" Please input your desired number of unique monomers or choose a default setting.")
-		message3.pack(side = Tk.TOP)
-		root.resizable(width=True, height=True)
-		root.sizefrom(who = "program")
-	#Hides input params
-	def showInputParams(self):
-		self.inputFrame.pack(side = Tk.BOTTOM, pady = 3)
-		self.showButton.destroy()
-	#Shows input params
-	def hideInputParams(self):
-		self.inputFrame.pack_forget()
-		self.showButton = ttk.Button(master = self.parentFrame, text = "Show Input Parameters", width = 27,
-			bg = "pale turquoise", activebackground = "light slate blue", command = self.showInputParams)
-		self.showButton.pack(side = Tk.TOP)
+	"-----------------------------------------------------------------------------------------------------------------------------------------------------"
+	"***MAIN CODE FOR SIMULATING POLYMERS***"
+	"-----------------------------------------------------------------------------------------------------------------------------------------------------"
+
 	#Simulates polymer reaction based on input values
 	def simulate(self):
 		root.wm_state('zoomed')
@@ -1101,13 +1132,13 @@ class Application(ttk.Frame):
 		#a lock
 		if self.simulateLocked == True:
 			return
-		#Asserts that there are no input errors. Shows errorMessage if error caught.test
+
+		"***Read user inputs and checks to see if they are valid***"
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
 			monomerAmounts = self.getMonomerAmounts()
 			if not PENULTIMATE:
-				singleCoeffList = self.getCoefficients()
-				print("singleCoeffList: ", singleCoeffList)
+				coeffList = self.getCoefficients()
 			else:
 				singleCoeffList = self.getPenultimateCoeff()
 			self.raftRatio = float(self.raftRatioTkVar.get())
@@ -1141,11 +1172,26 @@ class Application(ttk.Frame):
 			return
 		self.numSimulations = NUM_SIMULATIONS
 		self.fullPolymerLength = int(self.raftRatio)
+
+		"***Calculate the polymer length using raft ratio and percent conversion***"
 		self.polymerLength = int(self.raftRatio * self.conversion / 100)
 		if self.polymerLength == 0:
 			self.polymerLength = 1
+
+		"***Caluculate number of polymer chains by dividing total number of monomers by monomers per full polymer***"
 		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
-		#progress bar widget setup
+		#Asserting valid inputs for RAFT ration and totalMonomers
+		try:
+			assert self.numPolymers > 0
+		except AssertionError:
+			errorMessage("RAFT Ratio too small!", 220)
+			return
+		print("got here!")
+		#print("numMonomers: ", self.numMonomers)
+		singleCoeffList = self.getReactivity(coeffList, self.numMonomers)
+		print("got here2!")
+		
+		#Progress bar widget setup
 		self.simulateLocked = True
 		simulationProgressTkVar = Tk.IntVar()
 		self.simulationProgressBar = ttk.Progressbar(master = self.column2Frame, mode = "determinate", 
@@ -1155,29 +1201,11 @@ class Application(ttk.Frame):
 		simulationProgressTkVar.set(0)
 		currProgress = 0
 		self.simulationProgressBar.start()
-		"""Calculates Initial Conditions based on inputs"""
+
 		#number of monomers in each polymer assuming reaction goes to completion, based on raftRatio and itotalMonomers
 		#print(self.totalMonomers)
 		#print(self.raftRatio)
-		#Asserting valid inputs for RAFT ration and totalMonomers
-		try:
-			assert self.numPolymers > 0
-		except AssertionError:
-			errorMessage("RAFT Ratio too small!", 220)
-			return
-		#Debugging Purposes
-		#print("Polymer Length: ", self.polymerLength)
-		#print("Number of Polymers: ", self.numPolymers)
-		#destroys hideButton if necessary
-		if self.destroyHide:
-			self.hideButton.destroy()
-		#hideButton creation, _DEPRECATED_
-		"""self.hideButton = ttk.Button(master = self.buttonFrame, bg = "pale turquoise", activebackground = "light slate blue",
-			width = 27, text = "Hide Input Paramters", command = self.hideInputParams)
-		self.hideButton.pack(side = Tk.TOP, pady = 3)
-		self.destroyHide = True"""
-		#print("monomerAmounts: ", monomerAmounts)
-		#print("singleCoeffList: ", singleCoeffList)
+
 		if self.initialSetTkVar.get() == "Weighted":
 			global SETINITIAL
 			SETINITIAL = 0
@@ -1185,7 +1213,8 @@ class Application(ttk.Frame):
 			wordarray = self.initialSetTkVar.get().split()
 			global SETINITIAL
 			SETINITIAL = int(wordarray[1])
-		#An array of polymers
+
+		"***initiate an empty array, which will hold all of the polymers to be simulate***"
 		self.polymerArray = []
 		#keeps track of number of simulations
 		simCounter = 1
@@ -1199,19 +1228,43 @@ class Application(ttk.Frame):
 			#variable keeping track of current number of polymers
 			currNumPolymers = 0
 			#print(self.numMonomers)
-			#Builds number of polymers equal to self.numpolymers
+
+			"-----------------------------------------------------------------------------------------------------------------------"
+			"***INITIATION STEP***"
+			"------------------------------------------------------------------------------------------------------------------------"
+
+			"In this step, all polymers will be initiated with one starting monomer. The algorithm continually intiates"
+			"a chain until the chain count reaches self.numPolymers."
+
 			while currNumPolymers < self.numPolymers:  
-				"""Initiation: Chooses a monomer to initiate the chain based of weighted chance"""
+
+				"In the case where the user fixes all chains to start with a certain monomer, we simply initiate all chains"
+				"with the monomer of choice."
+				
 				#case for setting first monomer
 				if SETINITIAL:
 					localPolymerArray.append([SETINITIAL])
 					monomerAmounts[SETINITIAL - 1] -= 1
 					currNumPolymers += 1
 					continue
-				#A variable keeping track of current monomer
-				monomerID = 1
+
+				"Otherwise, we will choose the initial monomer randomly based on the the mole fractions 'f' of each monomer"
+				"in the feed solution. For 2- and 3- monomer systems, the instantaneous form of the Mayo Lewis Equation is "
+				"used to determine the probabilities of each monomer initiating the chain."
+
+				"Initiate a variable 'choices' that keeps track of the weight probabilty assigned to each monomer."
+				#Example:
+
+				#>>>print(choices)
+				#[[1, 1.5], [2, 0.5]]
+
+				#This means that monomer 1 has a weight of 1.5 assigned to it and monomer 2 has a weight of 0.5 assigned to it.
+				#Thus, monomer 1 will initiate 3x more often than monomer 2 will.
+
 				choices = []
-				#For two monomer system, can use Mayo Lewis Equation
+
+				"Case for 2-monomer system: use the Mayo Lewis Equation"
+
 				if self.numMonomers == 2 and not PENULTIMATE:
 					f1 = monomerAmounts[0]
 					f2 = monomerAmounts[1]
@@ -1223,7 +1276,11 @@ class Application(ttk.Frame):
 					#print("weight: ", weight)
 					choices.append([1, weight])
 					choices.append([2, 1 - weight])
+
+				
+
 				elif self.numMonomers == 3:
+					"Case for 3-monomer system: use an altered Mayo Lewis Equation"
 					m1 = monomerAmounts[0]
 					m2 = monomerAmounts[1]
 					m3 = monomerAmounts[2]
@@ -1246,23 +1303,38 @@ class Application(ttk.Frame):
 					a = f1*r11*f1/(r11*f1+r12*f2+r13*f3) + f2*r21*f1/(r21*f1+r22*f2+r23*f3) + f3*r31*f1/(r31*f1+r32*f2+r33*f3)
 					b = f1*r12*f2/(r11*f1+r12*f2+r13*f3) + f2*r22*f2/(r21*f1+r22*f2+r23*f3) + f3*r32*f2/(r31*f1+r32*f2+r33*f3)
 					c = 1 - a - b
-					print("startingRatioList: ", [a, b, c])
+					#print("startingRatioList: ", [a, b, c])
 					choices.append([1,a])
 					choices.append([2 ,b])
 					choices.append([3,c])
 				else:
+					"Case for any monomer system > 3: initial solely based on feed mole ratios 'f'"
+					#A variable keeping track of current monomer
+					monomerID = 1
+
+					"Cycle through each monomer, finding its feed amount and using that value as the weight."
+
 					while monomerID <= self.numMonomers:
 						#weight chance of monomer initation: (amount of starting monomer)
 						weight = monomerAmounts[monomerID - 1]
 						#Adds a two element list to choices containing monomer and weight
 						choices.append([monomerID, weight])
 						monomerID += 1
-				#print("choices: ", choices)
-				#Using weighted_choice, selects first monomer
+
+				"Randomly choose a monomer to initiate the polymer chain by using a weighted random selector."
+				"Monomer with higher relative weights will be chosen more often. The 'weighted_choices' function"
+				"takes in the 'choices' variable which has relevant weights for each monomer and runs a weighted"
+				"random selection on it."
+
 				startingMonomer = weighted_choice(choices)
 				#Starts a new polymer with startingMonomer, represented by an array, 
 				#and adds that array to polymerArray
+				"A polymer is represented as a python list/ array. Here, we inititate an instance of a polymer as a list, "
+				"and append that polymer to a superlist which contains a list of all polymers"
+
 				localPolymerArray.append([startingMonomer])
+
+				"Remove the monomer that was used to intitate the polymer in order to accurately update the monomer pool ratios."
 				#Uses up one monomer of the startingMonomer if MAINTAIN is false, else maintains composition
 				if not MAINTAIN:
 					monomerAmounts[startingMonomer - 1] -= 1
@@ -1274,7 +1346,10 @@ class Application(ttk.Frame):
 			currPolymerLength = 1
 			"""Grows each polymer at the same time until they all reach desired polymer size"""
 			#print("self.polymerLength: ", self.polymerLength)
-			#case for penultimate model: choosing the second monomer in chain, based off of HETEROGENOUS constants (works only for 2 monomer system)
+
+			"case for penultimate model: choosing the second monomer in chain, based off of "
+			"HETEROGENOUS constants (works only for 2 monomer system)"
+
 			if PENULTIMATE:
 				#iterating through each polymer in batch
 				for polymer in localPolymerArray:
@@ -1306,7 +1381,13 @@ class Application(ttk.Frame):
 					#print("monomerAmounts: ", monomerAmounts)
 					#Attaches next monomer to polymer chain
 					polymer.append(nextMonomer)
-			#case for penultimate model: propogating polymer chain once first 2 monomers have been decided
+
+			"-------------------------------------------------------------------------------------------------------------------"
+			"***PROPAGATION STEP***"
+			"-------------------------------------------------------------------------------------------------------------------"
+
+			"Case for penultimate step (description will not be as in depth). For normal Mayo-Lewis case, scroll down."
+
 			if PENULTIMATE:
 				for currPolymer in range(2, self.polymerLength):	
 					for polymer in localPolymerArray:
@@ -1345,23 +1426,29 @@ class Application(ttk.Frame):
 					simulationProgressTkVar.set(currProgress)
 					self.simulationProgressBar.update()
 
-			#case for non-penultimate simulation
+			
 			else:
+				"***Propogation for standard Mayo-Lewis Case***"
+
+				"The 'while' loop cycles through each round of propogation until the target degree of polymerization is met. "
 				while currPolymerLength < self.polymerLength:
-					"""RAFT polymerization: each polymer propagates at the same time, represented here as
-					monomers being attached to each polymer chain one at a time"""
+					"The 'for' loop cycles between all polymers (instantiated in the previous initiation step), and for each"
+					"polymer, it appends one monomer to the growing chain, simulating an ideal homogenous polymer chain growth."
 					for polymer in localPolymerArray:
 						#A variable keeping track of current monomer
 						monomerID = 1
 						choices = []
-						"""Propogation: Iterates through all monomers, calculating weight chance to bind for each, 
-						and binds monomer with highest weight chance"""
+						"For each polymer, iterate through all possible monomers which can be added. For each monomer, calculate"
+						"the weight chance of the monomer to be added to the chain , defined as the product of the relevant rate "
+						"constant 'k' times the number of monomers left unreacted 'f'"
 						while monomerID <= self.numMonomers:
 							#Retrieveing coefficient based on previous and current monomer
-							coeff = singleCoeffList[polymer[-1] - 1][monomerID - 1]
-							#print("coeff: ", coeff);
+							#get the last monomer on the growing chain
+							terminatingMonomer = polymer[-1]
+							#retrieve the relevant rate constant k
+							k = singleCoeffList[terminatingMonomer - 1][monomerID - 1]
 							# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
-							chance = monomerAmounts[monomerID - 1] * coeff
+							chance = monomerAmounts[monomerID - 1] * k
 							#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
 							#Adds a two element list to choices containing monomer and weight
 							choices.append([monomerID, chance])
@@ -1397,16 +1484,26 @@ class Application(ttk.Frame):
 			self.polymerArray = self.polymerArray + localPolymerArray
 			#increases simCounter by 1
 			simCounter += 1
-			#print(currProgress)
-		#Debugging purposes
+
+
 		"""Important Debug: Prints out array of polymers"""
 		#print("Array of Polymers: ", polymerArray)
+
 		#stops progress bar
 		self.simulationProgressBar.stop()
-		#outputs polymer onto textfile
+
+		"--------------------------------------------------------------------------------------------------------------------"
+		"***OUTPUT RAW SIMULATION RESULTS INTO A TEXT FILE"
+		"--------------------------------------------------------------------------------------------------------------------"
+
 		text_file = open("polymerArray.txt", "w")
 		json.dump(self.polymerArray, text_file)
 		text_file.close()
+
+		"--------------------------------------------------------------------------------------------------------------------"
+		"***CALCULATE AND DISPLAY MONOMER COMPOSITION***"
+		"--------------------------------------------------------------------------------------------------------------------"
+
 		self.compositionList = self.getComposition(self.polymerArray)
 		if not self.compFrameExists:
 			self.col3Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
@@ -1437,14 +1534,22 @@ class Application(ttk.Frame):
 			for item in self.compTkVarArray:
 				item.set(round(self.compositionList[monomerID - 1], 2))
 				monomerID += 1
+
+		"***Visualize Polymers***"
 		self.visualizePolymers(self.polymerArray)
+
+		"***Plot Polymer Data***"
 		self.plotCompositions(False)
 		#destroy progress bar
 		self.simulationProgressBar.destroy()
 		center(root)
 		self.simulateLocked = False
 		#self.inputFrame.pack_forget()
-	#plots compositions given a PolymerArray
+	
+	"----------------------------------------------------------------------------------------------------------------------------"
+	"***PLOT THE USER-SELECTED GRAPHS***"
+	"----------------------------------------------------------------------------------------------------------------------------"
+
 	def plotCompositions(self, update):
 		try:
 			polymerArray = self.polymerArray
@@ -1547,7 +1652,11 @@ class Application(ttk.Frame):
 		return
 		#very bad fix for draggable, should correct
 		#self.plotCompositions(True)
-	#Visualizes the polymers with colored squares representing monomers
+
+	"-------------------------------------------------------------------------------------------------------------------------"
+	"***VISUALIZE THE POLYMERS WITH COLORED SQUARES***"
+	"-------------------------------------------------------------------------------------------------------------------------"
+
 	def visualizePolymers(self, polymerArray):
 		if DYAD:
 			polymerArrayToUse = self.getDyad(polymerArray)
@@ -1610,6 +1719,13 @@ class Application(ttk.Frame):
 			ulx2 = 0
 		self.visualizationFrameExists = True
 		self.polymerImage.save("polymerImage.jpg")
+
+	"--------------------------------------------------------------------------------------------------------------------------------"
+	"***FUNCTIONS FOR PARSING USER INPUTTED DATA***"
+	"--------------------------------------------------------------------------------------------------------------------------------"
+
+
+	"***Retrieves monomer ratio data***"
 	#Converts an array of ttk.Entrys of ratios into an int array of starting monomer amounts
 	#Note: might have result in total amount fo momoners being slightly more tcanvashan inital total monomers due to ceiling divide
 	def getMonomerAmounts(self):
@@ -1629,6 +1745,8 @@ class Application(ttk.Frame):
 			assert(weight > 0)
 		#print("monomerAmounts: ", monomerAmounts)
 		return monomerAmounts
+
+	"***Retrieves standard reactivity ratio data***"
 	#Converts a 2D array of ttk.Entrys for coefficients into a 2D double array
 	def getCoefficients(self):
 		coeffList = []
@@ -1646,7 +1764,36 @@ class Application(ttk.Frame):
 					else:
 						assert(float(innerEntry.get()) >= 0)
 						singleCoeffList.append(float(innerEntry.get()))
+		print("coeffList: ", coeffList)
 		return coeffList
+
+	def getReactivity(self, coeffList, numMonomers):
+		if numMonomers == 2:
+			return coeffList
+		else:
+			#rrSubList: a list of reactivity ratios for a single monomer
+			#>>>print(coeffList)
+			#[[1.0, 1.0], [1.0, 1.0], [1.0, 1.0]]
+			reactivityList = []
+			for currMonomer in range(1, numMonomers + 1):
+				rrSubList = coeffList[currMonomer - 1]
+				reactivitySubList = []
+				monomerAccess = 0
+				for secondMonomer in range(1, numMonomers + 1):
+					if secondMonomer == currMonomer:
+						reactivitySubList.append(1)
+					else:
+						reactivity = 1/rrSubList[monomerAccess]
+						reactivitySubList.append(reactivity)
+						monomerAccess += 1
+				reactivityList.append(reactivitySubList)
+			print("reactivityList: ", reactivityList)
+			return reactivityList
+
+
+
+
+	"***Retrieves penultimate reactivity ratio data"
 	def getPenultimateCoeff(self):
 		coeffList = []
 		for nextMonomerList in self.coefficientList:
@@ -1664,7 +1811,11 @@ class Application(ttk.Frame):
 		print("coeffList: ", coeffList)
 		return coeffList
 
+	"----------------------------------------------------------------------------------------------------------------------------"
+	"***FUNCTIONS FOR ANALYZING SIMULATED POLYMER ARRAY DATA"
+	"----------------------------------------------------------------------------------------------------------------------------"
 
+	"***Analysis for Run Length***"
 	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
 	def getHistogramData(self, polymerArray, monomerID, indexLimit):
 		#counting number of monomers in polymerArray
@@ -1712,6 +1863,7 @@ class Application(ttk.Frame):
 			histogramData = [0]
 		return histogramData
 
+	"***Analysis for Dyads***"
 	#returns an array, same size as polymerArray, with dyad monomer being assign different numbers
 	def getDyad(self, polymerArray):
 		dyadArray = []
@@ -1730,6 +1882,8 @@ class Application(ttk.Frame):
 					prevMonomer = monomer
 			dyadArray.append(polymerDyad)
 		return dyadArray
+
+	"***Monomer composition analysis***"
 	#Returns a list of the percent compostion of each monomer, in monomerID order
 	def getComposition(self, polymerArray):
 		compositionList = [0] * self.numMonomers
@@ -1745,6 +1899,8 @@ class Application(ttk.Frame):
 			compositionList[monomerID - 1] = compositionList[monomerID - 1] / totalMonomers
 		#print("compositionList: ", compositionList)
 		return compositionList
+
+	"***Polymer composition analysis***"	
 	#Returns a list of the percent composition of each monomer at each index, in monomerID order
 	def getFullCompositionAtIndex(self, polymerArray):
 		fullCompList = []
@@ -1764,6 +1920,8 @@ class Application(ttk.Frame):
 		#print("totalMonomers: ", totalMonomers)
 		#print("index: ", index)
 		return fullCompList
+
+	"***Hydrophobic/Hydrophillic analysis***"
 	#takes in a polymerArray, an converts monomer number to 0 for hydrophobic, 1 for hydrophilic
 	def convertHydro(self, polymerArray):
 		print("hphobList: ", self.hphobList)
@@ -1778,6 +1936,8 @@ class Application(ttk.Frame):
 					newPolymer.append(1)
 			newPolymerArray.append(newPolymer)
 		return newPolymerArray
+
+	"***Alter histogram data for histogram plotting***"
 	def getHistPlotvals(self, histogramMonomer):
 			histogramNumberLimit = int(self.polymerLength)
 			print("histogramLimit: ", histogramNumberLimit)
@@ -1803,6 +1963,11 @@ class Application(ttk.Frame):
 			hist = hist / (self.polymerLength * self.numPolymers) 
 			print("newHist: ", hist)
 			return [bins, hist, histogramData]
+
+	"----------------------------------------------------------------------------------------------------------------------------"
+	"***GRAPHING FUNCTIONS"
+	"----------------------------------------------------------------------------------------------------------------------------"
+	
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
 		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
 			if graphType == "Monomer Occurrences":
@@ -1900,7 +2065,7 @@ class Application(ttk.Frame):
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 				lgd.draggable(state = True)
 			subplot.set_xlabel("Conversion", labelpad = 0, fontsize = 9)
-		elif graphType == "Monomer Separation":
+		elif graphType == "Run Length":
 			#obtain histogram limit
 			try:
 				self.histogramLimit = float(self.histogramLimitTkVar.get())
@@ -1924,9 +2089,9 @@ class Application(ttk.Frame):
 			subplot.bar(bins[:-1], hist, widths, color = COLORARRAY[histogramMonomer - 1])
 			#subplot.hist(histogramData, bins=range(min(histogramData), max(histogramData) + binwidth, binwidth),
 			 #color = COLORARRAY[histogramMonomer - 1], normed = True)
-			if graphType == "Monomer Separation":
-				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
-				subplot.set_ylabel("Normalized Separation", labelpad=5, fontsize = 9)
+			if graphType == "Run Length":
+				subplot.set_xlabel("Monomer %i Run Length" %histogramMonomer, labelpad = 0, fontsize = 9)
+				subplot.set_ylabel("Normalized Counts", labelpad=5, fontsize = 9)
 				#subplot.set_ylim([0,yUpperLim])
 			elif graphType == "Block Size":
 				subplot.set_xlabel("Monomer %i Block Size" %histogramMonomer, labelpad = 0, fontsize = 9)
@@ -1977,6 +2142,11 @@ class Application(ttk.Frame):
 				minimum = 0
 				maximum = 0
 			subplot.set_xticks(arange(minimum, maximum + 1, 1))
+
+	"------------------------------------------------------------------------------------------------------------------------------"
+	"***SAVING STATE***"
+	"------------------------------------------------------------------------------------------------------------------------------"
+	
 	def saveState(self):
 		ratiosList = []
 		#Asserts that there are no input errors. Shows errorMessage if error caught.test
@@ -2021,6 +2191,7 @@ class Application(ttk.Frame):
 			else:
 				break
 		print("stateNumber: ", stateNumber)
+		print("singleCoeffList: ", singleCoeffList)
 		nextSetting = LAST_SETTING + 1
 		file = open("state%i.txt" %(stateNumber), "w")
 		file.write("\n# Setting %i \nNumber of Unique Monomers = %i " %(nextSetting, self.numMonomers))
@@ -2045,11 +2216,18 @@ class Application(ttk.Frame):
 		else:
 			file.write("\nStandard")
 			while monomerIndex <= self.numMonomers:
-				innerIndex = 1
-				while innerIndex <= self.numMonomers:
-					coefflist = singleCoeffList[monomerIndex - 1]
-					file.write("\n%i-%i = %f" %(monomerIndex, innerIndex, (coefflist[innerIndex - 1])))
-					innerIndex += 1
+				rrIndex = 0
+				for secondMonomer in range(1, self.numMonomers + 1):
+					if self.numMonomers == 2:
+						coefflist = singleCoeffList[monomerIndex - 1]
+						file.write("\n%i-%i = %f" %(monomerIndex, secondMonomer, (coefflist[secondMonomer - 1])))
+						rrIndex += 1	
+					else:
+						if secondMonomer != monomerIndex:
+							coefflist = singleCoeffList[monomerIndex - 1]
+							print("coefflist: ", coefflist)
+							file.write("\n%i-%i = %f" %(monomerIndex, secondMonomer, (coefflist[rrIndex])))
+							rrIndex += 1
 				monomerIndex += 1
 			file.write("\nend")
 			file.close()
@@ -2058,6 +2236,11 @@ class Application(ttk.Frame):
 		infoMessage("Save Successful", "State successfully saved into state %i!" %stateNumber, 300)
 		#self.saveButton.update()
 		return
+
+	"---------------------------------------------------------------------------------------------------------------------------"
+	"***'OPTIONS' DISPLAY****"
+	"---------------------------------------------------------------------------------------------------------------------------"
+
 	#displays toplevel options window
 	def displayOptions(self):
 		self.optionsWindow = Tk.Toplevel()
@@ -2272,6 +2455,11 @@ class Application(ttk.Frame):
 		#self.amountFrame.destroy()
 		#self.coefficientFrame.destroy()
 		#self.createIterativeInputs(True)
+
+	"----------------------------------------------------------------------------------------------------------------------------"
+	"***DATA EXPORTATION***"
+	"----------------------------------------------------------------------------------------------------------------------------"
+	
 	def export(self):
 		if not self.plotted:
 			errorMessage("Please simulate before exporting data!" , 330)
@@ -2284,18 +2472,18 @@ class Application(ttk.Frame):
 
 		for polymerID in range(1, self.numMonomers + 1):
 			data = self.getHistPlotvals(polymerID)[1]
-			name = "Monomer %i Separation" %(polymerID)
+			name = "Monomer %i Run Length" %(polymerID)
 			currHistData = histData(name, data)
 			self.histDataList.append(currHistData)
 		wb = Workbook()
 		ws = wb.active
-		ws.title = "Monomer Separation"
+		ws.title = "Run Length"
 		colCount = 1
 		maxRow = 0
 		for histData in self.histDataList:
 			ws.cell(row = 1, column = colCount, value = histData.name)
 			ws.column_dimensions[get_column_letter(colCount)].width = len(histData.name) - 1
-			ws.cell(row = 1, column = colCount + 1, value = "Normalized Separation")
+			ws.cell(row = 1, column = colCount + 1, value = "Normalized Counts")
 			ws.column_dimensions[get_column_letter(colCount +1)].width = 20
 			columnCount = 1
 			maxRow = max(len(histData.data), maxRow)
@@ -2488,7 +2676,11 @@ class Application(ttk.Frame):
 			errorMessage("Cannot export if graphData.xlsx is open!", 300)
 		return
 		
+"-------------------------------------------------------------------------------------------------------------------------------"
+"***GLOBAL FUNCTIONS***"
+"-------------------------------------------------------------------------------------------------------------------------------"
 
+"**Error message function***"
 #When called, makes a pop out error informing user of invalid inputs
 def errorMessage(message, width):
 	#Toplevel parameters
@@ -2504,6 +2696,8 @@ def errorMessage(message, width):
 	#OK button to exit
 	exitButton = ttk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
 	exitButton.pack(side = Tk.TOP, pady = 5)
+
+"***Info message function***"
 def infoMessage(title, message, width):
 	#Toplevel parameters
 	top = Tk.Toplevel()
@@ -2517,6 +2711,8 @@ def infoMessage(title, message, width):
 	#OK button to exit
 	exitButton = ttk.Button(master = top, text = "Ok", command = top.destroy, width = 7)
 	exitButton.pack(side = Tk.TOP, pady = 5)
+
+"***Weighted choice function***"
 #Takes in a list of tuple lists with item and weight, and returns a random item based on 
 #weight
 def weighted_choice(choices):
@@ -2528,6 +2724,8 @@ def weighted_choice(choices):
         	return c
         upto += w
     assert False, "Shouldn't get here"
+
+"*** Window Centering function****"
 def center(toplevel):
     toplevel.update_idletasks()
     w = toplevel.winfo_screenwidth()
@@ -2539,15 +2737,27 @@ def center(toplevel):
 #def flatten(l):
 #	flat_list = [item for sublist in l for item in sublist]
 #	return flat_list
-class notInEuropeError(Exception):
-	def __init__(self, value):
-		self.value = value
-class phobicityNotSpecified(Exception):
-	def __init__(self, value):
-		self.value = value
+"***Proper shutdown function***"
 def on_closing():
 	root.quit()
 	root.destroy()
+
+"--------------------------------------------------------------------------------------------------------------------------"
+"***USER DEFINED ERRORS***"
+"--------------------------------------------------------------------------------------------------------------------------"
+
+class notInEuropeError(Exception):
+	def __init__(self, value):
+		self.value = value
+
+class phobicityNotSpecified(Exception):
+	def __init__(self, value):
+		self.value = value
+
+"-----------------------------------------------------------------------------------------------------------------------------"
+"***STARTS THE APPLICATION***"
+"-----------------------------------------------------------------------------------------------------------------------------"
+
 root = Tk.Tk()
 root.protocol("WM_DELETE_WINDOW", on_closing)
 root.wm_title("Compositional Drift %s" % VERSION)
