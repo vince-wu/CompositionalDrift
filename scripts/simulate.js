@@ -1,5 +1,10 @@
 numUniqueMonomers = 2;
+//================================================================================================================================
+//SIMULATION AND DYNAMIC VISUALIZATION
+//================================================================================================================================
 function simulate() {
+	colorArray = ["#FF6600", "#FCD202", "#B0DE09", "#0D8ECF", "#2A0CD0", 
+	"#CD0D74", "#CC0000", "#00CC00", "#0000CC", "#DDDDDD", "#999999", "#333333", "#990000"];
 	//Get all relevant inputs
 	numUniqueMonomers = parseInt(document.getElementById("numUniqueMonomers").value);
 	var totalNumMonomers = parseInt(document.getElementById("totalNumMonomers").value);
@@ -8,14 +13,25 @@ function simulate() {
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
 	var graphTypeObj = document.getElementById("graph1Type");
 	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
-	//var monomer1RR = parseFloat(document.getElementById("monomer1RR").value);
-	//var monomer2RR = parseFloat(document.getElementById("monomer2RR").value);
 	//Initial variable calculations
 	//console.log("Type of monomer1Ratio: ", typeof(monomer1Ratio));
 	polymerLength = Math.floor(mRatio * conversion / 100);
 	var numPolymers = Math.floor(totalNumMonomers / mRatio);
 	var monomerRatioList = getMonomerRatios(numUniqueMonomers);
 	console.log("monomerRatioList: ", monomerRatioList);
+
+	//Set up visualizing canvas
+	var canvas = document.getElementById("visual");
+	var ctx = canvas.getContext("2d");
+	var winWidth = window.innerWidth;
+	var canvasWidth = parseInt(winWidth * 0.95);
+	var squareLength = Math.min((canvasWidth - 10) / polymerLength, 15);
+	canvas.setAttribute("width", canvasWidth);
+	canvas.setAttribute("height", squareLength * numRowsToShow + 10);
+	ctx.clearRect(0, 0, canvas.width, canvas.height)
+	ctx.translate(0.5, 0.5);
+	ctx.lineWidth="1";
+	ctx.strokeStyle = "black";
 	//var rrList = [[monomer1RR, 1], [1, monomer2RR]];
 	var monomerAmountsList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	initialMonomerAmountList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
@@ -58,6 +74,15 @@ function simulate() {
 		polymerArray.push([startingMonomer]);
 		//Remove one of that monomer from the pool
 		monomerAmountsList[startingMonomer - 1] --;
+		//Visualize the monomer being added
+		if (currNumPolymers < numRowsToShow) {
+			color = colorArray[startingMonomer - 1];
+			ctx.beginPath()
+			ctx.fillStyle = color;
+			ctx.rect(0, currNumPolymers*squareLength, squareLength, squareLength);
+			ctx.fill();
+			ctx.stroke();
+		}
 	}
 	//console.log("polymerArray: ", polymerArray);
 	//Propogate chains
@@ -87,10 +112,23 @@ function simulate() {
 			polymer.push(nextMonomer);
 			//Remove that monomer from the reactant pool
 			monomerAmountsList[nextMonomer - 1]--;
+			if (i < numRowsToShow) {
+				var color = colorArray[nextMonomer - 1];
+				//console.log("color: ", color)
+				ctx.beginPath()
+				ctx.fillStyle = color;
+				ctx.rect(currLength*squareLength, i*squareLength, squareLength, squareLength);
+				ctx.fill();
+				ctx.stroke();
+			}
 		}
 	}
 	setGraph(graphType);
 };
+
+//================================================================================================================================
+//FUNCTIONS FOR RETRIEVING USER INPUT DATA
+//=================================================================================================================================
 
 //Parses HTML document, returns list of monomer ratios
 function getMonomerRatios(numUniqueMonomers) {
@@ -139,6 +177,9 @@ function getReactivityRatios(numUniqueMonomers) {
 	return rrList;
 };
 
+//==================================================================================================================================
+//CREATING ITERATIVE INPUTS
+//==================================================================================================================================
 
 function createInputs(inputNum) {
 	inputNum = parseFloat(inputNum);
@@ -596,12 +637,16 @@ function setGraph(type) {
 function visualize() {
 	var canvas = document.getElementById("visual");
 	var ctx = canvas.getContext("2d");
+	var pixelRatio = setCanvasScalingFactor();
+	canvas.setAttribute("width", 1010)
+	canvas.setAttribute("height", 100)
 	ctx.translate(0.5, 0.5);
 	ctx.fillStyle = "#FF0000";
 	ctx.lineWidth="1";
 	ctx.strokeStyle = "black";
-	for (var index = 0; index < 90; index++) {
-		ctx.rect(index*10,0,10,10);
+	size = 20
+	for (var index = 0; index < 100; index++) {
+		ctx.rect(index*size,0,size,size);
 		ctx.fill();
 		ctx.stroke();
 	}
@@ -610,7 +655,9 @@ function visualize() {
 	// ctx.fillRect(100,0,50,50);
 	// ctx.fillRect(200,0,50,50);
 }
-
+function setCanvasScalingFactor() {
+	return window.devicePixelRatio || 1;
+}
 //================================================================================================================================
 //UTILITY FUNCTIONS
 //================================================================================================================================
