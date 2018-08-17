@@ -28,7 +28,8 @@ function simulate() {
 	var squareLength = Math.min((canvasWidth - 10) / polymerLength, 15);
 	canvas.setAttribute("width", canvasWidth);
 	canvas.setAttribute("height", squareLength * numRowsToShow + 10);
-	ctx.clearRect(0, 0, canvas.width, canvas.height)
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.beginPath();
 	ctx.translate(0.5, 0.5);
 	ctx.lineWidth="1";
 	ctx.strokeStyle = "black";
@@ -644,6 +645,8 @@ function setGraph(type) {
 //=================================================================================================================================
 
 function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, length) {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.beginPath();
 	var blockList = [];
 	for (var len = 0; len < polymerLength; len++) {
 		console.log("got here!");
@@ -690,9 +693,6 @@ function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, leng
 	}
 	var lastIndex = 0;
 	function draw() {
-		if (blockList.length == 0) {
-			return;
-		}
 		for (var index = 0; index < lastIndex; index++) {
 			block = blockList[index];
 			ctx.beginPath()
@@ -700,6 +700,9 @@ function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, leng
 			ctx.rect(block.ulX, block.ulY, length, length);
 			ctx.fill();
 			ctx.stroke();
+		}
+		if (lastIndex == blockList.length) {
+			animation.pause();
 		}
 		if (lastIndex < blockList.length) {
 			lastIndex += 1;
