@@ -75,14 +75,15 @@ function simulate() {
 		//Remove one of that monomer from the pool
 		monomerAmountsList[startingMonomer - 1] --;
 		//Visualize the monomer being added
-		if (currNumPolymers < numRowsToShow) {
-			color = colorArray[startingMonomer - 1];
-			ctx.beginPath()
-			ctx.fillStyle = color;
-			ctx.rect(0, currNumPolymers*squareLength, squareLength, squareLength);
-			ctx.fill();
-			ctx.stroke();
-		}
+		// if (currNumPolymers < numRowsToShow) {
+		// 	color = colorArray[startingMonomer - 1];
+		// 	ctx.beginPath()
+		// 	ctx.fillStyle = color;
+		// 	ctx.rect(0, currNumPolymers*squareLength, squareLength, squareLength);
+		// 	ctx.fill();
+		// 	ctx.stroke();
+		// 	sleep(100);
+		// }
 	}
 	//console.log("polymerArray: ", polymerArray);
 	//Propogate chains
@@ -112,17 +113,25 @@ function simulate() {
 			polymer.push(nextMonomer);
 			//Remove that monomer from the reactant pool
 			monomerAmountsList[nextMonomer - 1]--;
-			if (i < numRowsToShow) {
-				var color = colorArray[nextMonomer - 1];
-				//console.log("color: ", color)
-				ctx.beginPath()
-				ctx.fillStyle = color;
-				ctx.rect(currLength*squareLength, i*squareLength, squareLength, squareLength);
-				ctx.fill();
-				ctx.stroke();
-			}
+			// if (i < numRowsToShow) {
+			// 	color = colorArray[nextMonomer - 1];
+			// 	length = squareLength;
+			// 	console.log("currLength: ", currLength);
+			// 	xfactor = currLength;
+			// 	yfactor = i;
+			// 	function draw() {
+			// 		console.log("currLength2: ", currLength)
+			// 		ctx.beginPath()
+			// 		ctx.fillStyle = color;
+			// 		ctx.rect(xfactor*length, yfactor*length, length, length);
+			// 		ctx.fill();
+			// 		ctx.stroke();
+			// 	}
+			// 	requestAnimationFrame(draw)
+			// }
 		}
 	}
+	visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, squareLength);
 	setGraph(graphType);
 };
 
@@ -634,27 +643,76 @@ function setGraph(type) {
 //VISUALIZING FUNCTIONS
 //=================================================================================================================================
 
-function visualize() {
-	var canvas = document.getElementById("visual");
-	var ctx = canvas.getContext("2d");
-	var pixelRatio = setCanvasScalingFactor();
-	canvas.setAttribute("width", 1010)
-	canvas.setAttribute("height", 100)
-	ctx.translate(0.5, 0.5);
-	ctx.fillStyle = "#FF0000";
-	ctx.lineWidth="1";
-	ctx.strokeStyle = "black";
-	size = 20
-	for (var index = 0; index < 100; index++) {
-		ctx.rect(index*size,0,size,size);
-		ctx.fill();
-		ctx.stroke();
+function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, length) {
+	var blockList = [];
+	for (var len = 0; len < polymerLength; len++) {
+		console.log("got here!");
+		// polymerIndex = 0;
+		// var interval = setInterval(loop, 20);
+		// function loop() {
+		// 	console.log("polymerIndex: ", polymerIndex);
+		// 	console.log("numRowsToShow: ", numRowsToShow);
+		// 	console.log("len: ", len);
+		// 	if (polymerIndex >= numRowsToShow) {
+		// 		clearInterval(interval);
+		// 		return;
+		// 	}
+		// 	//console.log("polymerArray: " ,polymerArray)
+		// 	monomerID = polymerArray[polymerIndex][len];
+		// 	var color = colorArray[monomerID - 1];
+		// 	ctx.beginPath()
+		// 	ctx.fillStyle = color;
+		// 	ctx.rect(len*length, polymerIndex*length, length, length);
+		// 	ctx.fill();
+		// 	ctx.stroke();
+		// 	polymerIndex += 1;
+		// }
+		for (var polymerIndex = 0; polymerIndex < numRowsToShow; polymerIndex ++) {
+			monomerID = polymerArray[polymerIndex][len];
+			var color = colorArray[monomerID - 1];
+			var block = {
+				bcolor: color,
+				ulX: len * length,
+				ulY: polymerIndex * length
+			}
+			blockList.push(block);
+			//draw();
+			//sleep(20)
+			// function draw() {
+			// 	ctx.beginPath()
+			// 	ctx.fillStyle = color;
+			// 	ctx.rect(len*length, polymerIndex*length, length, length);
+			// 	ctx.fill();
+			// 	ctx.stroke();
+			// 	requestAnimationFrame(draw);
+			// }
+		}
 	}
+	var lastIndex = 0;
+	function draw() {
+		if (blockList.length == 0) {
+			return;
+		}
+		for (var index = 0; index < lastIndex; index++) {
+			block = blockList[index];
+			ctx.beginPath()
+			ctx.fillStyle = block.bcolor;
+			ctx.rect(block.ulX, block.ulY, length, length);
+			ctx.fill();
+			ctx.stroke();
+		}
+		if (lastIndex < blockList.length) {
+			lastIndex += 1;
+		}
+		requestAnimationFrame(draw)
+	}
+	draw();
 	// var ctx = canvas.getContext("2d");
 	// ctx.fillRect(0,0,50,50);
 	// ctx.fillRect(100,0,50,50);
 	// ctx.fillRect(200,0,50,50);
 }
+
 function setCanvasScalingFactor() {
 	return window.devicePixelRatio || 1;
 }
@@ -699,7 +757,15 @@ function weightedRand(list, weight) {
     }
     // end of function
 };
-
+//sleep function
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
+}
 //========================================================================================================================================
 //DATA
 //========================================================================================================================================
