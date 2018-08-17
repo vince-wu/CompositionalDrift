@@ -13,6 +13,10 @@ function simulate() {
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
 	var graphTypeObj = document.getElementById("graph1Type");
 	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
+	var animate = false;
+	if (document.getElementById("animate").checked) {
+		animate = true;
+	}
 	//Initial variable calculations
 	//console.log("Type of monomer1Ratio: ", typeof(monomer1Ratio));
 	polymerLength = Math.floor(mRatio * conversion / 100);
@@ -132,7 +136,7 @@ function simulate() {
 			// }
 		}
 	}
-	visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, squareLength);
+	visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, squareLength, animate);
 	setGraph(graphType);
 };
 
@@ -644,7 +648,7 @@ function setGraph(type) {
 //VISUALIZING FUNCTIONS
 //=================================================================================================================================
 
-function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, length) {
+function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, length, animate) {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.beginPath();
 	var blockList = [];
@@ -679,16 +683,17 @@ function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, leng
 				ulY: polymerIndex * length
 			}
 			blockList.push(block);
-			//draw();
-			//sleep(20)
-			// function draw() {
-			// 	ctx.beginPath()
-			// 	ctx.fillStyle = color;
-			// 	ctx.rect(len*length, polymerIndex*length, length, length);
-			// 	ctx.fill();
-			// 	ctx.stroke();
-			// 	requestAnimationFrame(draw);
-			// }
+			if (!animate) {
+				draw();
+				function draw() {
+					ctx.beginPath()
+					ctx.fillStyle = color;
+					ctx.rect(len*length, polymerIndex*length, length, length);
+					ctx.fill();
+					ctx.stroke();
+				}
+			}
+
 		}
 	}
 	var lastIndex = 0;
@@ -709,7 +714,9 @@ function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, leng
 		}
 		requestAnimationFrame(draw)
 	}
-	draw();
+	if (animate) {
+		draw();
+	}
 	// var ctx = canvas.getContext("2d");
 	// ctx.fillRect(0,0,50,50);
 	// ctx.fillRect(100,0,50,50);

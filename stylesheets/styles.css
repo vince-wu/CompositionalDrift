@@ -368,6 +368,10 @@ footer {
   padding:5px 5px;
   border-bottom:1px solid #e5e5e5;
 }
+.checkbox {
+  zoom: 1.25;
+}
+
 input[type=text], select {
     padding: 12px 20px;
     margin: 8px 0;
@@ -402,6 +406,7 @@ select {
     box-sizing: border-box;
     min-width: 170px;
 }
+
 canvas {
 
 }
