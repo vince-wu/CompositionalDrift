@@ -690,18 +690,40 @@ function visualize(canvas, ctx, polymerArray, polymerLength, numRowsToShow, leng
 	}
 	var lastIndex = 0;
 	function draw() {
+		var fadeDelay =  10;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		for (var index = 0; index < lastIndex; index++) {
-			block = blockList[index];
-			ctx.beginPath()
-			ctx.fillStyle = block.bcolor;
-			ctx.rect(block.ulX, block.ulY, length, length);
-			ctx.fill();
-			ctx.stroke();
+			ctx.globalAlpha = 1;
+			var initFade = 0.2;
+			var maxFade = 1;
+			if (index > lastIndex - fadeDelay * numRowsToShow) {
+				fadeStep = (maxFade - initFade) / (fadeDelay * numRowsToShow);
+				fadeDistance = Math.abs(lastIndex - index);
+				fade = initFade + fadeStep * fadeDistance;
+				ctx.globalAlpha = fade;
+			}
+			if (index < blockList.length){ 
+				block = blockList[index];
+				ctx.beginPath()
+				ctx.fillStyle = block.bcolor;
+				ctx.rect(block.ulX, block.ulY, length, length);
+				ctx.fill();
+				ctx.stroke();
+			}
 		}
-		if (lastIndex == blockList.length) {
-			animation.finish();
+		if (lastIndex > blockList.length + fadeDelay * numRowsToShow) {
+			//animation.cancel();
+			// for (var index = 0; index < lastIndex; index++) {
+			// 	ctx.globalAlpha = 1;
+			// 	block = blockList[index];
+			// 	ctx.beginPath()
+			// 	ctx.fillStyle = block.bcolor;
+			// 	ctx.rect(block.ulX, block.ulY, length, length);
+			// 	ctx.fill();
+			// 	ctx.stroke();
+			// }
 		}
-		if (lastIndex < blockList.length) {
+		if (lastIndex < blockList.length + fadeDelay * numRowsToShow) {
 			lastIndex += 1;
 		}
 		currAnimation = requestAnimationFrame(draw)
