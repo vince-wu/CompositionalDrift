@@ -519,6 +519,7 @@ function createHistChart(chartData, monomerID) {
 	chart2.categoryField = keyList[0];
 	chart2.startDuration = 1;
 	chart2.sequencedAnimation = false; 
+	chart2["export"] = {"enabled": true};
 
 	//Value Axis
 	var valueAxis = new AmCharts.ValueAxis();
