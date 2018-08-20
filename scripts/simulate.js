@@ -1,5 +1,15 @@
 numUniqueMonomers = 2;
 currAnimation = 0;
+///===============================================================================================================================
+///'ENTER' KEY EVENT TRIGGER
+///===============================================================================================================================
+function checkEnter(event) {
+	var keyPressed = event.keyCode;
+	///console.log("keyPressed: ", keyPressed);
+	if (keyPressed == 13) {
+		simulate();
+	}
+}
 //================================================================================================================================
 //SIMULATION AND DYNAMIC VISUALIZATION
 //================================================================================================================================
@@ -52,7 +62,7 @@ function simulate(demo = false) {
 	//var rrList = [[monomer1RR, 1], [1, monomer2RR]];
 	var monomerAmountsList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	initialMonomerAmountList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
-	console.log("initialMonomerAmountList1: ", initialMonomerAmountList);
+	//console.log("initialMonomerAmountList1: ", initialMonomerAmountList);
 	rrList = getRateConstantRatios(numUniqueMonomers);
 	//console.log(monomerAmountsList);
 	//Initiate chains, all polymer chains are represented as arrays and stored in another array, polymerArray
