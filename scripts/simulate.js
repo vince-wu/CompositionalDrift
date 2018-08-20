@@ -73,6 +73,35 @@ function simulate(demo = false) {
 			initChoices.push(2);
 			initWeightList.push(initWeight);
 			initWeightList.push(1 - initWeight);
+		} else if (numUniquemonomers == 3) {
+			var m1 = monomerAmounts[0]
+			var m2 = monomerAmounts[1]
+			var m3 = monomerAmounts[2]
+			var F = m1 + m2 + m3
+			var f1 = m1/F
+			var f2 = m2/F
+			var f3 = m3/F
+			var r11 = rrList[0][0]
+			var r12 = rrList[0][1]
+			var r13 = rrList[0][2]
+			var r21 = rrList[1][0]
+			var r22 = rrList[1][1]
+			var r23 = rrList[1][2]
+			var r31 = rrList[2][0]
+			var r32 = rrList[2][1]
+			var r33 = rrList[2][2]
+			var R1 = r11 + r12 + r13
+			var R2 = r21 + r22 + r23
+			var R3 = r31 + r32 + r33
+			var a = f1*r11*f1/(r11*f1+r12*f2+r13*f3) + f2*r21*f1/(r21*f1+r22*f2+r23*f3) + f3*r31*f1/(r31*f1+r32*f2+r33*f3)
+			var b = f1*r12*f2/(r11*f1+r12*f2+r13*f3) + f2*r22*f2/(r21*f1+r22*f2+r23*f3) + f3*r32*f2/(r31*f1+r32*f2+r33*f3)
+			var c = 1 - a - b
+			initChoices.push(1);
+			initChoices.push(2);
+			initChoices.push(3);
+			initWeight.push(a);
+			initWeight.push(b);
+			initWeight.push(c);
 		} else {
 		//If it is a 3-monomer or more system, use initial starting ratios to determing starting monomers
 			var initChoices = [];
@@ -216,7 +245,7 @@ function createInputs(inputNum) {
 
 	//Change HTML Objects for Monomer Ratios
 
-	//Delete all current objects
+	//Delete all current objects relating to monomer ratios
 
 	for (var index = 0; index < numUniqueMonomers; index++) {
 		var row = inputTable.rows[index];
@@ -224,7 +253,7 @@ function createInputs(inputNum) {
 		row.deleteCell(4);
 	}
 
-	//Iteratively create objects
+	//Iteratively create objects for Monomer Ratios
 
 	for (var index = 0; index < inputNum; index++) {
 		var labelElement = document.createElement("LABEL");;
@@ -242,7 +271,7 @@ function createInputs(inputNum) {
 
 	//Change HTML Objects for Monomer Reactivities
 
-	//Delete all objects
+	//Delete all objects for monomer reactivities
 
 	for (var index = 0; index < numUniqueMonomers; index++) {
 			var row = inputTable.rows[index];
@@ -250,7 +279,7 @@ function createInputs(inputNum) {
 				row.deleteCell(-1);
 				row.deleteCell(-1);
 			} else {
-				for (var index2 = 1; index2 <= numUniqueMonomers; index2++) { 
+				for (var index2 = 1; index2 <= numUniqueMonomers - 1; index2++) { 
 					row.deleteCell(-1);
 					row.deleteCell(-1);
 				}
@@ -261,17 +290,19 @@ function createInputs(inputNum) {
 	if (inputNum > 2) {
 		for (var index = 0; index < inputNum; index++) {
 			var row = inputTable.rows[index];
-			for (var index2 = 1; index2 <= inputNum; index2++) {
-				var labelElement = document.createElement("LABEL");
-				var labelText = index2 + "-" + (index + 1) + " Reactivity";
-				labelElement.innerHTML = labelText;
-				var inputElement = document.createElement("INPUT");
-				inputElement.setAttribute("type", "number");
-				inputElement.setAttribute("value", 1);
-				var labelCell = row.insertCell(-1);
-				labelCell.appendChild(labelElement);
-				var inputCell = row.insertCell(-1);
-				inputCell.appendChild(inputElement);
+			for (var index2 = 0; index2 < inputNum; index2++) {
+				if (index2 != index) {
+					var labelElement = document.createElement("LABEL");
+					var labelText = " rr" + (index + 1) + (index2 + 1);
+					labelElement.innerHTML = labelText;
+					var inputElement = document.createElement("INPUT");
+					inputElement.setAttribute("type", "number");
+					inputElement.setAttribute("value", 1);
+					var labelCell = row.insertCell(-1);
+					labelCell.appendChild(labelElement);
+					var inputCell = row.insertCell(-1);
+					inputCell.appendChild(inputElement);
+				}
 			}
 		}
 	}
@@ -279,7 +310,7 @@ function createInputs(inputNum) {
 		for (var index = 0; index < 2; index++) {
 			var row = inputTable.rows[index];
 			var labelElement = document.createElement("LABEL");
-			var labelText = "Monomer " + (index + 1) + " Reactivity";
+			var labelText = "Reactivity Ratio" + (index + 1);
 			labelElement.innerHTML = labelText;
 			var inputElement = document.createElement("INPUT");
 			inputElement.setAttribute("type", "number");
