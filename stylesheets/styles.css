@@ -79,7 +79,7 @@ h1, h2, h3 {
 }
 
 h1 {
-  font-size:40px;
+  font-size:36px;
 }
 
 
@@ -159,10 +159,9 @@ th {
 
 
 header {
-  margin-top:1%;
+  margin-top:0%;
   width:100%;
   float:center;
-  position:fixed;
   -webkit-font-smoothing:subpixel-antialiased;
 }
 
@@ -324,6 +323,9 @@ footer {
     color:#444;
   }
 
+}
+.innerHeader {
+  padding: px;
 }
 .intro {
   padding: 12px 20px;

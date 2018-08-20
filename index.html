@@ -27,12 +27,14 @@
     gtag('config', 'UA-121861251-1');
     </script>
   </head>
-  <body>
+  <body onkeypress="simulate()">
+    <div class="innerHeader">
+      <h1>Compositional Drift</h1>
+        <div>
+          This program simulates controlled polymer growth based on the Mayo Lewis equation and Monte Carlo method. This site is maintained by Vincent Wu.
+        </div>
+    </div>
   <div>
-        <h1>Compositional Drift</h1>
-          <div class = "i1">
-            <p>This program simulates controlled polymer growth based on the Mayo Lewis equation and Monte Carlo method. This site is maintained by Vincent Wu.</p>
-          </div>
         <!--<img src="Images/visual.png" alt="visualization of program" class="example-image">-->
         <div id="chartdiv" style="width: 100%; height: 400px; display: block;"></div>
         <div id="chartdiv2" style="width: 100%; height: 400px; display: none;"></div>
@@ -57,7 +59,7 @@
                   <select id="graph1Type" onchange="setGraph(this.options[this.selectedIndex].value)">
                     <option>Monomer Occurences</option>
                     <option>Percentage Monomer</option>
-                    <option>Monomer Separation</option>
+                    <option>Run Length</option>
                     <option>Polymer Compositions</option>
                   </select>
                 </td>
