@@ -53,7 +53,7 @@ function simulate(demo = false) {
 	var monomerAmountsList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	initialMonomerAmountList = getMonomerAmounts(monomerRatioList, totalNumMonomers);
 	console.log("initialMonomerAmountList1: ", initialMonomerAmountList);
-	rrList = getReactivityRatios(numUniqueMonomers);
+	rrList = getRateConstantRatios(numUniqueMonomers);
 	//console.log(monomerAmountsList);
 	//Initiate chains, all polymer chains are represented as arrays and stored in another array, polymerArray
 	polymerArray = [];
@@ -73,35 +73,6 @@ function simulate(demo = false) {
 			initChoices.push(2);
 			initWeightList.push(initWeight);
 			initWeightList.push(1 - initWeight);
-		} else if (numUniquemonomers == 3) {
-			var m1 = monomerAmounts[0]
-			var m2 = monomerAmounts[1]
-			var m3 = monomerAmounts[2]
-			var F = m1 + m2 + m3
-			var f1 = m1/F
-			var f2 = m2/F
-			var f3 = m3/F
-			var r11 = rrList[0][0]
-			var r12 = rrList[0][1]
-			var r13 = rrList[0][2]
-			var r21 = rrList[1][0]
-			var r22 = rrList[1][1]
-			var r23 = rrList[1][2]
-			var r31 = rrList[2][0]
-			var r32 = rrList[2][1]
-			var r33 = rrList[2][2]
-			var R1 = r11 + r12 + r13
-			var R2 = r21 + r22 + r23
-			var R3 = r31 + r32 + r33
-			var a = f1*r11*f1/(r11*f1+r12*f2+r13*f3) + f2*r21*f1/(r21*f1+r22*f2+r23*f3) + f3*r31*f1/(r31*f1+r32*f2+r33*f3)
-			var b = f1*r12*f2/(r11*f1+r12*f2+r13*f3) + f2*r22*f2/(r21*f1+r22*f2+r23*f3) + f3*r32*f2/(r31*f1+r32*f2+r33*f3)
-			var c = 1 - a - b
-			initChoices.push(1);
-			initChoices.push(2);
-			initChoices.push(3);
-			initWeight.push(a);
-			initWeight.push(b);
-			initWeight.push(c);
 		} else {
 		//If it is a 3-monomer or more system, use initial starting ratios to determing starting monomers
 			var initChoices = [];
@@ -120,20 +91,11 @@ function simulate(demo = false) {
 		polymerArray.push([startingMonomer]);
 		//Remove one of that monomer from the pool
 		monomerAmountsList[startingMonomer - 1] --;
-		//Visualize the monomer being added
-		// if (currNumPolymers < numRowsToShow) {
-		// 	color = colorArray[startingMonomer - 1];
-		// 	ctx.beginPath()
-		// 	ctx.fillStyle = color;
-		// 	ctx.rect(0, currNumPolymers*squareLength, squareLength, squareLength);
-		// 	ctx.fill();
-		// 	ctx.stroke();
-		// 	sleep(100);
-		// }
 	}
 	//console.log("polymerArray: ", polymerArray);
 	//Propogate chains
 	//First loop: propagate until the polymer length reaches expected value
+	console.log("rrList 2: ", rrList);
 	for (var currLength = 1; currLength < polymerLength; currLength++) {
 		//Second loop: during each cycle of propagation, add one monomer to each of the polymer chains
 		for (var i = 0; i < polymerArray.length; i++) {
@@ -159,22 +121,6 @@ function simulate(demo = false) {
 			polymer.push(nextMonomer);
 			//Remove that monomer from the reactant pool
 			monomerAmountsList[nextMonomer - 1]--;
-			// if (i < numRowsToShow) {
-			// 	color = colorArray[nextMonomer - 1];
-			// 	length = squareLength;
-			// 	console.log("currLength: ", currLength);
-			// 	xfactor = currLength;
-			// 	yfactor = i;
-			// 	function draw() {
-			// 		console.log("currLength2: ", currLength)
-			// 		ctx.beginPath()
-			// 		ctx.fillStyle = color;
-			// 		ctx.rect(xfactor*length, yfactor*length, length, length);
-			// 		ctx.fill();
-			// 		ctx.stroke();
-			// 	}
-			// 	requestAnimationFrame(draw)
-			// }
 		}
 	}
 	setGraph(graphType);
@@ -201,8 +147,8 @@ function getMonomerRatios(numUniqueMonomers) {
 
 //Parses HTML document, returns a list of lists of reactivity ratios
 
-function getReactivityRatios(numUniqueMonomers) {
-	var rrList = [];
+function getRateConstantRatios(numUniqueMonomers) {
+	var rcList = [];
 	var inputTable = document.getElementById("inputTable");
 	if (numUniqueMonomers == 2) {
 		var row1 = inputTable.rows[0];
@@ -215,22 +161,50 @@ function getReactivityRatios(numUniqueMonomers) {
 		var inputObj2 = cell2.children[0];
 		var rr2 = parseFloat(inputObj2.value);
 		var singleRRList2 = [1, rr2];
-		rrList = [singleRRList1, singleRRList2];
-		return rrList;
-	}
-	for (var index = 0; index < numUniqueMonomers; index++) {
-		var singleRRList = []; 
-		rrList.push(singleRRList);
-		for (var index2 = 0; index2 < numUniqueMonomers; index2++) {
-			var row = inputTable.rows[index2];
-			var cell = row.cells[7 + 2 * index];
-			var inputObj = cell.children[0];
-			var reactivityRatio = parseFloat(inputObj.value);
-			singleRRList.push(reactivityRatio);
+		rcList = [singleRRList1, singleRRList2];
+	} else {
+		var rrList = [];
+		for (var index = 0; index < numUniqueMonomers; index++) {
+			var singleRRList = []; 
+			rrList.push(singleRRList);
+			for (var index2 = 0; index2 < numUniqueMonomers - 1; index2++) {
+				var row = inputTable.rows[index];
+				var cell = row.cells[7 + 2 * index2];
+				var inputObj = cell.children[0];
+				var reactivityRatio = parseFloat(inputObj.value);
+				singleRRList.push(reactivityRatio);
+			}
 		}
+		console.log("rrList: ", rrList);
+		rcList = convertRRtoRC(numUniqueMonomers, rrList);
+		//console.log("got here!");
 	}
-	return rrList;
+	console.log("rcList: ", rcList);
+	return rcList;
 };
+
+//Input: a matrix of reactivity ratios
+//Output: a larger matrix of relative rate constants derived from reactivity ratios
+
+function convertRRtoRC(numUniqueMonomers, rrList) {
+	var rcList = [];
+	for (var rrIndex = 0; rrIndex < numUniqueMonomers; rrIndex++) {
+		var singleRCList = [];
+		var rrIndexToAccess = 0;
+		var rrSubList = rrList[rrIndex];
+		for (var rrIndex2 = 0; rrIndex2 < numUniqueMonomers; rrIndex2++) {
+			if (rrIndex2 == rrIndex) {
+				singleRCList.push(1);
+			} else {
+				rc =  1 / rrSubList[rrIndexToAccess];
+				singleRCList.push(rc);
+				rrIndexToAccess++;
+			}
+		}
+		rcList.push(singleRCList); 
+	}
+	return rcList;
+}
 
 //==================================================================================================================================
 //CREATING ITERATIVE INPUTS
@@ -322,7 +296,7 @@ function createInputs(inputNum) {
 		}
 	}
 
-	//Update numUniquemonomers
+	//Update numUniqueMonomers
 
 	numUniqueMonomers = inputNum;
 
@@ -556,7 +530,7 @@ function createHistChart(chartData, monomerID) {
 	var valueAxis = new AmCharts.ValueAxis();
 	valueAxis.position = "bottom";
 	valueAxis.minimum = 0;
-	valueAxis.title = "Normalized Separation";
+	valueAxis.title = "Normalized Counts";
 	chart2.addValueAxis(valueAxis);
 
 	//X Axis
@@ -620,7 +594,7 @@ function formatHistGraph(monomerID) {
 	chart2.categoryField = keyList[0];
 	chart2.graphs[0].valueField = keyList[1];
 	chart2.dataProvider = chartData;
-	chart2.categoryAxis.title = "Monomer " + monomerID + " Block Size";
+	chart2.categoryAxis.title = "Monomer " + monomerID + " Run Length";
 	chart2.graphs[0].lineColor = colorArray[monomerID - 1];
 	chart2.graphs[0].fillColors = colorArray[monomerID - 1];
 	chart2.validateData();
@@ -674,7 +648,7 @@ function setGraph(type) {
 			}
 			chart.validateData();
 			break;
-		case "Monomer Separation":
+		case "Run length":
 			var histMonomer = parseInt(document.getElementById("hist1Monomer").value);
 			chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, histMonomer);
 			createHistChart(chartData, histMonomer);
