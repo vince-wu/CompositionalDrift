@@ -556,11 +556,14 @@ function formatXYGraphs() {
 
 	//Remove all old graphs
 	var graphList = chart.graphs;
-	//console.log("graphList.length", graphList.length);
-	for (var i = 0; i < graphList.length; i++) {
-		chart.removeGraph(graphList[i]);
+	console.log("graphList.length", graphList.length);
+	initGraphListLen = graphList.length;
+	for (var i = 0; i < initGraphListLen; i++) {
+		console.log("graphList: ", graphList, i);
+		chart.removeGraph(graphList[0]);
 	}
 	console.log("lengthafter: ", graphList.length);
+	console.log("numUniqueMonomers: ", numUniqueMonomers);
 	//Add graphs depending on number of unique monomers
 	for (var graphNumber = 1; graphNumber <= numUniqueMonomers; graphNumber++) {
 		var graph = new AmCharts.AmGraph();
@@ -572,7 +575,7 @@ function formatXYGraphs() {
 		graph.bullet = "triangleDown";
 		chart.addGraph(graph);
 	}
-	chart.removeGraph(graphList[0]);
+	//chart.removeGraph(graphList[0]);
 };
 function formatHistGraph(monomerID) {
 	if (monomerID > numUniqueMonomers) {
