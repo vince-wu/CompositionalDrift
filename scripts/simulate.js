@@ -31,8 +31,8 @@ function simulate(demo = false) {
 	if (demo) {
 		animate = true;
 		numRowsToShow = 4;
-		mRatio = 74;
-		totalNumMonomers = 50000;
+		//mRatio = 100;
+		totalNumMonomers = 100000;
 	}
 	//Stops any current animation
 	if (!demo) {
@@ -620,7 +620,7 @@ function setGraph(type) {
 			//console.log("chartData: ", chartData);
 			chart.dataProvider = chartData;
 			chart.valueAxes[0].title = "Monomer Index";
-			chart.valueAxes[1].title = "Monomer Occurence";
+			chart.valueAxes[1].title = "Instantaneous Polymer Composition";
 			chart.valueAxes[0].minimum = 0;
 			chart.valueAxes[0].maximum = polymerLength;
 			chart.valueAxes[1].minimum = 0;
@@ -658,7 +658,7 @@ function setGraph(type) {
 			}
 			chart.validateData();
 			break;
-		case "Run length":
+		case "Run Length":
 			var histMonomer = parseInt(document.getElementById("hist1Monomer").value);
 			chartData = getMonomerSeparation(polymerArray, numUniqueMonomers, polymerLength, histMonomer);
 			createHistChart(chartData, histMonomer);
