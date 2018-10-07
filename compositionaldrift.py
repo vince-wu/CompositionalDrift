@@ -84,7 +84,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.8"
+VERSION = "v1.8.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -981,7 +981,7 @@ class Application(ttk.Frame):
 			monomerAmountFrame = ttk.Frame(master = self.amountFrame)
 			monomerAmountFrame.pack(side = Tk.TOP, padx = 0, pady = 3)
 			inputAmountLabel = ttk.Label(master = monomerAmountFrame, text = "     Monomer " 
-				+ str(createCount + 1) + " Ratio: ")
+				+ str(createCount + 1) + " Percentage: ")
 			self.ratiosLabelList.append(inputAmountLabel)
 			inputAmountLabel.pack(side = Tk.LEFT)
 			#Entry for inputAmount
@@ -2002,6 +2002,7 @@ class Application(ttk.Frame):
 							label = self.aliasList[monomer - 1]
 						else:
 							label = "Monomer " + str(monomer)
+					polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
 					curve = subplot.plot(polymerIndex, monomercounts, label = label)
 					#setting axis limits
 					subplot.set_ylim([0,1])
@@ -2010,6 +2011,7 @@ class Application(ttk.Frame):
 				for monomer in range(1, self.numMonomers + 1):
 					#x-axis array
 					polymerIndex = list(range(1, self.polymerLength + 1))
+
 					#y-axis array initation
 					monomercounts = [0] * self.polymerLength
 					#adjust axis title
@@ -2029,6 +2031,7 @@ class Application(ttk.Frame):
 						#calculated percentage of monomer remaining
 						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
 						monomercounts[index - 1] = percentageRemaining
+					polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
 				#debugging purposes
 				#print(polymerIndex)
 				#print(monomercounts)
@@ -2045,6 +2048,7 @@ class Application(ttk.Frame):
 				subplot.set_ylim([0,1])
 				#x-axis array
 				polymerIndex = list(range(1, self.polymerLength + 1))
+				polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
 				#list of data for all monomers
 				fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
 				monomerID = 1
@@ -2058,7 +2062,6 @@ class Application(ttk.Frame):
 					else:
 						curve = subplot.plot(polymerIndex, compList, label = "Monomer %i" %(monomerID))
 					monomerID += 1
-
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
 			if LEGEND:
