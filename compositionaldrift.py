@@ -70,7 +70,7 @@ COLOR2 = '#5DA5DA'
 COLOR3 = '#F15854'
 COLOR4 = '#DECF3F'
 COLOR5 = '#60BD68'
-COLOR6 = '#F17CB0'
+COLOR6 = '#F17CB0'	
 COLOR7 = '#B276B2'
 COLOR8 = '#FAA43A'
 DCOLOR1 = '#353535'
@@ -872,7 +872,7 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Run Length", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"), 
+			"Run Length", "Polymer Compositions", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"), 
 		textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
@@ -884,7 +884,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Run Length", "Polymer Compositions", "Hydrophobic Blocks", "Hydrophilic Blocks", "None"),
+			"Run Length", "Polymer Compositions", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"),
 			 textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
