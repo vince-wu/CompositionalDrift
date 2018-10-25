@@ -20,7 +20,7 @@ function simulate(demo = false) {
 	numUniqueMonomers = parseInt(document.getElementById("numUniqueMonomers").value);
 	var totalNumMonomers = parseInt(document.getElementById("totalNumMonomers").value);
 	var mRatio = parseInt(document.getElementById("mRatio").value);
-	var conversion = parseInt(document.getElementById("conversion").value);
+	conversion = parseInt(document.getElementById("conversion").value);
 	var numRowsToShow = parseInt(document.getElementById("numRowsToShow").value);
 	var graphTypeObj = document.getElementById("graph1Type");
 	var graphType = graphTypeObj.options[graphTypeObj.selectedIndex].value;
@@ -241,7 +241,7 @@ function createInputs(inputNum) {
 
 	for (var index = 0; index < inputNum; index++) {
 		var labelElement = document.createElement("LABEL");;
-		labelElement.innerHTML = "Monomer " + (index + 1) + " Ratio:";
+		labelElement.innerHTML = "Monomer " + (index + 1) + " Percentage:";
 		var inputElement = document.createElement("INPUT");
 		inputElement.setAttribute("type", "number");
 		inputElement.setAttribute("value", 1);
@@ -344,10 +344,15 @@ function getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength) {
 			var monomerRatio = monomerCount / polymerArray.length;
 			singleCompositionList.push(monomerRatio);
 		}
-		var xyDataPair = [createRangeArray(polymerLength), singleCompositionList];
+		var percentageArray = [];
+		for (var i = 1; i <= polymerLength; i++) {
+			percentageArray.push(i / polymerLength * conversion);
+		}
+		var xyDataPair = [percentageArray, singleCompositionList];
 		fullCompositionList.push(xyDataPair);
 	}
 	chartData = convertToChartData(fullCompositionList, numUniqueMonomers, polymerLength);
+	console.log(chartData[1]);
 	return chartData;
 };
 function getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList) {
@@ -429,6 +434,7 @@ function getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength) {
 			var polymerComposition = totalMonomerCount / (polymerArray.length * (positionIndex + 1));
 			singleCompositionList.push(polymerComposition);
 		}
+		indexArray = createRangeArray(polymerLength);
 		var xyDataPair = [createRangeArray(polymerLength), singleCompositionList];
 		fullCompositionList.push(xyDataPair);
 	}
@@ -619,10 +625,10 @@ function setGraph(type) {
 			chartData = getMonomerComposition(polymerArray, numUniqueMonomers, polymerLength);
 			//console.log("chartData: ", chartData);
 			chart.dataProvider = chartData;
-			chart.valueAxes[0].title = "Monomer Index";
+			chart.valueAxes[0].title = "Conversion";
 			chart.valueAxes[1].title = "Instantaneous Polymer Composition";
 			chart.valueAxes[0].minimum = 0;
-			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[0].maximum = conversion;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
 			for (var i = 0; i < numUniqueMonomers; i++) {
@@ -633,10 +639,10 @@ function setGraph(type) {
 		case "Percentage Monomer":
 			chartData = getPercentageMonomer(polymerArray, numUniqueMonomers, polymerLength, initialMonomerAmountList);
 			chart.dataProvider = chartData;
-			chart.valueAxes[0].title = "Monomer Index";
+			chart.valueAxes[0].title = "Conversion";
 			chart.valueAxes[1].title = "Unreacted Monomer Remaining";
 			chart.valueAxes[0].minimum = 0;
-			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[0].maximum = conversion;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
 			for (var i = 0; i < numUniqueMonomers; i++) {
@@ -647,10 +653,10 @@ function setGraph(type) {
 		case "Polymer Compositions":
 			chartData = getPolymerCompostion(polymerArray, numUniqueMonomers, polymerLength);
 			chart.dataProvider = chartData;
-			chart.valueAxes[0].title = "Monomer index";
+			chart.valueAxes[0].title = "Conversion";
 			chart.valueAxes[1].title = "Instantaneous Composition of Polymer Chain";
 			chart.valueAxes[0].minimum = 0;
-			chart.valueAxes[0].maximum = polymerLength;
+			chart.valueAxes[0].maximum = conversion;
 			chart.valueAxes[1].minimum = 0;
 			chart.valueAxes[1].maximum = 1;
 			for (var i = 0; i < numUniqueMonomers; i++) {
@@ -768,7 +774,7 @@ function setCanvasScalingFactor() {
 function createRangeArray(length) {
 	var array = [];
 	for (var i = 1; i <= length; i++) {
-		array.push(i);
+		array.push(i / length * conversion);
 	}
 	return array;
 };
