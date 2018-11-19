@@ -53,7 +53,7 @@ HYDROPHOBICITY = 0
 SETTING = 1
 LOAD_SUCCESSFUL = False
 GRAPH1_TYPE = "Monomer Occurrences"
-GRAPH2_TYPE = "Percentage Monomer"
+GRAPH2_TYPE = "Monomer Usage"
 HISTOGRAM1_MONOMER = 1
 HISTOGRAM2_MONOMER = 2
 HISTOGRAM_LIMIT = 1
@@ -84,7 +84,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.8.1"
+VERSION = "v1.9"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -421,13 +421,13 @@ def setConfigVariableHelper(configType, configValue):
 		if configValue == 0:
 			GRAPH1_TYPE = "Monomer Occurrences"
 		elif configValue == 1:
-			GRAPH1_TYPE = "Percentage Monomer"
+			GRAPH1_TYPE = "Monomer Usage"
 		elif configValue == 2:
 			GRAPH1_TYPE = "Monomer Separation"
 		elif configValue == 3:
 			GRAPH1_TYPE = "None"
 		elif configValue == 4:
-			GRAPH1_TYPE = "Polymer Compositions"
+			GRAPH1_TYPE = "DP Distribution"
 		elif configValue == 5:
 			GRAPH1_TYPE = "Hydrophobic Blocks"
 		elif configValue == 6:
@@ -439,13 +439,13 @@ def setConfigVariableHelper(configType, configValue):
 		if configValue == 0:
 			GRAPH2_TYPE = "Monomer Occurrences"
 		elif configValue == 1:
-			GRAPH2_TYPE = "Percentage Monomer"
+			GRAPH2_TYPE = "Monomer Usage"
 		elif configValue == 2:
 			GRAPH2_TYPE = "Monomer Separation"
 		elif configValue == 3:
 			GRAPH2_TYPE = "None"
 		elif configValue == 4:
-			GRAPH2_TYPE = "Polymer Compositions"
+			GRAPH2_TYPE = "DP Distribution"
 		elif configValue == 5:
 			GRAPH2_TYPE = "Hydrophobic Blocks"
 		elif configValue == 6:
@@ -789,7 +789,7 @@ class Application(ttk.Frame):
 		self.raftRatioFrame = ttk.Frame(master = self.columnFrame)
 		self.raftRatioFrame.pack(side = Tk.TOP)
 		#Label for raftRatio Entry
-		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Maximum DP:   ")
+		self.raftRatioLabel = ttk.Label(master = self.raftRatioFrame, text = "Number Average DP:   ")
 		self.raftRatioLabel.pack(side = Tk.LEFT, pady = 3)
 		#Entry for raftRatio
 		self.raftRatioEntry = ttk.Entry(master = self.raftRatioFrame, width = 5)
@@ -871,7 +871,7 @@ class Application(ttk.Frame):
 		self.graphType2Label = ttk.Label(master = self.graphFrame2, text = "Graph 2 Type:")
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
-		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
+		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Monomer Usage", 
 			"Run Length", "DP Distribution", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"), 
 		textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
@@ -883,7 +883,7 @@ class Application(ttk.Frame):
 		#setting default variable for graphType1
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
-		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
+		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Monomer Usage", 
 			"Run Length", "DP Distribution", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"),
 			 textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
@@ -2482,7 +2482,7 @@ class Application(ttk.Frame):
 	"----------------------------------------------------------------------------------------------------------------------------"
 	
 	def graphSubPlot(self, polymerArray, graphType, subplot, number):
-		if graphType == "Percentage Monomer" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
+		if graphType == "Monomer Usage" or graphType == "Monomer Occurrences" or graphType == "Polymer Compositions":
 			if graphType == "Monomer Occurrences":
 				if DYAD:
 					polymerArrayToUse = self.getDyad(polymerArray)
@@ -2528,7 +2528,7 @@ class Application(ttk.Frame):
 					#setting axis limits
 					subplot.set_ylim([0,1])
 			#graphs Percentage of Monomer Remaining
-			if graphType == "Percentage Monomer":
+			if graphType == "Monomer Usage":
 				for monomer in range(1, self.numMonomers + 1):
 					#x-axis array
 					polymerIndex = list(range(1, self.polymerLength + 1))
@@ -3064,7 +3064,7 @@ class Application(ttk.Frame):
 						cell.value = monomerCountsList[monomerID - 1][monomerIDcount]
 						monomerIDcount += 1
 				colCount += 1
-		ws3 = wb.create_sheet("Percentage Monomer")
+		ws3 = wb.create_sheet("Monomer Usage")
 		for monomer in range(1, self.numMonomers + 1):
 			#x-axis array
 			polymerIndex = list(range(1, self.polymerLength + 1))
