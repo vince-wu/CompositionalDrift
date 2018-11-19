@@ -824,7 +824,7 @@ class Application(ttk.Frame):
 		self.backSimFrame.pack(side = Tk.TOP)
 		#A simulate button to simulate polymer formation
 		self.simulateButton = ttk.Button(master = self.backSimFrame, text = "Simulate", width = 8,
-		 command = self.simulate)
+		 command = self.simulate2)
 		self.simulateButton.pack(side = Tk.LEFT, padx = 2, pady = 4)
 		#An Update Button Widget
 		updateButton = ttk.Button(master = self.backSimFrame, text = "Update",
@@ -872,11 +872,11 @@ class Application(ttk.Frame):
 		self.graphType2Label.pack(side = Tk.LEFT)
 		#combobox
 		self.graphType1ComboBox = ttk.Combobox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Run Length", "Polymer Compositions", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"), 
+			"Run Length", "DP Distribution", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"), 
 		textvariable = self.graphType1TkVar, state = "readonly", width = 21)
 		self.graphType1ComboBox.pack(side = Tk.LEFT)
 
-		#Spinbox for graphType1
+		#Spinbox for graphType1Spinbox
 		#self.graphType1Spinbox = Tk.Spinbox(master = self.graphFrame1, values = ("Monomer Occurrences", "Percentage Monomer", 
 		#	"Monomer Separation", "None"), width = 20, textvariable = self.graphType1TkVar, state = "readonly")
 		#self.graphType1Spinbox.pack(side = Tk.LEFT)
@@ -884,7 +884,7 @@ class Application(ttk.Frame):
 		self.graphType1TkVar.set(GRAPH1_TYPE)
 		#combobox
 		self.graphType2ComboBox = ttk.Combobox(master = self.graphFrame2, values = ("Monomer Occurrences", "Percentage Monomer", 
-			"Run Length", "Polymer Compositions", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"),
+			"Run Length", "DP Distribution", "Hydrophobic Run Length", "Hydrophilic Run Length", "None"),
 			 textvariable = self.graphType2TkVar, state = "readonly", width = 21)
 		self.graphType2ComboBox.pack(side = Tk.LEFT)
 		#Frame for histogramLimit
@@ -939,7 +939,7 @@ class Application(ttk.Frame):
 		self.col2Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, padx = 1, pady = 1)
 		self.createIterativeInputs(False)
 	def key(self):
-		self.simulate()
+		self.simulate2()
 	
 	"-------------------------------------------------------------------------------------------------------------------------------"
 	"***CREATE ITERATIVE INPUTS: MONOMER RATIOS AND REACTIVITY RATIOS***"
@@ -1545,6 +1545,485 @@ class Application(ttk.Frame):
 		center(root)
 		self.simulateLocked = False
 		#self.inputFrame.pack_forget()
+	"-----------------------------------------------------------------------------------------------------------------------------------------------------"
+	"***MAIN CODE FOR SIMULATING POLYMERS WITH VARYING LENGTHS***"
+	"-----------------------------------------------------------------------------------------------------------------------------------------------------"
+
+	#Simulates polymer reaction based on input values
+	def simulate2(self):
+		root.wm_state('zoomed')
+		#print("Simulating!")
+		#a lock
+		if self.simulateLocked == True:
+			return
+
+		"***Read user inputs and checks to see if they are valid***"
+		try:
+			self.totalMonomers = int(self.totalMonomersTkVar.get())
+			monomerAmounts = self.getMonomerAmounts()
+			if not PENULTIMATE:
+				coeffList = self.getCoefficients()
+				singleCoeffList = self.getReactivity(coeffList, self.numMonomers)
+			else:
+				singleCoeffList = self.getPenultimateCoeff()
+			self.raftRatio = float(self.raftRatioTkVar.get())
+			self.histogramLimit = float(self.histogramLimitTkVar.get())
+			self.conversion = float(self.conversionTkVar.get())
+			assert(self.histogramLimit <= 1)
+			assert(self.conversion > 0)
+			assert(self.conversion <= 100)
+			assert(self.histogramLimit > 0)
+			assert(self.totalMonomers > 0)
+			assert(NUM_SIMULATIONS > 0)
+			assert(self.raftRatio > 0)
+			assert(self.totalMonomers * NUM_SIMULATIONS <= MONOMER_CAP)
+			self.graph1Type = self.graphType1TkVar.get()
+			self.graph2Type = self.graphType2TkVar.get()
+			if self.graph1Type == "Hydrophobic Blocks" or self.graph1Type == "Hydrophilic Blocks" or self.graph2Type == "Hydrophobic Blocks" or self.graph2Type == "Hydrophilic Blocks":
+				for phobicity in self.hphobList:
+					if phobicity == "None":
+						raise phobicityNotSpecified("hi")
+		except ValueError:
+			errorMessage("Please input valid parameters!", 220)
+			return
+		except notInEuropeError:
+			errorMessage("You are not in Europe!", 220)
+			return
+		except AssertionError:
+			errorMessage("Please input valid parameters!", 220)
+			return
+		except phobicityNotSpecified:
+			errorMessage("Please specficy hydrophobicities in the Options Tab.", 330)
+			return
+		self.numSimulations = NUM_SIMULATIONS
+		self.fullPolymerLength = int(self.raftRatio)
+
+		"***Calculate the polymer length using raft ratio and percent conversion***"
+		self.polymerLength = int(self.raftRatio * self.conversion / 100)
+		if self.polymerLength == 0:
+			self.polymerLength = 1
+
+		"***Caluculate number of polymer chains by dividing total number of monomers by monomers per full polymer***"
+		self.numPolymers = int(self.totalMonomers / self.fullPolymerLength)
+		#Asserting valid inputs for RAFT ration and totalMonomers
+		try:
+			assert self.numPolymers > 0
+		except AssertionError:
+			errorMessage("RAFT Ratio too small!", 220)
+			return
+		#print("numMonomers: ", self.numMonomers)
+
+		if self.initialSetTkVar.get() == "Weighted":
+			global SETINITIAL
+			SETINITIAL = 0
+		else:
+			wordarray = self.initialSetTkVar.get().split()
+			global SETINITIAL
+			SETINITIAL = int(wordarray[1])
+
+		"***initiate an empty array, which will hold all of the polymers to be simulated***"
+		self.polymerArray = []
+		#keeps track of number of simulations
+		simCounter = 1
+		self.originalMonomerAmounts = list(monomerAmounts)
+		#sets monomerAmounts to orignalMonomerAmounts
+		monomerAmounts = list(self.originalMonomerAmounts)
+		totalOriginalMonomerAmounts = sum(list(self.originalMonomerAmounts))
+		#print("monomerAmounts: ", monomerAmounts)
+		#variable keeping track of current number of polymers
+		currNumPolymers = 0
+		#print(self.numMonomers)
+		self.monomerUsageList = []
+		self.monomerRemainingList = []
+		for i in range(self.numMonomers):
+			self.monomerUsageList.append([])
+			self.monomerRemainingList.append([])
+		self.monomerUsageSubList = [0]*self.numMonomers
+
+		"-----------------------------------------------------------------------------------------------------------------------"
+		"***INITIATION STEP***"
+		"------------------------------------------------------------------------------------------------------------------------"
+
+		"In this step, all polymers will be initiated with one starting monomer. The algorithm continually intiates"
+		"a chain until the chain count reaches self.numPolymers."
+
+
+		while currNumPolymers < self.numPolymers:  
+
+			"In the case where the user fixes all chains to start with a certain monomer, we simply initiate all chains"
+			"with the monomer of choice."
+			
+			#case for setting first monomer
+			if SETINITIAL:
+				self.polymerArray.append([SETINITIAL])
+				monomerAmounts[SETINITIAL - 1] -= 1
+				currNumPolymers += 1
+				continue
+
+			"Otherwise, we will choose the initial monomer randomly based on the the mole fractions 'f' of each monomer"
+			"in the feed solution. For 2- and 3- monomer systems, the instantaneous form of the Mayo Lewis Equation is "
+			"used to determine the probabilities of each monomer initiating the chain."
+
+			"Initiate a variable 'choices' that keeps track of the weight probabilty assigned to each monomer."
+			#Example:
+
+			#>>>print(choices)
+			#[[1, 1.5], [2, 0.5]]
+
+			#This means that monomer 1 has a weight of 1.5 assigned to it and monomer 2 has a weight of 0.5 assigned to it.
+			#Thus, monomer 1 will initiate 3x more often than monomer 2 will.
+
+			choices = []
+
+			"Case for 2-monomer system: use the Mayo Lewis Equation"
+
+			if self.numMonomers == 2 and not PENULTIMATE:
+				f1 = monomerAmounts[0]
+				f2 = monomerAmounts[1]
+				r1 = singleCoeffList[0][0]
+				r2 = singleCoeffList[1][1]
+				#print("r1: ", r1)
+				#print("r2: ", r2)
+				weight = (r1*f1**2 + f1*f2) / (r1*f1**2 + 2*f1*f2 + r2*f2**2)
+				#print("weight: ", weight)
+				choices.append([1, weight])
+				choices.append([2, 1 - weight])
+
+			
+
+			elif self.numMonomers == 3:
+				"Case for 3-monomer system: use an altered Mayo Lewis Equation"
+				m1 = monomerAmounts[0]
+				m2 = monomerAmounts[1]
+				m3 = monomerAmounts[2]
+				F = m1 + m2 + m3
+				f1 = m1/F
+				f2 = m2/F
+				f3 = m3/F
+				r11 = singleCoeffList[0][0]
+				r12 = singleCoeffList[0][1]
+				r13 = singleCoeffList[0][2]
+				r21 = singleCoeffList[1][0]
+				r22 = singleCoeffList[1][1]
+				r23 = singleCoeffList[1][2]
+				r31 = singleCoeffList[2][0]
+				r32 = singleCoeffList[2][1]
+				r33 = singleCoeffList[2][2]
+				R1 = r11 + r12 + r13
+				R2 = r21 + r22 + r23
+				R3 = r31 + r32 + r33
+				a = f1*r11*f1/(r11*f1+r12*f2+r13*f3) + f2*r21*f1/(r21*f1+r22*f2+r23*f3) + f3*r31*f1/(r31*f1+r32*f2+r33*f3)
+				b = f1*r12*f2/(r11*f1+r12*f2+r13*f3) + f2*r22*f2/(r21*f1+r22*f2+r23*f3) + f3*r32*f2/(r31*f1+r32*f2+r33*f3)
+				c = 1 - a - b
+				#print("startingRatioList: ", [a, b, c])
+				choices.append([1,a])
+				choices.append([2 ,b])
+				choices.append([3,c])
+			else:
+				"Case for any monomer system > 3: initial solely based on feed mole ratios 'f'"
+				#A variable keeping track of current monomer
+				monomerID = 1
+
+				"Cycle through each monomer, finding its feed amount and using that value as the weight."
+
+				while monomerID <= self.numMonomers:
+					#weight chance of monomer initation: (amount of starting monomer)
+					weight = monomerAmounts[monomerID - 1]
+					#Adds a two element list to choices containing monomer and weight
+					choices.append([monomerID, weight])
+					monomerID += 1
+
+			"Randomly choose a monomer to initiate the polymer chain by using a weighted random selector."
+			"Monomer with higher relative weights will be chosen more often. The 'weighted_choices' function"
+			"takes in the 'choices' variable which has relevant weights for each monomer and runs a weighted"
+			"random selection on it."
+
+			startingMonomer = weighted_choice(choices)
+			#Starts a new polymer with startingMonomer, represented by an array, 
+			#and adds that array to polymerArray
+			"A polymer is represented as a python list/ array. Here, we inititate an instance of a polymer as a list, "
+			"and append that polymer to a superlist which contains a list of all polymers"
+
+			self.polymerArray.append([startingMonomer])
+
+			"Remove the monomer that was used to intitate the polymer in order to accurately update the monomer pool ratios."
+			#Uses up one monomer of the startingMonomer if MAINTAIN is false, else maintains composition
+			if not MAINTAIN:
+				monomerAmounts[startingMonomer - 1] -= 1
+			#increases number of polymers by 1
+			currNumPolymers += 1
+			index = 0
+			for amount in monomerAmounts:
+				self.monomerRemainingList[index].append(amount/ self.originalMonomerAmounts[index])
+				index += 1
+			self.monomerUsageSubList[startingMonomer - 1] += 1
+		self.monomerUsageSubList = [float(i)/sum(self.monomerUsageSubList) for i in self.monomerUsageSubList]
+		for i in range(self.numMonomers):
+			self.monomerUsageList[i].append(self.monomerUsageSubList[i])
+
+
+			
+		#debugging starting monomers
+		#print("polymer array", polymerArray)
+		#variable to keep track of polymer length
+		currPolymerLength = 1
+		"""Grows each polymer at the same time until they all reach desired polymer size"""
+		#print("self.polymerLength: ", self.polymerLength)
+
+		"case for penultimate model: choosing the second monomer in chain, based off of "
+		"HETEROGENOUS constants (works only for 2 monomer system)"
+
+		if PENULTIMATE:
+			#iterating through each polymer in batch
+			for polymer in self.polymerArray:
+				choices = []
+				#calculates weight chance for each monomer
+				for monomerID in range(1, self.numMonomers + 1):
+					#retrieving coefficient based on previous and currrent monomer, assumes hetergoenous penultimate monomer
+					coeff = singleCoeffList[monomerID - 1][polymer[-1] - 1][1]
+					#print("coeff: ", coeff)
+					# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+					chance = monomerAmounts[monomerID - 1] * coeff
+					#adds a two element list to choices containing monomer and weight
+					choices.append([monomerID, chance])
+				#Using weighted_choice, selects next monomer
+				try:
+					#print(choices)
+					nextMonomer = weighted_choice(choices)	
+				#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
+				except AssertionError:
+					monomerID = 1
+					choices = []
+					while monomerID <= self.numMonomers:
+						choices.append([monomerID, monomerAmounts[monomerID - 1]])
+						monomerID += 1
+					nextMonomer = weighted_choice(choices)
+				#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+				if not MAINTAIN:
+					monomerAmounts[nextMonomer - 1] -= 1
+				#print("monomerAmounts: ", monomerAmounts)
+				#Attaches next monomer to polymer chain
+				polymer.append(nextMonomer)
+				self.monomerUsageList.append(nextMonomer)
+				index = 0
+				for amount in monomerAmounts:
+					self.monomerRemainingList[index].append(amount/ self.originalMonomerAmounts[index])
+					index += 1
+				self.monomerUsageSubList[startingMonomer - 1] += 1
+			self.monomerUsageSubList = [float(i)/sum(self.monomerUsageSubList) for i in self.monomerUsageSubList]
+				
+
+		"-------------------------------------------------------------------------------------------------------------------"
+		"***PROPAGATION STEP***"
+		"-------------------------------------------------------------------------------------------------------------------"
+
+		"Case for penultimate step (description will not be as in depth). For normal Mayo-Lewis case, scroll down."
+
+		if PENULTIMATE:
+			counter = 0
+			while sum(monomerAmounts) > (1-self.conversion/100) * totalOriginalMonomerAmounts:	
+				polymer = random.choice(self.polymerArray)
+				choices = []
+				#calculates weight chance for each monomer
+				for monomerID in range(1, self.numMonomers + 1):
+					#retrieving coefficient based on previous and currrent monomer, assumes hetergoenous penultimate monomer
+					#assigning variables for clarity
+					nextMonomer = monomerID - 1
+					ultimateMonomer = polymer[-1] - 1
+					penultimateMonomer = polymer[-2] - 1
+					coeff = singleCoeffList[nextMonomer][ultimateMonomer][penultimateMonomer]
+					# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+					chance = monomerAmounts[monomerID - 1] * coeff
+					#adds a two element list to choices containing monomer and weight
+					choices.append([monomerID, chance])
+				#Using weighted_choice, selects next monomer
+				try:
+					nextMonomer = weighted_choice(choices)
+				#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
+				except AssertionError:
+					monomerID = 1
+					choices = []
+					while monomerID <= self.numMonomers:
+						choices.append([monomerID, monomerAmounts[monomerID - 1]])
+						monomerID += 1
+					nextMonomer = weighted_choice(choices)
+				#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+				if not MAINTAIN:
+					monomerAmounts[nextMonomer - 1] -= 1
+				#print("monomerAmounts: ", monomerAmounts)
+				#Attaches next monomer to polymer chain
+				polymer.append(nextMonomer)
+				self.monomerUsageList.append(nextMonomer)
+				index = 0
+				for amount in monomerAmounts:
+					self.monomerRemainingList[index].append(amount/ self.originalMonomerAmounts[index])
+					index += 1
+				self.monomerUsageSubList[nextMonomer - 1] += 1
+				counter += 1
+				if counter == self.numPolymers:
+					counter = 0
+					normalizedMonomerUsageSubList = [float(i)/sum(self.monomerUsageSubList) for i in self.monomerUsageSubList]
+					for i in range(self.numMonomers):
+						self.monomerUsageList[i].append(normalizedMonomerUsageSubList[i])
+						self.monomerUsageSubList = [0]*self.numMonomers
+			
+				
+
+		
+		else:
+			"***Propogation for standard Mayo-Lewis Case***"
+
+			"The 'while' loop will add monomers to the chain until we reach we use up a percentage of the total starting monomers"
+			"defined by user input into the 'Percent Conversion' box. Setting 'Percent Conversion' to 100% will continue to add "
+			"monomers to growing chains until there are no remaining monomers, simulating a living polymerization."
+			self.monomerUsageSubList = [0]*self.numMonomers
+			counter = 0
+			while sum(monomerAmounts) > (1-self.conversion/100) * totalOriginalMonomerAmounts:
+
+				"Randomly choose a polymer chain to grow."
+				"polymer, it appends one monomer to the growing chain, simulating an ideal homogenous polymer chain growth."
+				polymer = random.choice(self.polymerArray)
+				"For each polymer, iterate through all possible monomers which can be added. For each monomer, calculate"
+				"the weight chance of the monomer to be added to the chain , defined as the product of the relevant rate "
+				"constant 'k' times the number of monomers left unreacted 'f'"
+				#A variable keeping track of current monomer
+				choices = []
+				for monomerID in range(1, self.numMonomers + 1):
+					#Retrieveing coefficient based on previous and current monomer
+					#get the last monomer on the growing chain
+					terminatingMonomer = polymer[-1]
+					#retrieve the relevant rate constant k
+					k = singleCoeffList[terminatingMonomer - 1][monomerID - 1]
+					# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+					chance = monomerAmounts[monomerID - 1] * k
+					#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
+					#Adds a two element list to choices containing monomer and weight
+					choices.append([monomerID, chance])
+					monomerID += 1
+				#print ("currPolymerLength: ", currPolymerLength)
+				#print("choices2: ", choices)
+				#Using weighted_choice, selects next monomer
+				try:
+					nextMonomer = weighted_choice(choices)
+				#If all weights are zero due to coefficients, then sort by relative amounts of monomer instead
+				except AssertionError:
+					monomerID = 1
+					choices = []
+					while monomerID <= self.numMonomers:
+						choices.append([monomerID, monomerAmounts[monomerID - 1]])
+						monomerID += 1
+					nextMonomer = weighted_choice(choices)
+				#Reduces number of nextMonomer by 1, since it is being used up in reaction, unless MAINTAIN is true
+				if not MAINTAIN:
+					monomerAmounts[nextMonomer - 1] -= 1
+				#print("monomerAmounts: ", monomerAmounts)
+				#Attaches next monomer to polymer chain
+				polymer.append(nextMonomer)
+				self.monomerUsageList.append(nextMonomer)
+				index = 0
+				for amount in monomerAmounts:
+					self.monomerRemainingList[index].append(amount/ self.originalMonomerAmounts[index])
+					index += 1
+				self.monomerUsageSubList[nextMonomer - 1] += 1
+				counter += 1
+				if counter == self.numPolymers:
+					counter = 0
+					normalizedMonomerUsageSubList = [float(i)/sum(self.monomerUsageSubList) for i in self.monomerUsageSubList]
+					for i in range(self.numMonomers):
+						self.monomerUsageList[i].append(normalizedMonomerUsageSubList[i])
+						self.monomerUsageSubList = [0]*self.numMonomers
+			
+				#print("currProgress: ", currProgress)
+
+		"--------------------------------------------------------------------------------------------------------------------"
+		"***OUTPUT RAW SIMULATION RESULTS INTO A TEXT FILE"
+		"--------------------------------------------------------------------------------------------------------------------"
+
+		text_file = open("polymerArray.txt", "w")
+		json.dump(self.polymerArray, text_file)
+		text_file.close()
+
+		"--------------------------------------------------------------------------------------------------------------------"
+		"***CALCULATE AND DISPLAY MONOMER COMPOSITION, WEIGHT AVG DP, NUMBER AVG DP, AND DISPERSITY INDEX***"
+		"--------------------------------------------------------------------------------------------------------------------"
+
+		self.compositionList = self.getComposition(self.polymerArray)
+		numberAverageDP = round(self.numberAverageDP(self.polymerArray), 1)
+		weightAverageDP = round(self.weightAverageDP(self.polymerArray, numberAverageDP), 1)
+		dispersityIndex = round(self.disperityIndex(numberAverageDP, weightAverageDP), 3)
+		if not self.compFrameExists:
+			self.col3Sep = ttk.Separator(master = self.inputFrame, orient = Tk.VERTICAL)
+			self.col3Sep.pack(side = Tk.LEFT, expand = True, fill = Tk.BOTH, pady = 1)
+			self.compFrame = ttk.Frame(master = self.inputFrame)
+			self.compFrame.pack(side = Tk.LEFT, padx = 0)
+			self.compTkVarArray = []
+			self.compLabelList = []
+			for monomer in range(1, self.numMonomers + 1):
+				dispCompFrame = ttk.Frame(master = self.compFrame)
+				dispCompFrame.pack(side = Tk.TOP, pady = 1)
+				if ALIAS:
+					label = self.aliasList[monomer - 1]
+				else:
+					label = "Monomer " + str(monomer)
+				fullLabel = label + " Composition: "
+				compLabel = ttk.Label(master = dispCompFrame, text = fullLabel)
+				self.compLabelList.append(compLabel)
+				compLabel.pack(side = Tk.LEFT)
+				compTkVar = Tk.DoubleVar()
+				compTkVar.set(round(self.compositionList[monomer - 1], 2))
+				self.compTkVarArray.append(compTkVar)
+				compEntry = ttk.Entry(master = dispCompFrame, textvariable = compTkVar, width = 4)
+				compEntry.pack(side = Tk.LEFT, padx = 5)
+				self.compFrameExists = True
+			numAvgDPFrame = ttk.Frame(master = self.compFrame)
+			numAvgDPFrame.pack(side = Tk.TOP, pady = 1)
+			label = "Number Average DP: "
+			numAvgLabel = ttk.Label(master = numAvgDPFrame, text = label)
+			numAvgLabel.pack(side = Tk.LEFT)
+			self.numAvgTkVar = Tk.DoubleVar()
+			self.numAvgTkVar.set(numberAverageDP)
+			self.numAvgEntry = ttk.Entry(master = numAvgDPFrame, textvariable = self.numAvgTkVar, width = 5)
+			self.numAvgEntry.pack(side = Tk.LEFT, padx = 5)
+
+			weightAvgDPFrame = ttk.Frame(master = self.compFrame)
+			weightAvgDPFrame.pack(side = Tk.TOP, pady = 1)
+			label = "Weight Average DP: "
+			weightAvgLabel = ttk.Label(master = weightAvgDPFrame, text = label)
+			weightAvgLabel.pack(side = Tk.LEFT)
+			self.weightAvgTkVar = Tk.DoubleVar()
+			self.weightAvgTkVar.set(weightAverageDP)
+			self.weightAvgEntry = ttk.Entry(master = weightAvgDPFrame, textvariable = self.weightAvgTkVar, width = 5)
+			self.weightAvgEntry.pack(side = Tk.LEFT, padx = 5)
+
+			dispersityFrame = ttk.Frame(master = self.compFrame)
+			dispersityFrame.pack(side = Tk.TOP, pady = 1)
+			label = "Dispersity Index: "
+			dispersityLabel = ttk.Label(master = dispersityFrame, text = label)
+			dispersityLabel.pack(side = Tk.LEFT)
+			self.dispersityTkVar = Tk.DoubleVar()
+			self.dispersityTkVar.set(dispersityIndex)
+			self.dispersityEntry = ttk.Entry(master = dispersityFrame, textvariable = self.dispersityTkVar, width = 5)
+			self.dispersityEntry.pack(side = Tk.LEFT, padx = 5)
+
+
+
+
+		else:
+			monomerID = 1
+			for item in self.compTkVarArray:
+				item.set(round(self.compositionList[monomerID - 1], 2))
+				monomerID += 1
+			self.numAvgTkVar.set(numberAverageDP)
+			self.weightAvgTkVar.set(weightAverageDP)
+			self.dispersityTkVar.set(dispersityIndex)
+
+
+		"***Visualize Polymers***"
+		self.visualizePolymers(self.polymerArray)
+
+		"***Plot Polymer Data***"
+		self.plotCompositions(False)
+		center(root)
 	
 	"----------------------------------------------------------------------------------------------------------------------------"
 	"***PLOT THE USER-SELECTED GRAPHS***"
@@ -1573,7 +2052,7 @@ class Application(ttk.Frame):
 		#retrieving graphType variables
 		self.graph1Type = self.graphType1TkVar.get()
 		self.graph2Type = self.graphType2TkVar.get()
-		print("grpah1type: ", self.graph1Type)
+		print("graph1type: ", self.graph1Type)
 		#Plot and Figure formatting
 		if not self.canvasExists:
 			self.plotFigure = plt.figure(figsize=(5.5, 3.3),dpi =100)
@@ -1814,6 +2293,34 @@ class Application(ttk.Frame):
 	"----------------------------------------------------------------------------------------------------------------------------"
 	"***FUNCTIONS FOR ANALYZING SIMULATED POLYMER ARRAY DATA"
 	"----------------------------------------------------------------------------------------------------------------------------"
+	"***Analysis for Total Mass***"
+	def totalMass(self, polymerArray):
+		totalMass = 0
+		for polymer in polymerArray:
+			totalMass += len(polymer)
+		return totalMass
+
+	"***Analysis for Number Average***"
+	#Given a list of polymers, returns the number average DP
+	def numberAverageDP(self, polymerArray):
+		totalMass = self.totalMass(polymerArray)
+		numberAverageDP = totalMass / self.numPolymers
+		return numberAverageDP
+
+	#Given a list of polymers, return the weight average DP
+	"***Analysis for Weight Average***"
+	def weightAverageDP(self, polymerArray, numberAverageDP):
+		weightAverageDP = 0
+		for polymer in polymerArray:
+			M = len(polymer)
+			weightAverageDP += M*M
+		weightAverageDP = weightAverageDP / numberAverageDP / self.numPolymers
+		return weightAverageDP
+
+	#Given number and weight average DP, return the dispersity index
+	"***Analysis for Dispersity Index***"
+	def disperityIndex(self, numberAverageDP, weightAverageDP):
+		return weightAverageDP / numberAverageDP 
 
 	"***Analysis for Run Length***"
 	#returns an array of numbers for each consecutive monomer; to be used in histogram plotting
@@ -1900,7 +2407,7 @@ class Application(ttk.Frame):
 		#print("compositionList: ", compositionList)
 		return compositionList
 
-	"***Polymer composition analysis***"	
+	"***Polymer composition analysis, DEPRECATED***"	
 	#Returns a list of the percent composition of each monomer at each index, in monomerID order
 	def getFullCompositionAtIndex(self, polymerArray):
 		fullCompList = []
@@ -1920,6 +2427,12 @@ class Application(ttk.Frame):
 		#print("totalMonomers: ", totalMonomers)
 		#print("index: ", index)
 		return fullCompList
+	"***DP Distribution Analysis***"
+	def DP_Distribution(self, polymerArray):
+		DP_Distribution = []
+		for polymer in polymerArray:
+			DP_Distribution.append(len(polymer))
+		return DP_Distribution
 
 	"***Hydrophobic/Hydrophillic analysis***"
 	#takes in a polymerArray, an converts monomer number to 0 for hydrophobic, 1 for hydrophilic
@@ -1986,12 +2499,14 @@ class Application(ttk.Frame):
 					#inputs counts into y-axis array
 					#adjust axis title
 					subplot.set_ylabel("Normalized Monomer Occurrences", labelpad=5, fontsize = 9)
-					for index in polymerIndex:
-						count = 0
-						for polymer in polymerArrayToUse:
-							if polymer[index - 1] == monomer:
-								count += 1
-						monomercounts[index - 1] = float(float(count) / float(self.numSimulations) / float(self.numPolymers))
+					varLengths = True
+					if not varLengths:
+						for index in polymerIndex:
+							count = 0
+							for polymer in polymerArrayToUse:
+								if polymer[index - 1] == monomer:
+									count += 1
+							monomercounts[index - 1] = float(float(count) / float(self.numSimulations) / float(self.numPolymers))
 					if monomer > self.numMonomers:
 						if ALIAS:
 							label = self.aliasList[monomer - self.numMonomers - 1] + " Homodyad"
@@ -2002,8 +2517,14 @@ class Application(ttk.Frame):
 							label = self.aliasList[monomer - 1]
 						else:
 							label = "Monomer " + str(monomer)
-					polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
-					curve = subplot.plot(polymerIndex, monomercounts, label = label)
+					totalOriginalMonomerAmounts = sum(list(self.originalMonomerAmounts))
+					monomerUsage = self.monomerUsageList[monomer - 1]
+					#print("monomerUsage: ", monomerUsage)
+					conversionIndex = range(len(monomerUsage))
+					conversionIndex = [i*self.numPolymers/totalOriginalMonomerAmounts*100 for i in conversionIndex]
+					#polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
+					#polymerIndex = range(len(self.monomerUsageData))
+					curve = subplot.plot(conversionIndex, monomerUsage, label = label)
 					#setting axis limits
 					subplot.set_ylim([0,1])
 			#graphs Percentage of Monomer Remaining
@@ -2019,55 +2540,45 @@ class Application(ttk.Frame):
 					#adjust y axis limiys
 					subplot.set_ylim([0,1])
 					#variable to keep track of average number of monomers consumed
-					monomersConsumed = 0
-					for index in polymerIndex:
-						count = 0
-						for polymer in polymerArray:
-							if polymer[index - 1] == monomer:
-								count += 1
-						startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
-						#calculates monomer consumed
-						monomersConsumed += count / self.numSimulations
-						#calculated percentage of monomer remaining
-						percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
-						monomercounts[index - 1] = percentageRemaining
-					polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
+					# monomersConsumed = 0
+					# for index in polymerIndex:
+					# 	count = 0
+					# 	for polymer in polymerArray:
+					# 		if polymer[index - 1] == monomer:
+					# 			count += 1
+					# 	startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
+					# 	#calculates monomer consumed
+					# 	monomersConsumed += count / self.numSimulations
+					# 	#calculated percentage of monomer remaining
+					# 	percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
+					# 	monomercounts[index - 1] = percentageRemaining
+					# polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
 				#debugging purposes
 				#print(polymerIndex)
 				#print(monomercounts)
 				#plots x and y arrays
+					monomerRemaining = self.monomerRemainingList[monomer -1]
+					conversionIndex = range(len(monomerRemaining))
+					totalOriginalMonomerAmounts = sum(list(self.originalMonomerAmounts))
+					conversion = [i/totalOriginalMonomerAmounts*100 for i in conversionIndex]
+
 					if ALIAS:
 						labelToUse = self.aliasList[monomer - 1]
-						curve = subplot.plot(polymerIndex, monomercounts, label = labelToUse)
+						curve = subplot.plot(conversion, monomerRemaining, label = labelToUse)
 					else:
-						curve = subplot.plot(polymerIndex, monomercounts, label = "Monomer " + str(monomer))
-			if graphType == "Polymer Compositions":
-				#adjust axis title
-				subplot.set_ylabel("Polymer Composition", labelpad=5, fontsize = 9)
-				#adjust y axis limiys
-				subplot.set_ylim([0,1])
-				#x-axis array
-				polymerIndex = list(range(1, self.polymerLength + 1))
-				polymerIndex = [num * 100 / self.raftRatio for num in polymerIndex]
-				#list of data for all monomers
-				fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
-				monomerID = 1
-				for compList in fullCompList:
-					#print("complist: ", compList)
-					#print("lengthComp: ", len(compList))
-					#print("lengthPolymer: ", len(polymerIndex))
-					if ALIAS:
-						labelToUse = self.aliasList[monomer - 1]
-						curve = subplot.plot(polymerIndex, compList, label = labelToUse)
-					else:
-						curve = subplot.plot(polymerIndex, compList, label = "Monomer %i" %(monomerID))
-					monomerID += 1
+						curve = subplot.plot(conversion, monomerRemaining, label = "Monomer " + str(monomer))
 			#legend-screw matplotlib; so fucking hard to format
 			handles, labels = subplot.get_legend_handles_labels()
 			if LEGEND:
 				lgd = subplot.legend(handles, labels, prop = {'size':7}, loc = "best")
 				lgd.draggable(state = True)
 			subplot.set_xlabel("Conversion", labelpad = 0, fontsize = 9)
+		elif graphType == "DP Distribution":
+			#adjust axis title
+			DP_Distribution = self.DP_Distribution(self.polymerArray)
+			#list of data for all monomers
+			subplot.hist(DP_Distribution)
+			subplot.set_xlabel("DP Distribution", labelpad=0, fontsize = 9)
 		elif graphType == "Run Length":
 			#obtain histogram limit
 			try:
