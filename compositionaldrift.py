@@ -2778,7 +2778,8 @@ class Application(ttk.Frame):
 		self.styleComboBox.pack(side = Tk.LEFT)
 		#Frame for dyad
 		self.dyadFrame = ttk.Frame(master = self.options1Frame)
-		self.dyadFrame.pack(side = Tk.TOP, pady = 3)
+		#DEPRACTES DYAD
+		#self.dyadFrame.pack(side = Tk.TOP, pady = 3)
 		#label for dyad
 		self.dyadLabel = ttk.Label(master = self.dyadFrame, text = "Enable Homodyad Detection:")
 		self.dyadLabel.pack(side = Tk.LEFT)
@@ -3021,22 +3022,11 @@ class Application(ttk.Frame):
 			monomerRange = self.numMonomers + 1
 		#Iterates through each unique monomer and adds it to a list of data
 		monomerCountsList = []
-		for monomer in range(1, monomerRange):
-			#x-axis array
-			polymerIndex = list(range(1, self.polymerLength + 1))
-			#y-axis array initation
-			monomercounts = [0] * self.polymerLength
-			#inputs counts into y-axis array
-			#adjust axis title
-			for index in polymerIndex:
-				count = 0
-				for polymer in polymerArrayToUse:
-					if polymer[index - 1] == monomer:
-						count += 1
-				monomercounts[index - 1] = float(float(count) / float(self.numSimulations) / float(self.numPolymers))
-			monomerCountsList.append(monomercounts)
+		totalOriginalMonomerAmounts = sum(list(self.originalMonomerAmounts))
+		conversionIndex = range(len(self.monomerUsageList[0]))
+		conversionIndex = [i*self.numPolymers/totalOriginalMonomerAmounts*100 for i in conversionIndex]
 		colCount = 1
-		ws2.cell(row = 1, column = colCount, value = "Monomer Position Index")
+		ws2.cell(row = 1, column = colCount, value = "Conversion Percentage")
 		if not DYAD:
 			for monomerID in range(1, self.numMonomers + 1):
 				ws2.cell(row = 1, column = colCount + 1, value = "Normalized Monomer %i Occurence" %(monomerID))
@@ -3050,17 +3040,18 @@ class Application(ttk.Frame):
 		colCount = 1
 		indexCount = 0
 		if not DYAD:
-			for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+			for column in ws2.iter_cols(min_row = 2, max_row = len(conversionIndex) + 1, min_col = colCount, max_col = colCount):
 				for cell in column:
-					cell.value = polymerIndex[indexCount]
+					cell.value = conversionIndex[indexCount]
 					indexCount += 1
 			for monomerID in range(1, self.numMonomers + 1):
 				monomerIDcount = 0
-				for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+				for column in ws2.iter_cols(min_row = 2, max_row = len(conversionIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
 					for cell in column:
-						cell.value = monomerCountsList[monomerID - 1][monomerIDcount]
+						cell.value = self.monomerUsageList[monomerID - 1][monomerIDcount]
 						monomerIDcount += 1
 				colCount += 1
+		#DYAD IS DEPRECATED
 		if DYAD:
 			for column in ws2.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
 				for cell in column:
@@ -3082,19 +3073,10 @@ class Application(ttk.Frame):
 			#variable to keep track of average number of monomers consumed
 			monomersConsumed = 0
 			#list of data for each monomer
-			percentageRemainingList = []
-			for index in polymerIndex:
-				count = 0
-				for polymer in self.polymerArray:
-					if polymer[index - 1] == monomer:
-						count += 1
-				startingMonomerAmount = self.originalMonomerAmounts[monomer - 1]
-				#calculates monomer consumed
-				monomersConsumed += count / self.numSimulations
-				#calculated percentage of monomer remaining
-				percentageRemaining = (startingMonomerAmount - monomersConsumed) / startingMonomerAmount
-				monomercounts[index - 1] = percentageRemaining
-				percentageRemainingList.append(monomercounts)
+			monomerRemaining = self.monomerRemainingList[0]
+			conversionIndex = range(len(monomerRemaining))
+			totalOriginalMonomerAmounts = sum(list(self.originalMonomerAmounts))
+			conversionIndex = [i/totalOriginalMonomerAmounts*100 for i in conversionIndex]
 		colCount = 1
 		ws3.cell(row = 1, column = colCount, value = "Monomer Position Index")
 		for monomerID in range(1, self.numMonomers + 1):
@@ -3103,41 +3085,41 @@ class Application(ttk.Frame):
 			colCount += 1
 		colCount = 1
 		indexCount = 0
-		for column in ws3.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+		for column in ws3.iter_cols(min_row = 2, max_row = len(conversionIndex) + 1, min_col = colCount, max_col = colCount):
 			for cell in column:
-				cell.value = polymerIndex[indexCount]
+				cell.value = conversionIndex[indexCount]
 				indexCount += 1
 		for monomerID in range(1, self.numMonomers + 1):
 			monomerIDcount = 0
-			for column in ws3.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+			for column in ws3.iter_cols(min_row = 2, max_row = len(conversionIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
 				for cell in column:
-					cell.value = percentageRemainingList[monomerID - 1][monomerIDcount]
+					cell.value = self.monomerRemainingList[monomerID - 1][monomerIDcount]
 					monomerIDcount += 1
 			colCount += 1
-		#x-axis array
-		polymerIndex = list(range(1, self.polymerLength + 1))
-		#list of data for all monomers
-		fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
-		ws4 = wb.create_sheet("Polymer Compositions")
-		colCount = 1
-		ws4.cell(row = 1, column = colCount, value = "Monomer Position Index")
-		for monomerID in range(1, self.numMonomers + 1):
-			ws4.cell(row = 1, column = colCount + 1, value = "%" + "  Composition of Monomer %i" %(monomerID))
-			#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
-			colCount += 1
-		colCount = 1
-		indexCount = 0
-		for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
-			for cell in column:
-				cell.value = polymerIndex[indexCount]
-				indexCount += 1
-		for monomerID in range(1, self.numMonomers + 1):
-			monomerIDcount = 0
-			for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
-				for cell in column:
-					cell.value = fullCompList[monomerID - 1][monomerIDcount]
-					monomerIDcount += 1
-			colCount += 1
+		# #x-axis array
+		# polymerIndex = list(range(1, self.polymerLength + 1))
+		# #list of data for all monomers
+		# fullCompList = self.getFullCompositionAtIndex(self.polymerArray)
+		# ws4 = wb.create_sheet("Polymer Compositions")
+		# colCount = 1
+		# ws4.cell(row = 1, column = colCount, value = "Monomer Position Index")
+		# for monomerID in range(1, self.numMonomers + 1):
+		# 	ws4.cell(row = 1, column = colCount + 1, value = "%" + "  Composition of Monomer %i" %(monomerID))
+		# 	#ws.column_dimensions[get_column_letter(colCount +1)].width = 20
+		# 	colCount += 1
+		# colCount = 1
+		# indexCount = 0
+		# for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount, max_col = colCount):
+		# 	for cell in column:
+		# 		cell.value = polymerIndex[indexCount]
+		# 		indexCount += 1
+		# for monomerID in range(1, self.numMonomers + 1):
+		# 	monomerIDcount = 0
+		# 	for column in ws4.iter_cols(min_row = 2, max_row = len(polymerIndex) + 1, min_col = colCount + 1, max_col = colCount + 1):
+		# 		for cell in column:
+		# 			cell.value = fullCompList[monomerID - 1][monomerIDcount]
+		# 			monomerIDcount += 1
+		# 	colCount += 1
 		ws5 = wb.create_sheet("Hydrophobicity Blocks")
 		class histData:
 			def __init__(self, name, data):
