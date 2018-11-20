@@ -84,7 +84,7 @@ DCOLOR8 = '#c8832e'
 COLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
 DCOLORARRAY = [DCOLOR1, DCOLOR2, DCOLOR3, DCOLOR4, DCOLOR5, DCOLOR6, DCOLOR7, DCOLOR8]
 DYADCOLORARRAY = [COLOR1, COLOR2, COLOR3, COLOR4, COLOR5, COLOR6, COLOR7, COLOR8]
-VERSION = "v1.9"
+VERSION = "v1.9.0.1"
 CONFIGS = [["Number of Unique Monomers", 1], ["Number of Simulations", 1],
  ["Number of Polymers to Show", 1], 
  ["Graph Monomer Occurence", 1], ["Monomer Pool Size", 1], ["Monomers to RAFT Ratio", 1], 
@@ -1556,7 +1556,7 @@ class Application(ttk.Frame):
 		#a lock
 		if self.simulateLocked == True:
 			return
-
+		self.simulateLocked = True
 		"***Read user inputs and checks to see if they are valid***"
 		try:
 			self.totalMonomers = int(self.totalMonomersTkVar.get())
@@ -2024,6 +2024,9 @@ class Application(ttk.Frame):
 		"***Plot Polymer Data***"
 		self.plotCompositions(False)
 		center(root)
+
+		"***Unlock***"
+		self.simulateLocked = False
 	
 	"----------------------------------------------------------------------------------------------------------------------------"
 	"***PLOT THE USER-SELECTED GRAPHS***"
@@ -2154,8 +2157,8 @@ class Application(ttk.Frame):
 		#variable to keep track of frame width
 		self.visualFrameWidth = self.visualizationFrame.winfo_width()
 		#print("Width", self.visualFrameWidth)
-
 		numRows = self.numPolyToShow.get()
+		maxPolymerLength = len(max(self.polymerArray[:numRows], key=lambda x: len(x)))
 		if numRows > self.numPolymers * self.numSimulations: 
 			numRows = self.numPolymers * self.numSimulations
 		#parameters for canvas height and width
@@ -2163,11 +2166,11 @@ class Application(ttk.Frame):
 		canvasWidth = self.visualFrameWidth
 
 		#Maximizes size of squares
-		if (canvasHeight - 25) / numRows <= (canvasWidth - 40) / self.polymerLength:
+		if (canvasHeight - 25) / numRows <= (canvasWidth - 40) / maxPolymerLength:
 			size = (canvasHeight - 25) / numRows
-			canvasWidth = self.polymerLength * size + 20
+			canvasWidth = maxPolymerLength * size + 20
 		else:
-			size = (canvasWidth - 40) / self.polymerLength
+			size = (canvasWidth - 40) / maxPolymerLength
 			canvasHeight = numRows * size + 10
 		self.visualFrameWidth = self.visualizationFrame.winfo_height()
 		#Canvas for visualization
@@ -2468,10 +2471,10 @@ class Application(ttk.Frame):
 
 			binwidth = 1
 			hist, bins = np.histogram(histogramData, bins=range(1, maximum + binwidth + 1, binwidth))
-			print("hist: ", hist)
-			print("bins: ", bins)
-			print("sum hist: ", sum(hist))
-			print("normFactor: ", self.polymerLength * self.numPolymers)
+			# print("hist: ", hist)
+			# print("bins: ", bins)
+			# print("sum hist: ", sum(hist))
+			# print("normFactor: ", self.polymerLength * self.numPolymers)
 			#first normalization step
 			hist = hist / (self.polymerLength * self.numPolymers) 
 			print("newHist: ", hist)
@@ -2577,7 +2580,15 @@ class Application(ttk.Frame):
 			#adjust axis title
 			DP_Distribution = self.DP_Distribution(self.polymerArray)
 			#list of data for all monomers
-			subplot.hist(DP_Distribution)
+			maximum = max(DP_Distribution)
+			minimum = min(DP_Distribution)
+			binwidth = 1
+			hist, bins = np.histogram(DP_Distribution, bins=range(minimum, maximum + binwidth + 1, binwidth))
+			widths = np.diff(bins)
+			subplot.bar(bins[:-1], hist, widths)
+			#subplot.set_xticks(arange(min(DP_Distribution), max(DP_Distribution) + binwidth, binwidth))
+			subplot.hist(DP_Distribution, bins)
+			#plt.xticks(rotation = 45)
 			subplot.set_xlabel("DP Distribution", labelpad=0, fontsize = 9)
 		elif graphType == "Run Length":
 			#obtain histogram limit
