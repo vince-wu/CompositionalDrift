@@ -2,6 +2,8 @@
 
 This program tool allows polymer chemists easily to simulate the results of controlled polymerizations given all required reaction parameters (monomer amounts, monomer reactivity ratio, average polydispersity, ect.). The simulations use the Mayo-Lewis equation along Monte Carlo methods to predict polymer chain growth. The tool allows for rapid pre-experimental screening of reaction conditions along with critical post-synthesis analysis of the chain structure.
 
+![polymer image](https://i.imgur.com/wB5LMne.png)
+
 ## Getting Started
 The program can be accesed in several ways.
 
