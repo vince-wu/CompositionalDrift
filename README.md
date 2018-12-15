@@ -5,7 +5,7 @@ This program tool allows polymer chemists easily to simulate the results of cont
 ![polymer image](https://i.imgur.com/eJcNjP3.png)
 
 ## Getting Started
-The program can be accesed in several ways.
+The program can be accessed in several ways.
 
 ### Running via Executable (Windows only)
 
