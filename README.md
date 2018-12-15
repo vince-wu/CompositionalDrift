@@ -1,38 +1,21 @@
-# Project Title
+# Compositional Drift
 
-One Paragraph of project description goes here
+This program tool allows polymer chemists easily to simulate the results of controlled polymerizations given all required reaction parameters (monomer amounts, monomer reactivity ratio, average polydispersity, ect.). The simulations use the Mayo-Lewis equation along Monte Carlo methods to predict polymer chain growth. The tool allows for rapid pre-experimental screening of reaction conditions along with critical post-synthesis analysis of the chain structure.
 
 ## Getting Started
+The program can be accesed in several ways.
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+### Running via executable (Windows only)
 
-### Prerequisites
+1.Download and save the .exe file in the most current release
 
-What things you need to install the software and how to install them
+2.Run the program as an executable (certification is on its way)
 
-```
-Give examples
-```
+3.Refer to the wiki for specific instructions
 
-### Installing
+### Running via Web App
 
-A step by step series of examples that tell you how to get a development env running
-
-Say what the step will be
-
-```
-Give the example
-```
-
-And repeat
-
-```
-until finished
-```
-
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
+1.Go to https://vince-wu.github.io/CompositionalDrift/
 
 Explain how to run the automated tests for this system
 
