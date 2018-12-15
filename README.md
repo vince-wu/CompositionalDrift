@@ -5,7 +5,7 @@ This program tool allows polymer chemists easily to simulate the results of cont
 ## Getting Started
 The program can be accesed in several ways.
 
-### Running via executable (Windows only)
+### Running via Executable (Windows only)
 
 * Download and save the .exe file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
 
@@ -36,7 +36,7 @@ For the versions available, see the [tags on this repository](https://github.com
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.txt](https://github.com/vince-wu/CompositionalDrift/blob/master/LISCENCE.txt) file for details
 
 ## Acknowledgments
 
