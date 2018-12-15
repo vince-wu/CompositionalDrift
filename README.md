@@ -13,7 +13,7 @@ The program can be accessed in several ways.
 
 * Run the program as an executable (certification is on its way)
 
-* Refer to the wiki for specific instructions
+* Refer to the [wiki](https://github.com/vince-wu/CompositionalDrift/wiki) for step-by-step instructions on how to use the program
 
 ### Running via Web App
 
