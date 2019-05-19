@@ -1,5 +1,5 @@
 import math
-from generateUI import displayMessage
+from modules.generateUI import displayMessage
 
 #Extracts all values needed to simulate polymerization from GUI
 def parseUI_Inputs(self):

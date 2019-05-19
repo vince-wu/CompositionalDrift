@@ -1,7 +1,7 @@
-from parse import parseUI_Inputs, testAssertions
-from Polymer import Polymer
-from graph import plotData, clearGraph
-from visualize import setup_scene, draw_polymers
+from modules.parse import parseUI_Inputs, testAssertions
+from modules.Polymer import Polymer
+from modules.graph import plotData, clearGraph
+from modules.visualize import setup_scene, draw_polymers
 import random
 
 def run_simulation(self):

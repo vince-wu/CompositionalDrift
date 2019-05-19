@@ -1,7 +1,7 @@
 import pickle
 from PyQt5.QtWidgets import QFileDialog
-from parse import parseUI_Inputs
-from generateUI import displayMessage
+from modules.parse import parseUI_Inputs
+from modules.generateUI import displayMessage
 
 def save_state(self):
 	parseUI_Inputs(self)

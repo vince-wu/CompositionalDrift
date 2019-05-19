@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from export import exportImage
+from modules.export import exportImage
 
 def setupDynamicUi(self, MainWindow):
 	#define local values for numMonomers and model so as to not interfere with any currently running simulations

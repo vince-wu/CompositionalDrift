@@ -2,6 +2,7 @@ import csv
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QPainter, QPixmap
 
+
 def exportPolymerArray(self):
 	csvData = []
 	for polymer in self.polymerArray:

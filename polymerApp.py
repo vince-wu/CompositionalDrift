@@ -3,14 +3,14 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 
-from MainForm import Ui_MainWindow
-from generateUI import setupDynamicUi
-from graph import plotData
-from simulate import run_simulation
-from visualize import setup_scene, draw_polymers
-from save import save_state, load_state
-from export import exportPolymerArray, exportImage
-import parse as parse
+from modules.MainForm import Ui_MainWindow
+from modules.generateUI import setupDynamicUi
+from modules.graph import plotData
+from modules.simulate import run_simulation
+from modules.visualize import setup_scene, draw_polymers
+from modules.save import save_state, load_state
+from modules.export import exportPolymerArray, exportImage
+import modules.parse as parse
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):

@@ -1,11 +1,11 @@
 import sys 	
 import pyqtgraph as pg 
 import numpy as np
-import analysis as analysis
 from PyQt5.QtGui import *
 
+import modules.analysis as analysis
 
-from MainForm import Ui_MainWindow
+from modules.MainForm import Ui_MainWindow
 
 def plotData(self):
 
