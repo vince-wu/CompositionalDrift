@@ -131,7 +131,7 @@ class Ui_MainWindow(object):
         self.formLayout_6.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_10)
         self.rowsSpinBox = QtWidgets.QSpinBox(self.scrollAreaWidgetContents_3)
         self.rowsSpinBox.setMaximum(1000000)
-        self.rowsSpinBox.setProperty("value", 9)
+        self.rowsSpinBox.setProperty("value", 10)
         self.rowsSpinBox.setObjectName("rowsSpinBox")
         self.formLayout_6.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.rowsSpinBox)
         self.label_7 = QtWidgets.QLabel(self.scrollAreaWidgetContents_3)

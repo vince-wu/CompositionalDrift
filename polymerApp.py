@@ -1,8 +1,10 @@
 import sys 	
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 
+import static.images_qr
 from modules.MainForm import Ui_MainWindow
 from modules.generateUI import setupDynamicUi
 from modules.graph import plotData
@@ -18,14 +20,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 	def __init__(self, *args, **kwargs):
 		super(MainWindow, self).__init__(*args, **kwargs)
 
-		self.setVars()
 
+		self.setVars()
 		self.setupUi(self)
+		self.setWindowTitle("Compositional Drift v{}".format(self.version))
 		setupDynamicUi(self, MainWindow)
 
 		self.connectEvents()
 
 	def setVars(self):
+		self.version = "2.0"
 		self.simulated = False
 		self.simulation_running = False
 		self.ratioLabelList = []
@@ -124,6 +128,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 if __name__ == '__main__':
 
 	app = QApplication([])
+	app.setWindowIcon(QIcon(':/static/app.ico'))
 	QApplication.setStyle(QStyleFactory.create('WindowsVista'))
 	window = MainWindow()
 	window.show()

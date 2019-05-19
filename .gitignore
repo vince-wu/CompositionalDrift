@@ -1,8 +1,10 @@
 build/
 __pycache__/
 dist/
+env/
 pyqt5designer.exe
 polymerApp.spec
 *.csv
 *.png
-
+app.ico
+*.qrc

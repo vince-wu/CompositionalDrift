@@ -1,4 +1,5 @@
 import pickle
+import os
 from PyQt5.QtWidgets import QFileDialog
 from modules.parse import parseUI_Inputs
 from modules.generateUI import displayMessage
@@ -57,6 +58,8 @@ def load_state(self):
 	self.legendComboBox.setProperty('currentText', getState(state['Legend']))
 	setMonomerCompositions(self, state)
 	setReactivities(self, state)
+	filename = os.path.basename(file)
+	self.setWindowTitle("Compositional Drift v{} - {}".format(self.version, filename))
 
 def setMonomerCompositions(self, state):
 	numMonomers = state['Polymer System']
