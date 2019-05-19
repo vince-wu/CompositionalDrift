@@ -1,8 +1,0 @@
-__pycache__/
-build/
-dist/
-*.png
-*.csv
-pyqt5designer.exe
-polymerApp.spec
-
