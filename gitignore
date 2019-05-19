@@ -1,0 +1,6 @@
+__pycache__/
+build/
+dist/
+pyqt5designer.exe
+polymerApp.spec
+
