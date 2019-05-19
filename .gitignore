@@ -1,7 +1,8 @@
 build/
-compositionaldrift.spec
 __pycache__/
 dist/
+pyqt5designer.exe
+polymerApp.spec
 *.csv
 *.png
 
