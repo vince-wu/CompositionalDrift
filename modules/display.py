@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtCore
-from packaging import version
+from pkg_resources import parse_version
 import requests
 from requests.exceptions import HTTPError
 import json
@@ -55,10 +55,10 @@ def getVersionText(self):
 				bodyText = json_response['body']
 				bodyText = re.sub(r'(<li>)', '<li>- ', bodyText)
 				bodyText = re.sub(r'(Changelog:)', '{} Changelog:'.format(newestVersion), bodyText)
+				newestVersionNumber = re.sub('[^0-9,.]','',newestVersion)
 			else:
 				connected = False
 
-		newestVersionNumber = re.sub('[^0-9,.]','',newestVersion)
 
 		currentVersionNumber = re.sub('[^0-9,.]','',self.version)
 		#Alert user based on if version is updated, ahead, or behind
@@ -80,7 +80,7 @@ def getVersionText(self):
 				</span>\
 			</p>\
 			'
-		elif version.parse(newestVersionNumber) > version.parse(currentVersionNumber):
+		elif parse_version(newestVersionNumber) > parse_version(currentVersionNumber):
 			versionText = '\
 			<p style="color: #FFF; font-size:9pt; text-align:center">\
 				<br>\
@@ -102,7 +102,7 @@ def getVersionText(self):
 			</p>\
 			'.format(newestVersion, bodyText)
 
-		elif version.parse(newestVersionNumber) == version.parse(currentVersionNumber):
+		elif parse_version(newestVersionNumber) == parse_version(currentVersionNumber):
 			versionText = '\
 			<p style="color: #FFF; font-size:9pt; text-align:center">\
 				<br>\
@@ -113,9 +113,12 @@ def getVersionText(self):
 				<span style="color: #FF0">\
 					***\
 				</span>\
+				<p style="color: #FFF; font-size:8pt">\
+					{}\
+				</p>\
 			</p>\
-			'
-		elif version.parse(newestVersionNumber) < version.parse(currentVersionNumber):
+			'.format(bodyText)
+		elif parse_version(newestVersionNumber) < parse_version(currentVersionNumber):
 			versionText = '\
 			<p style="color: #FFF; font-size:9pt; text-align:center">\
 				<br>\
@@ -127,8 +130,11 @@ def getVersionText(self):
 				<span style="color: #FF0">\
 					***\
 				</span>\
+				<p style="color: #FFF; font-size:8pt">\
+					{}\
+				</p>\
 			</p>\
-			'
+			'.format(bodyText)
 
 	except Exception as e:
 		pass
@@ -143,7 +149,6 @@ def getJson():
 		json_response = response.json()
 		return json_response
 	except HTTPError as http_err:
-		print('httperror')
 		return None
 	except Exception as err:
 		return None
