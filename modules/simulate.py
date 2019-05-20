@@ -4,6 +4,7 @@ from modules.graph import plotData, clearGraph
 from modules.visualize import setup_scene, draw_polymers
 import random
 
+
 def run_simulation(self):
 
 	"***Set Global Variables***"
@@ -43,7 +44,10 @@ def run_simulation(self):
 	"***Set Up Visualization Scene***"
 	setup_scene(self)
 
+
 	"***Set up variables***"
+	#update statusbar - NO EFFECT ON SIMULATION
+	self.statusbar.showMessage("Simulating...")
 	#list for keeping track of monomer occurrences for plotting
 	self.monomerOccurrenceList = []
 
@@ -408,7 +412,7 @@ def run_simulation(self):
 	"***Update Global Variables***"
 	self.simulation_running = False
 	self.simulated = True
-		
+	self.statusbar.showMessage("Done.", 3000)
 			
 
 	

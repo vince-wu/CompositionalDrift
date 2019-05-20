@@ -2,12 +2,49 @@ import sys
 import pyqtgraph as pg 
 import numpy as np
 from PyQt5.QtGui import *
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 import modules.analysis as analysis
 
 from modules.MainForm import Ui_MainWindow
 
+"***Initial Screen Display***"
+def initDisplay(self):
+	htmlText = '<span style="color: #FFF;">This is the</span><br><span style="color: #FF0; font-size: 16pt;">PEAK</span>'
+	htmlText = '<a href="https://github.com/vince-wu/CompositionalDrift">Visit my github</a>'
+	txt = pg.TextItem(html= htmlText, anchor=(0.5,0.5))
+	self.graphWindow.showAxis('left', False)
+	self.graphWindow.showAxis('bottom', False)
+	self.graphWindow.setYRange(0, 1)
+	self.graphWindow.setXRange(0, 1)
+	self.graphWindow.addItem(txt)
+	txt.setPos(0.5,0.5)
+
+"***Set Up Graph Screen***"
+def setUpGraph(self):
+	self.graphWindow = pg.PlotWidget(self.tab)
+	sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+	sizePolicy.setHorizontalStretch(70)
+	sizePolicy.setVerticalStretch(8)
+	sizePolicy.setHeightForWidth(self.graphWindow.sizePolicy().hasHeightForWidth())
+	self.graphWindow.setSizePolicy(sizePolicy)
+	self.graphWindow.setFrameShape(QtWidgets.QFrame.NoFrame)
+	self.graphWindow.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+	self.graphWindow.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+	self.horizontalLayout_6.insertWidget(0, self.graphWindow)
+	self.horizontalLayout_6.removeWidget(self.displayView)
+	self.displayView.deleteLater()
+	self.displayView = None
+
+"***Main Plot Function***"
+
 def plotData(self):
+
+	if self.displayView:
+		setUpGraph(self)
+
+	self.graphWindow.showAxis('left', True)
+	self.graphWindow.showAxis('bottom', True)
 
 	if self.graphType == "Monomer Occurrence":
 		plotMonomerOccurrence(self)

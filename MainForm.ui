@@ -39,6 +39,9 @@
              <layout class="QGridLayout" name="gridLayout">
               <item row="0" column="2">
                <widget class="QPushButton" name="saveButton">
+                <property name="toolTip">
+                 <string>Save current input values</string>
+                </property>
                 <property name="text">
                  <string>Save</string>
                 </property>
@@ -59,6 +62,9 @@
               </item>
               <item row="0" column="1">
                <widget class="QPushButton" name="exportButton">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Export polymer data as csv. Right click figures to export.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Export</string>
                 </property>
@@ -79,6 +85,9 @@
               </item>
               <item row="0" column="3">
                <widget class="QPushButton" name="loadButton">
+                <property name="toolTip">
+                 <string>Load input values from save file</string>
+                </property>
                 <property name="text">
                  <string>Load</string>
                 </property>
@@ -89,21 +98,15 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="70,30">
               <item>
-               <widget class="PlotWidget" name="graphWindow">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>1</verstretch>
-                 </sizepolicy>
+               <widget class="QTextBrowser" name="displayView">
+                <property name="lineWrapMode">
+                 <enum>QTextEdit::WidgetWidth</enum>
                 </property>
-                <property name="frameShape">
-                 <enum>QFrame::NoFrame</enum>
+                <property name="lineWrapColumnOrWidth">
+                 <number>100</number>
                 </property>
-                <property name="sizeAdjustPolicy">
-                 <enum>QAbstractScrollArea::AdjustToContents</enum>
-                </property>
-                <property name="dragMode">
-                 <enum>QGraphicsView::ScrollHandDrag</enum>
+                <property name="readOnly">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
@@ -219,6 +222,9 @@
                   </item>
                   <item row="5" column="0">
                    <widget class="QLabel" name="label_9">
+                    <property name="toolTip">
+                     <string>Monomer to plot for run length</string>
+                    </property>
                     <property name="text">
                      <string>Run Length Monomer</string>
                     </property>
@@ -233,6 +239,9 @@
                   </item>
                   <item row="6" column="0">
                    <widget class="QLabel" name="label_10">
+                    <property name="toolTip">
+                     <string>Number of polymers to visualize</string>
+                    </property>
                     <property name="text">
                      <string>Rows to Show</string>
                     </property>
@@ -351,6 +360,9 @@
                    <layout class="QFormLayout" name="formLayout_2">
                     <item row="0" column="0">
                      <widget class="QLabel" name="label">
+                      <property name="toolTip">
+                       <string>Number of unique monomers in the system</string>
+                      </property>
                       <property name="text">
                        <string>Polymer System </string>
                       </property>
@@ -430,6 +442,9 @@
                     </item>
                     <item row="1" column="0">
                      <widget class="QLabel" name="label_14">
+                      <property name="toolTip">
+                       <string>Model used by simulation</string>
+                      </property>
                       <property name="text">
                        <string>Model</string>
                       </property>
@@ -460,6 +475,9 @@
                     </item>
                     <item row="2" column="0">
                      <widget class="QLabel" name="label_2">
+                      <property name="toolTip">
+                       <string>If checked, monomers will never be used up</string>
+                      </property>
                       <property name="text">
                        <string>Hold Composition</string>
                       </property>
@@ -478,6 +496,9 @@
                    <layout class="QFormLayout" name="formLayout_4">
                     <item row="0" column="0">
                      <widget class="QLabel" name="label_12">
+                      <property name="toolTip">
+                       <string>Average polymer length</string>
+                      </property>
                       <property name="text">
                        <string>Average DP</string>
                       </property>
@@ -501,6 +522,9 @@
                     </item>
                     <item row="1" column="0">
                      <widget class="QLabel" name="label_13">
+                      <property name="toolTip">
+                       <string>Reaction conversion</string>
+                      </property>
                       <property name="text">
                        <string>Percent Conversion</string>
                       </property>
@@ -511,6 +535,9 @@
                     </item>
                     <item row="2" column="0">
                      <widget class="QLabel" name="label_15">
+                      <property name="toolTip">
+                       <string>Total number of monomers in reaction</string>
+                      </property>
                       <property name="text">
                        <string>Monomer Pool Size</string>
                       </property>
@@ -586,13 +613,6 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>PlotWidget</class>
-   <extends>QGraphicsView</extends>
-   <header>pyqtgraph</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

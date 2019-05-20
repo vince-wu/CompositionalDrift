@@ -12,6 +12,7 @@ from modules.simulate import run_simulation
 from modules.visualize import setup_scene, draw_polymers
 from modules.save import save_state, load_state
 from modules.export import exportPolymerArray, exportImage
+from modules.display import initDisplay
 import modules.parse as parse
 
 
@@ -25,6 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		self.setupUi(self)
 		self.setWindowTitle("Compositional Drift v{}".format(self.version))
 		setupDynamicUi(self, MainWindow)
+		initDisplay(self)
 
 		self.connectEvents()
 

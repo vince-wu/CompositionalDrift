@@ -58,6 +58,7 @@ def setupDynamicUi(self, MainWindow):
 		self.ratioDoubleSpinBoxList[i].setProperty("value", 1)
 		self.monomerRatio_layout.setWidget(i, QtWidgets.QFormLayout.FieldRole, self.ratioDoubleSpinBoxList[i])
 		self.ratioLabelList[i].setText(_translate("MainWindow", "Monomer {} Ratio".format(i+1)))
+		self.ratioLabelList[i].setToolTip("Initial molar ratio of monomer {}".format(i+1))
 
 		#set up layouts for reactivity ratios
 		self.formLayoutList.append(QtWidgets.QFormLayout())
@@ -80,6 +81,10 @@ def setupDynamicUi(self, MainWindow):
 					self.rrDoubleSpinBox2DList[i][jIndex].setObjectName("rr{}{}DoubleSpinBox".format(i+1,j+1))
 					self.rrDoubleSpinBox2DList[i][jIndex].setProperty("value", 1)
 					self.rrDoubleSpinBox2DList[i][jIndex].setMaximum(100)
+					if numMonomers == 2:
+						self.rrLabel2DList[i][jIndex].setToolTip("Proportional to monomer {} homopolymerization probability".format(i+1))
+					else:
+						self.rrLabel2DList[i][jIndex].setToolTip("Inversely proportional to probability of monomer {} binding to monomer {}".format(i+1, j+1))
 					self.formLayoutList[i].setWidget(jIndex, QtWidgets.QFormLayout.FieldRole, self.rrDoubleSpinBox2DList[i][jIndex])
 					jIndex += 1
 			self.horizontalLayout.addLayout(self.formLayoutList[i])

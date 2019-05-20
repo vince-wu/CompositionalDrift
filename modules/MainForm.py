@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainForm.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.12.2
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -56,17 +56,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.addLayout(self.gridLayout)
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.graphWindow = PlotWidget(self.tab)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.graphWindow.sizePolicy().hasHeightForWidth())
-        self.graphWindow.setSizePolicy(sizePolicy)
-        self.graphWindow.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.graphWindow.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.graphWindow.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        self.graphWindow.setObjectName("graphWindow")
-        self.horizontalLayout_6.addWidget(self.graphWindow)
+        self.displayView = QtWidgets.QTextBrowser(self.tab)
+        self.displayView.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
+        self.displayView.setLineWrapColumnOrWidth(100)
+        self.displayView.setReadOnly(False)
+        self.displayView.setObjectName("displayView")
+        self.horizontalLayout_6.addWidget(self.displayView)
         self.scrollArea = QtWidgets.QScrollArea(self.tab)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -286,9 +281,12 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Compositional Drift"))
+        self.saveButton.setToolTip(_translate("MainWindow", "Save current input values"))
         self.saveButton.setText(_translate("MainWindow", "Save"))
         self.simulateButton.setText(_translate("MainWindow", "Simulate"))
+        self.exportButton.setToolTip(_translate("MainWindow", "<html><head/><body><p>Export polymer data as csv. Right click figures to export.</p></body></html>"))
         self.exportButton.setText(_translate("MainWindow", "Export"))
+        self.loadButton.setToolTip(_translate("MainWindow", "Load input values from save file"))
         self.loadButton.setText(_translate("MainWindow", "Load"))
         self.label_3.setText(_translate("MainWindow", "Number Average DP"))
         self.label_4.setText(_translate("MainWindow", "Weight Average DP"))
@@ -298,7 +296,9 @@ class Ui_MainWindow(object):
         self.graphComboBox.setItemText(1, _translate("MainWindow", "Monomer Usage"))
         self.graphComboBox.setItemText(2, _translate("MainWindow", "Run Length"))
         self.graphComboBox.setItemText(3, _translate("MainWindow", "DP Distribution"))
+        self.label_9.setToolTip(_translate("MainWindow", "Monomer to plot for run length"))
         self.label_9.setText(_translate("MainWindow", "Run Length Monomer"))
+        self.label_10.setToolTip(_translate("MainWindow", "Number of polymers to visualize"))
         self.label_10.setText(_translate("MainWindow", "Rows to Show"))
         self.label_7.setText(_translate("MainWindow", "Animation"))
         self.animateComboBox.setItemText(0, _translate("MainWindow", "On"))
@@ -306,6 +306,7 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "Legend"))
         self.legendComboBox.setItemText(0, _translate("MainWindow", "On"))
         self.legendComboBox.setItemText(1, _translate("MainWindow", "Off"))
+        self.label.setToolTip(_translate("MainWindow", "Number of unique monomers in the system"))
         self.label.setText(_translate("MainWindow", "Polymer System "))
         self.systemComboBox.setCurrentText(_translate("MainWindow", "3-Monomer"))
         self.systemComboBox.setItemText(0, _translate("MainWindow", "1-Monomer"))
@@ -318,14 +319,18 @@ class Ui_MainWindow(object):
         self.systemComboBox.setItemText(7, _translate("MainWindow", "8-Monomer"))
         self.systemComboBox.setItemText(8, _translate("MainWindow", "9-Monomer"))
         self.systemComboBox.setItemText(9, _translate("MainWindow", "10-Monomer"))
+        self.label_14.setToolTip(_translate("MainWindow", "Model used by simulation"))
         self.label_14.setText(_translate("MainWindow", "Model"))
         self.modelComboBox.setItemText(0, _translate("MainWindow", "Mayo-Lewis"))
         self.modelComboBox.setItemText(1, _translate("MainWindow", "Penultimate"))
+        self.label_2.setToolTip(_translate("MainWindow", "If checked, monomers will never be used up"))
         self.label_2.setText(_translate("MainWindow", "Hold Composition"))
+        self.label_12.setToolTip(_translate("MainWindow", "Average polymer length"))
         self.label_12.setText(_translate("MainWindow", "Average DP"))
+        self.label_13.setToolTip(_translate("MainWindow", "Reaction conversion"))
         self.label_13.setText(_translate("MainWindow", "Percent Conversion"))
+        self.label_15.setToolTip(_translate("MainWindow", "Total number of monomers in reaction"))
         self.label_15.setText(_translate("MainWindow", "Monomer Pool Size"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Compositional Drift"))
 
 
-from pyqtgraph import PlotWidget
