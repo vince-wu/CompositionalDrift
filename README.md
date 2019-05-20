@@ -11,20 +11,41 @@ The program can be accessed in several ways.
 
 * Download and save the .exe file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
 
-* Run the program as an executable (certification is on its way)
+* Run the program as an executable by double clicking (certification is on its way)
 
-* Refer to the [wiki](https://github.com/vince-wu/CompositionalDrift/wiki) for step-by-step instructions on how to use the program
-
-### Running via Web App
+### Running via Web App (Demo Version)
 
 * Go to https://vince-wu.github.io/CompositionalDrift/ 
+
+* Note that the web app does not have the full capability of the executable program
+
+### Running Locally with Python 
+
+* Download and install Python 3.5+
+
+* (Optional but recommend) Set up a python virtual environment using `virtualenv`
+
+* Clone into your local repository:
+
+`git clone https://github.com/vince-wu/CompositionalDrift.git`
+
+* Navigate into the CompositionDrift directory and install all dependencies:
+
+`pip install -r requirements.txt`
+
+* Run the program:
+
+`python polymerApp.py`
 
 ## Built With
 
 * Python
 * Javascript
 
-## Contributing
+## Contributing/ Development
+
+The code for this application is open source and available to everyone. Feel free to clone or fork the repository if
+you want to alter or add onto the codebase. You can refer to the wiki for a quick rundown of the code.
 
 Please report any bugs to vincent.wu@berkeley.edu
 
