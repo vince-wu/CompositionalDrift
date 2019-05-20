@@ -25,7 +25,7 @@ The program can be accessed in several ways.
 
 * (Optional but recommend) Set up a python virtual environment using `virtualenv`
 
-* Clone into your local repository:
+* Clone the project into your local repository:
 
 `git clone https://github.com/vince-wu/CompositionalDrift.git`
 
