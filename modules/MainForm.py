@@ -57,6 +57,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
         self.displayView = QtWidgets.QTextBrowser(self.tab)
+        self.displayView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.displayView.setLineWrapMode(QtWidgets.QTextEdit.WidgetWidth)
         self.displayView.setLineWrapColumnOrWidth(100)
         self.displayView.setReadOnly(False)

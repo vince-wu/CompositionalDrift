@@ -1,6 +1,8 @@
 import csv
 from PyQt5.QtWidgets import QFileDialog
 from PyQt5.QtGui import QPainter, QPixmap
+from PyQt5.QtCore import Qt
+
 
 
 def exportPolymerArray(self):
@@ -20,6 +22,7 @@ def exportImage(self):
 	imgHeight = self.scene.height()
 	#copy scene onto QPixmap obj
 	pix = QPixmap(imgWidth, imgHeight)
+	pix.fill(Qt.white)
 	painter = QPainter(pix)
 	self.scene.render(painter)
 	painter.end()
