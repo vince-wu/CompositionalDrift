@@ -99,6 +99,9 @@
              <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="70,30">
               <item>
                <widget class="QTextBrowser" name="displayView">
+                <property name="verticalScrollBarPolicy">
+                 <enum>Qt::ScrollBarAlwaysOff</enum>
+                </property>
                 <property name="lineWrapMode">
                  <enum>QTextEdit::WidgetWidth</enum>
                 </property>
