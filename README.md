@@ -45,7 +45,7 @@ The program can be accessed in several ways.
 ## Contributing/ Development
 
 The code for this application is open source and available to everyone. Feel free to clone or fork the repository if
-you want to alter or add onto the codebase. You can refer to the [wiki](https://github.com/vince-wu/CompositionalDrift/wiki/Developing-with-Python) for a rundown of the code.
+you want to alter or add onto the codebase. You can refer to the [wiki](https://github.com/vince-wu/CompositionalDrift/wiki/Developing-with-Python) for an overview of the code.
 
 Please report any bugs to vincent.wu@berkeley.edu
 
