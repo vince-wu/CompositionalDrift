@@ -7,9 +7,9 @@ This program tool allows polymer chemists easily to simulate the results of cont
 ## Getting Started
 The program can be accessed in several ways.
 
-### Running via Executable (Windows only)
+### Running via Executable
 
-* Download and save the .exe file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
+* Download and save the .exe/ .app file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
 
 * Run the program as an executable by double clicking (certification is on its way)
 
