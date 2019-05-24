@@ -29,7 +29,7 @@ The program can be accessed in several ways.
 
 `git clone https://github.com/vince-wu/CompositionalDrift.git`
 
-* Navigate into the CompositionDrift directory and install all dependencies:
+* Navigate into the CompositionalDrift directory and install all dependencies:
 
 `pip install -r requirements.txt`
 
