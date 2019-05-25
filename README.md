@@ -7,9 +7,9 @@ This program tool allows polymer chemists easily to simulate the results of cont
 ## Getting Started
 The program can be accessed in several ways.
 
-### Running via Executable (Windows only)
+### Running via Executable
 
-* Download and save the .exe file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
+* Download and save the .exe/ .app file in the most [current release](https://github.com/vince-wu/CompositionalDrift/releases)
 
 * Run the program as an executable by double clicking (certification is on its way)
 
@@ -25,11 +25,11 @@ The program can be accessed in several ways.
 
 * (Optional but recommend) Set up a python virtual environment using `virtualenv`
 
-* Clone into your local repository:
+* Clone the project into your local repository:
 
 `git clone https://github.com/vince-wu/CompositionalDrift.git`
 
-* Navigate into the CompositionDrift directory and install all dependencies:
+* Navigate into the CompositionalDrift directory and install all dependencies:
 
 `pip install -r requirements.txt`
 
@@ -45,7 +45,7 @@ The program can be accessed in several ways.
 ## Contributing/ Development
 
 The code for this application is open source and available to everyone. Feel free to clone or fork the repository if
-you want to alter or add onto the codebase. You can refer to the wiki for a quick rundown of the code.
+you want to alter or add onto the codebase. You can refer to the [wiki](https://github.com/vince-wu/CompositionalDrift/wiki/Developing-with-Python) for an overview of the code.
 
 Please report any bugs to vincent.wu@berkeley.edu
 
