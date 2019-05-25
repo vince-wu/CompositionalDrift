@@ -111,6 +111,74 @@ def setupDynamicUi(self, MainWindow):
 					positionIndex += 1
 			self.horizontalLayout.addLayout(self.formLayoutList[i])
 
+def rr_setupDynamicUi(self):
+	num_data_sets = self.numSetsSpinBox.value()
+
+	for formLayout in self.rr_formLayoutList:
+		clearLayoutItems(self, formLayout)
+		self.verticalLayout_10.removeItem(formLayout)
+		formLayout.deleteLater()
+		formLayout = None
+
+	for line in self.lineList:
+		self.verticalLayout_10.removeWidget(line)
+		line.deleteLater()
+		line = None
+
+	if self.spacerItem:
+		self.verticalLayout_10.removeItem(self.spacerItem)
+		self.spacerItem = None
+
+
+	self.rr_formLayoutList = []
+	self.setDataLabelList = []
+	self.setDataDoubleSpinBoxList = []
+	self.lineList = []
+
+
+
+	for i in range(num_data_sets):
+
+		self.setDataLabelList.append([])
+		self.setDataDoubleSpinBoxList.append([])
+
+		self.rr_formLayoutList.append(QtWidgets.QFormLayout())
+
+		self.setDataLabelList[i].append(QtWidgets.QLabel(self.scrollAreaWidgetContents_5))
+		self.setDataLabelList[i][0].setText("Set {} Conversion".format(i+1))
+		self.rr_formLayoutList[i].setWidget(0, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][0])
+		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.rr_formLayoutList[i].setWidget(0, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][0])
+
+		self.setDataLabelList[i].append(QtWidgets.QLabel(self.scrollAreaWidgetContents_5))
+		self.setDataLabelList[i][1].setText("Set {} Monomer Fraction".format(i+1))
+		self.rr_formLayoutList[i].setWidget(1, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][1])
+		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.rr_formLayoutList[i].setWidget(1, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][1])
+
+		self.setDataLabelList[i].append(QtWidgets.QLabel(self.scrollAreaWidgetContents_5))
+		self.setDataLabelList[i][2].setText("Set {} Initial Monomer Fraction".format(i+1))
+		self.rr_formLayoutList[i].setWidget(2, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][2])
+		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.rr_formLayoutList[i].setWidget(2, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][2])
+
+		self.verticalLayout_10.addLayout(self.rr_formLayoutList[i])
+
+		self.lineList.append(QtWidgets.QFrame(self.scrollAreaWidgetContents_5))
+		self.lineList[i].setFrameShape(QtWidgets.QFrame.HLine)
+		self.lineList[i].setFrameShadow(QtWidgets.QFrame.Sunken)
+		self.lineList[i].setObjectName("line_2")
+		self.verticalLayout_10.addWidget(self.lineList[i])	
+
+	self.spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+	self.verticalLayout_10.addItem(self.spacerItem)
+
+def clearLayout(layout):
+  while layout.count():
+    child = layout.takeAt(0)
+    if child.widget():
+      child.widget().deleteLater()
+
 #deletes all items within an layout
 def clearLayoutItems(self, layout):
 	if layout is not None:

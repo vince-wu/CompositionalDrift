@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1350</width>
-    <height>950</height>
+    <height>957</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -130,38 +130,24 @@
                    <x>0</x>
                    <y>0</y>
                    <width>391</width>
-                   <height>606</height>
+                   <height>612</height>
                   </rect>
                  </property>
                  <layout class="QFormLayout" name="formLayout_6">
-                  <item row="0" column="0">
+                  <item row="1" column="0">
                    <widget class="QLabel" name="label_3">
                     <property name="text">
                      <string>Number Average DP</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="0" column="1">
+                  <item row="1" column="1">
                    <widget class="QDoubleSpinBox" name="numAvDp_DoubleSpinBox">
                     <property name="enabled">
-                     <bool>false</bool>
+                     <bool>true</bool>
                     </property>
-                    <property name="maximum">
-                     <double>10000000.000000000000000</double>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_4">
-                    <property name="text">
-                     <string>Weight Average DP</string>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="1">
-                   <widget class="QDoubleSpinBox" name="weightAvDp_DoubleSpinBox">
-                    <property name="enabled">
-                     <bool>false</bool>
+                    <property name="readOnly">
+                     <bool>true</bool>
                     </property>
                     <property name="maximum">
                      <double>10000000.000000000000000</double>
@@ -169,16 +155,19 @@
                    </widget>
                   </item>
                   <item row="2" column="0">
-                   <widget class="QLabel" name="label_5">
+                   <widget class="QLabel" name="label_4">
                     <property name="text">
-                     <string>Dispersity Index</string>
+                     <string>Weight Average DP</string>
                     </property>
                    </widget>
                   </item>
                   <item row="2" column="1">
-                   <widget class="QDoubleSpinBox" name="dispersityDoubleSpinBox">
+                   <widget class="QDoubleSpinBox" name="weightAvDp_DoubleSpinBox">
                     <property name="enabled">
-                     <bool>false</bool>
+                     <bool>true</bool>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
                     </property>
                     <property name="maximum">
                      <double>10000000.000000000000000</double>
@@ -186,20 +175,40 @@
                    </widget>
                   </item>
                   <item row="3" column="0">
+                   <widget class="QLabel" name="label_5">
+                    <property name="text">
+                     <string>Dispersity Index</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="3" column="1">
+                   <widget class="QDoubleSpinBox" name="dispersityDoubleSpinBox">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="maximum">
+                     <double>10000000.000000000000000</double>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
                    <widget class="Line" name="line">
                     <property name="orientation">
                      <enum>Qt::Horizontal</enum>
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="0">
+                  <item row="5" column="0">
                    <widget class="QLabel" name="label_6">
                     <property name="text">
                      <string>Graph Type</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="4" column="1">
+                  <item row="5" column="1">
                    <widget class="QComboBox" name="graphComboBox">
                     <item>
                      <property name="text">
@@ -223,7 +232,7 @@
                     </item>
                    </widget>
                   </item>
-                  <item row="5" column="0">
+                  <item row="6" column="0">
                    <widget class="QLabel" name="label_9">
                     <property name="toolTip">
                      <string>Monomer to plot for run length</string>
@@ -233,14 +242,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="5" column="1">
+                  <item row="6" column="1">
                    <widget class="QSpinBox" name="runLengthSpinBox">
                     <property name="minimum">
                      <number>1</number>
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="0">
+                  <item row="7" column="0">
                    <widget class="QLabel" name="label_10">
                     <property name="toolTip">
                      <string>Number of polymers to visualize</string>
@@ -250,7 +259,7 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="6" column="1">
+                  <item row="7" column="1">
                    <widget class="QSpinBox" name="rowsSpinBox">
                     <property name="maximum">
                      <number>1000000</number>
@@ -260,14 +269,14 @@
                     </property>
                    </widget>
                   </item>
-                  <item row="7" column="0">
+                  <item row="8" column="0">
                    <widget class="QLabel" name="label_7">
                     <property name="text">
                      <string>Animation</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="7" column="1">
+                  <item row="8" column="1">
                    <widget class="QComboBox" name="animateComboBox">
                     <item>
                      <property name="text">
@@ -281,14 +290,14 @@
                     </item>
                    </widget>
                   </item>
-                  <item row="8" column="0">
+                  <item row="9" column="0">
                    <widget class="QLabel" name="label_8">
                     <property name="text">
                      <string>Legend</string>
                     </property>
                    </widget>
                   </item>
-                  <item row="8" column="1">
+                  <item row="9" column="1">
                    <widget class="QComboBox" name="legendComboBox">
                     <item>
                      <property name="text">
@@ -300,6 +309,38 @@
                       <string>Off</string>
                      </property>
                     </item>
+                   </widget>
+                  </item>
+                  <item row="0" column="0">
+                   <widget class="QLabel" name="label_18">
+                    <property name="toolTip">
+                     <string>Describes polymer rigidity. Only valid for 2-monomer systems</string>
+                    </property>
+                    <property name="text">
+                     <string>lambda Value</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="0" column="1">
+                   <widget class="QDoubleSpinBox" name="lambdaDoubleSpinBox">
+                    <property name="enabled">
+                     <bool>true</bool>
+                    </property>
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                    <property name="specialValueText">
+                     <string>n/a</string>
+                    </property>
+                    <property name="decimals">
+                     <number>3</number>
+                    </property>
+                    <property name="minimum">
+                     <double>-2.000000000000000</double>
+                    </property>
+                    <property name="maximum">
+                     <double>1.000000000000000</double>
+                    </property>
                    </widget>
                   </item>
                  </layout>
@@ -604,9 +645,190 @@
          </layout>
         </widget>
         <widget class="QWidget" name="tab_2">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
          <attribute name="title">
-          <string/>
+          <string>Reactivity Ratio</string>
          </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,3">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QPushButton" name="Calculate">
+                <property name="text">
+                 <string>Run</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="6,3">
+              <item>
+               <layout class="QVBoxLayout" name="verticalLayout_7">
+                <item>
+                 <widget class="QGraphicsView" name="graphicsView"/>
+                </item>
+                <item>
+                 <widget class="QScrollArea" name="scrollArea_3">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="widgetResizable">
+                   <bool>true</bool>
+                  </property>
+                  <widget class="QWidget" name="scrollAreaWidgetContents_2">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>0</y>
+                     <width>869</width>
+                     <height>88</height>
+                    </rect>
+                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_9">
+                    <item>
+                     <layout class="QHBoxLayout" name="horizontalLayout_8">
+                      <item>
+                       <layout class="QFormLayout" name="formLayout_3">
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_11">
+                          <property name="text">
+                           <string>Number of Data Sets</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QSpinBox" name="numSetsSpinBox">
+                          <property name="value">
+                           <number>3</number>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_16">
+                          <property name="text">
+                           <string>Increment</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                        </item>
+                        <item row="2" column="0">
+                         <widget class="QLabel" name="label_17">
+                          <property name="text">
+                           <string>Animate</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="1">
+                         <widget class="QComboBox" name="comboBox"/>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QFormLayout" name="formLayout_10">
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_21">
+                          <property name="text">
+                           <string>RR1 Lower Bound</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox_5"/>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_22">
+                          <property name="text">
+                           <string>RR1 Upper Bound</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox_6"/>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QFormLayout" name="formLayout_12">
+                        <item row="0" column="0">
+                         <widget class="QLabel" name="label_28">
+                          <property name="text">
+                           <string>RR2 Lower Bound</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_29">
+                          <property name="text">
+                           <string>RR2 Upper Bound</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="0" column="1">
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox_12"/>
+                        </item>
+                        <item row="1" column="1">
+                         <widget class="QDoubleSpinBox" name="doubleSpinBox_13"/>
+                        </item>
+                       </layout>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_4">
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_5">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>435</width>
+                   <height>858</height>
+                  </rect>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_10">
+                  <item>
+                   <layout class="QVBoxLayout" name="verticalLayout_10"/>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </widget>
       </item>

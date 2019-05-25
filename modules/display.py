@@ -22,6 +22,8 @@ def initDisplay(self):
 		<span style="text-align: center;font-size:9pt;">\
 			<br>\
 			Author: Vincent Wu (vincent.wu@berkeley.edu)\
+			<br>\
+			Contributors: Anton A. A. Smith, Aaron Hall\
 		</span>\
 		<p style="text-align:left;font-size:9pt;">\
 			This program uses the Mayo-Lewis Equation and Monte Carlo Methods to simulate controlled polymer\

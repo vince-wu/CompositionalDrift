@@ -8,17 +8,6 @@ import modules.analysis as analysis
 
 from modules.MainForm import Ui_MainWindow
 
-"***Initial Screen Display***"
-def initDisplay(self):
-	htmlText = '<span style="color: #FFF;">This is the</span><br><span style="color: #FF0; font-size: 16pt;">PEAK</span>'
-	htmlText = '<a href="https://github.com/vince-wu/CompositionalDrift">Visit my github</a>'
-	txt = pg.TextItem(html= htmlText, anchor=(0.5,0.5))
-	self.graphWindow.showAxis('left', False)
-	self.graphWindow.showAxis('bottom', False)
-	self.graphWindow.setYRange(0, 1)
-	self.graphWindow.setXRange(0, 1)
-	self.graphWindow.addItem(txt)
-	txt.setPos(0.5,0.5)
 
 "***Set Up Graph Screen***"
 def setUpGraph(self):
@@ -197,6 +186,12 @@ def updateValues(self):
 	self.weightAvDp_DoubleSpinBox.setProperty("value", weightAverageDP)
 	self.dispersityDoubleSpinBox.setProperty("value", dispersityIndex)
 
+	if self.numMonomers != 2:
+		self.lambdaDoubleSpinBox.setProperty("value", -2)
+
+	elif self.numMonomers == 2 and min([polymer.len() for polymer in self.polymerArray]) > 1:
+		lambdaValue = analysis.calculate_theta(self)
+		self.lambdaDoubleSpinBox.setProperty("value", lambdaValue)
 
 
 "***Remove Legend Item***"

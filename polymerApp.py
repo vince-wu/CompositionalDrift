@@ -6,7 +6,7 @@ from PyQt5.QtGui import *
 
 import static.images_qr
 from modules.MainForm import Ui_MainWindow
-from modules.generateUI import setupDynamicUi
+from modules.generateUI import setupDynamicUi, rr_setupDynamicUi
 from modules.graph import plotData
 from modules.simulate import run_simulation
 from modules.visualize import setup_scene, draw_polymers
@@ -26,20 +26,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		self.setupUi(self)
 		self.setWindowTitle("Compositional Drift v{}".format(self.version))
 		setupDynamicUi(self, MainWindow)
+		if not self.display_beta_content:
+			self.tab_2.setParent(None)
+		if self.display_beta_content:
+			rr_setupDynamicUi(self)
 		initDisplay(self)
 
 		self.connectEvents()
 
 	def setVars(self):
-		self.version = "2.0"
+		self.display_beta_content = False
+		self.version = "2.0.1"
 		self.simulated = False
 		self.simulation_running = False
 		self.ratioLabelList = []
 		self.ratioDoubleSpinBoxList = []
 		self.formLayoutList = []
+		self.rr_formLayoutList = []
+		self.lineList = []
+		self.spacerItem = None
 		
 
 	def connectEvents(self):
+		#For compositional drift
 		self.systemComboBox.currentTextChanged.connect(self.on_systemComboBox_changed)
 		self.modelComboBox.currentTextChanged.connect(self.on_modelComboBox_changed)
 		self.graphComboBox.currentTextChanged.connect(self.on_graphComboBox_changed)
@@ -53,6 +62,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		self.visualizeWindow.setContextMenuPolicy(Qt.CustomContextMenu)
 		self.visualizeWindow.customContextMenuRequested.connect(self.openMenu)
 		self.exportButton.clicked.connect(self.exportPolymers)
+
+		#For reactivity ratio
+		self.numSetsSpinBox.valueChanged.connect(self.on_numSetsSpinBox_changed)
+
 
 
 	
@@ -127,11 +140,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		saveImage_action.triggered.connect(self.save_image)
 
 
+	def on_numSetsSpinBox_changed(self):
+		rr_setupDynamicUi(self)
+
+
 if __name__ == '__main__':
 
 	app = QApplication([])
 	app.setWindowIcon(QIcon(':/static/app.ico'))
-	QApplication.setStyle(QStyleFactory.create('WindowsVista'))
+	QApplication.setStyle(QStyleFactory.create('Macintosh'))
 	window = MainWindow()
 	window.show()
 	sys.exit(app.exec_())

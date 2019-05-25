@@ -2,6 +2,7 @@ from modules.parse import parseUI_Inputs, testAssertions
 from modules.Polymer import Polymer
 from modules.graph import plotData, clearGraph
 from modules.visualize import setup_scene, draw_polymers
+import modules.analysis as analysis
 import random
 
 
@@ -410,6 +411,7 @@ def run_simulation(self):
 	draw_polymers(self)
 
 	"***Update Global Variables***"
+	lambdaValue = analysis.calculate_theta(self)
 	self.simulation_running = False
 	self.simulated = True
 	self.statusbar.showMessage("Done.", 3000)

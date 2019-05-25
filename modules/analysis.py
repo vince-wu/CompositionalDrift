@@ -90,6 +90,55 @@ def getComposition(self, polymerArray):
 	#print("compositionList: ", compositionList)
 	return compositionList
 
+"***lambda factor calculation***"
+def theta_polymer(polymer_individual):
+	"""
+	input is an individual polymer chain
+	output returns a list [<thetatheta>,<theta>*<theta>]
+	"""
+	thetatheta=[]
+	theta= sum(polymer_individual)/len(polymer_individual)
+	for pos in range(len(polymer_individual)-1):
+	    thetatheta.append(polymer_individual[pos]*polymer_individual[pos+1])
+	return [sum(thetatheta)/len(thetatheta),theta*theta]
+
+def theta_population(polymer_population):
+	"""
+	input is the list of polymer chains
+	output returns a list [<thetatheta>,<theta>*<theta>]
+	"""
+	thetatheta = []
+	theta = []
+	for i in range(len(polymer_population)):
+		theta_polymer_list = theta_polymer(polymer_population[i])
+		thetatheta.append(theta_polymer_list[0])
+		theta.append(theta_polymer_list[1])
+	return [sum(thetatheta)/len(thetatheta),sum(theta)/len(theta)]
+
+def convert_poly_array(self):
+	"""
+	output a list of polymers, with monomers as either 1 or -1
+	"""
+	polyList = []
+	for polymer in self.polymerArray:
+		polyList.append([float(-1) if x == 2 else float(x) for x in polymer.asArray()])
+
+	return polyList
+
+def calculate_theta(self):
+	"""
+	return a lambda value
+	"""
+	totalRatios = sum(self.monomerRatios)
+	fa = self.monomerRatios[0] / totalRatios
+	fb = self.monomerRatios[1] / totalRatios
+	#get fraction of monomer 1 and monomer 2
+
+	polyList = convert_poly_array(self)
+	theta_population_list = theta_population(polyList)
+	lambdaValue = (theta_population_list[0]-theta_population_list[1])/(4*fa*fb)
+	return lambdaValue
+
 "***DP Distribution Analysis***"
 def DP_Distribution(self):
 	#Get the DP Distribution
