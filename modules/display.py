@@ -40,6 +40,38 @@ def initDisplay(self):
 	self.displayView.setOpenExternalLinks(True)
 	#text.setReadOnly(False)
 
+def rr_initDisplay(self):
+	#Set initial display background color
+	self.rr_textBrowser.setStyleSheet("background-color: black; padding: 50px;")
+	self.rr_textBrowser.setAlignment(QtCore.Qt.AlignCenter)
+	self.rr_textBrowser.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
+
+	versionText = getVersionText(self)
+
+	#self.displayView.setBackgroundBrush(brush)
+	txt = '\
+	<div style="color: #FFF;">\
+		<h2 style="text-align: center">\
+			Welcome to Reactivity Ratio Calculator!\
+		</h2>\
+		<span style="text-align: center;font-size:9pt;">\
+		</span>\
+		<p style="text-align:left;font-size:9pt;">\
+			This program estimates reactivity ratios for 2-monomer systems from experimental data.\
+			For more detailed instructions and to access the open-source code,\
+	 		please refer to the project'"'"'s github page: \
+	 		<a style="color: #FF0;" href="https://github.com/vince-wu/CompositionalDrift">\
+			https://github.com/vince-wu/CompositionalDrift </a>.\
+		</p>\
+		 	{}\
+	</div>'.format(versionText)
+
+	text = self.rr_textBrowser.setText(txt)
+	#text.setDefaultTextColor(QtCore.Qt.yellow)
+	self.rr_textBrowser.setOpenExternalLinks(True)
+	#text.setReadOnly(False)
+
+
 def getVersionText(self):
 	versionText = ''
 	debug = False

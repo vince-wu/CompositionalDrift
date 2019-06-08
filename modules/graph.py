@@ -5,8 +5,10 @@ from PyQt5.QtGui import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import modules.analysis as analysis
-
+from modules.Heatmap import Heatmap
+from modules.Legend import Legend
 from modules.MainForm import Ui_MainWindow
+from modules.CustomViewBox import CustomViewBox
 
 
 "***Set Up Graph Screen***"
@@ -193,16 +195,94 @@ def updateValues(self):
 		lambdaValue = analysis.calculate_theta(self)
 		self.lambdaDoubleSpinBox.setProperty("value", lambdaValue)
 
+	else:
+		self.lambdaDoubleSpinBox.setProperty("value", 0)
 
 "***Remove Legend Item***"
-def removeLegend(self):
+def removeLegend(lgd):
 
 	try:
-		self.lgd.scene().removeItem(self.lgd) 
+		lgd.scene().removeItem(lgd) 
 	except Exception as e:
 		return
 
 "***Clear Graph, Including legend***"
 def clearGraph(self):
 	self.graphWindow.clear()
-	removeLegend(self)
+	removeLegend(self.lgd)
+
+"***Set up RR PlotWidget***"
+def setUpRRPlot(self):
+	self.vb = CustomViewBox()
+	self.rrPlotWidget = pg.PlotWidget(viewBox=self.vb, enableMenu=False)
+	self.rrPlotWidget.enableAutoRange('xy', False)
+	self.verticalLayout_7.insertWidget(0, self.rrPlotWidget)
+	self.verticalLayout_7.removeWidget(self.rr_textBrowser)
+	self.rr_textBrowser.deleteLater()
+
+"***Plot RR Heatmap ***"
+def plot_rr(self, data, x_counts, y_counts, rr1_max, rr2_max):
+
+	#Find scaling factors for heatmap plot
+	self.scaleX = x_counts/(rr1_max)
+	self.scaleY = y_counts/(rr2_max)
+
+	#Find the min and max of each axis
+	x_min = self.rr1_low*self.scaleX
+	y_min = self.rr2_low*self.scaleY
+	x_max = rr1_max*self.scaleX
+	y_max = rr2_max*self.scaleY
+
+	#Create a binding rectangle bases on dimensions
+	bindingRect = QtCore.QRectF(x_min, y_min, x_max - x_min, y_max - y_min)
+
+	if not self.htmap:
+		#set up Plotwidget
+		setUpRRPlot(self)
+
+		#create legend
+		creat_rr_legend(self)
+
+		#Creat Heatmap
+		self.htmap = Heatmap(data)
+		self.rrPlotWidget.addItem(self.htmap)
+		self.htmap.setRect(bindingRect)
+		self.rrPlotWidget.setLabel('bottom', text="r1")
+		self.rrPlotWidget.setLabel('left', text="r2")
+
+	else:
+		#Update heatmap and dimensions
+		self.htmap.updateImage(data)
+		self.htmap.setRect(bindingRect)
+
+	#Set axis ranges
+	self.rrPlotWidget.setXRange(x_min, x_max)
+	self.rrPlotWidget.setYRange(y_min, y_max)
+
+	#Adjust axis scales
+	x_axis = self.rrPlotWidget.getAxis('bottom')
+	y_axis = self.rrPlotWidget.getAxis('left')
+	x_axis.setScale(1/self.scaleX)
+	y_axis.setScale(1/self.scaleY)
+
+	#Force update events
+	QApplication.processEvents()
+
+"***Create legend for Heatmap***"
+#Hacky but it works...
+def creat_rr_legend(self):
+	#Create Legend
+	self.rr_lgd = self.rrPlotWidget.addLegend()
+	gradients =[(37,52,148), (44,127,184), (127,205,187), (199,233,180), (255,255,204)]
+	styles = []
+	for color in gradients:
+		styles.append(self.rrPlotWidget.plot([0], pen=None, symbolPen = (0,0,0), symbolBrush=color, symbol='s', symbolSize=15))
+
+	self.rr_lgd.addItem(styles[0], "95%")
+	self.rr_lgd.addItem(styles[1], "90%")
+	self.rr_lgd.addItem(styles[2], "70%")
+	self.rr_lgd.addItem(styles[3], "50%")
+	self.rr_lgd.addItem(styles[4], "0%")
+
+	for style in styles:
+		self.rrPlotWidget.removeItem(style)

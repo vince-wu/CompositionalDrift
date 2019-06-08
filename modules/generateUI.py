@@ -74,8 +74,9 @@ def setupDynamicUi(self, MainWindow):
 			for j in range(numMonomers):
 				if j != i:
 					self.rrLabel2DList[i].append(QtWidgets.QLabel(self.inputLayout))
+					# txt = "<html><head/><body><p>r<span style=\" vertical-align:sub;\">{}{}</span></p></body></html>".format(i+1,j+1)
 					self.rrLabel2DList[i][jIndex].setObjectName("rr{}{}Label".format(i+1,j+1))
-					self.rrLabel2DList[i][jIndex].setText(_translate("MainWindow", "rr{}{}".format(i+1,j+1)))
+					self.rrLabel2DList[i][jIndex].setText(_translate("MainWindow", "r{}{}".format(i+1,j+1)))
 					self.formLayoutList[i].setWidget(jIndex, QtWidgets.QFormLayout.LabelRole, self.rrLabel2DList[i][jIndex])
 					self.rrDoubleSpinBox2DList[i].append(QtWidgets.QDoubleSpinBox(self.inputLayout))
 					self.rrDoubleSpinBox2DList[i][jIndex].setObjectName("rr{}{}DoubleSpinBox".format(i+1,j+1))
@@ -83,6 +84,7 @@ def setupDynamicUi(self, MainWindow):
 					self.rrDoubleSpinBox2DList[i][jIndex].setMaximum(100)
 					if numMonomers == 2:
 						self.rrLabel2DList[i][jIndex].setToolTip("Proportional to monomer {} homopolymerization probability".format(i+1))
+						self.rrLabel2DList[i][jIndex].setText(_translate("MainWindow", "r{}".format(i+1)))
 					else:
 						self.rrLabel2DList[i][jIndex].setToolTip("Inversely proportional to probability of monomer {} binding to monomer {}".format(i+1, j+1))
 					self.formLayoutList[i].setWidget(jIndex, QtWidgets.QFormLayout.FieldRole, self.rrDoubleSpinBox2DList[i][jIndex])
@@ -111,33 +113,50 @@ def setupDynamicUi(self, MainWindow):
 					positionIndex += 1
 			self.horizontalLayout.addLayout(self.formLayoutList[i])
 
-def rr_setupDynamicUi(self):
+def rr_setupDynamicUi(self, MainWindow):
+	_translate = QtCore.QCoreApplication.translate
 	num_data_sets = self.numSetsSpinBox.value()
+	curr_num_sets = len(self.rr_formLayoutList)
 
-	for formLayout in self.rr_formLayoutList:
-		clearLayoutItems(self, formLayout)
-		self.verticalLayout_10.removeItem(formLayout)
-		formLayout.deleteLater()
-		formLayout = None
+	if curr_num_sets != 0 and curr_num_sets > num_data_sets:
 
-	for line in self.lineList:
-		self.verticalLayout_10.removeWidget(line)
-		line.deleteLater()
-		line = None
+		for i in range(num_data_sets, curr_num_sets):
+			formLayout = self.rr_formLayoutList[i]
+			clearLayoutItems(self, formLayout)
+			self.verticalLayout_10.removeItem(formLayout)
+			formLayout.deleteLater()
+			formLayout = None
+
+
+		for i in range(num_data_sets, curr_num_sets):
+			line = self.lineList[i]
+			self.verticalLayout_10.removeWidget(line)
+			line.deleteLater()
+			line = None
+
+		self.rr_formLayoutList = self.rr_formLayoutList[:num_data_sets]
+		self.setDataLabelList = self.setDataLabelList[:num_data_sets]
+		self.setDataDoubleSpinBoxList = self.setDataDoubleSpinBoxList[:num_data_sets]
+		self.lineList = self.lineList[:num_data_sets]
 
 	if self.spacerItem:
 		self.verticalLayout_10.removeItem(self.spacerItem)
+		clearLayoutItems(self, self.buttonLayout)
+		self.verticalLayout_10.removeItem(self.buttonLayout)
+		self.buttonLayout.deleteLater()
 		self.spacerItem = None
+		self.buttonLayout = None
+		self.addButton = None
+		self.minusButton = None
 
 
-	self.rr_formLayoutList = []
-	self.setDataLabelList = []
-	self.setDataDoubleSpinBoxList = []
-	self.lineList = []
+	if not self.rr_formLayoutList:
+		self.rr_formLayoutList = []
+		self.setDataLabelList = []
+		self.setDataDoubleSpinBoxList = []
+		self.lineList = []
 
-
-
-	for i in range(num_data_sets):
+	for i in range(curr_num_sets, num_data_sets):
 
 		self.setDataLabelList.append([])
 		self.setDataDoubleSpinBoxList.append([])
@@ -148,18 +167,21 @@ def rr_setupDynamicUi(self):
 		self.setDataLabelList[i][0].setText("Set {} Conversion".format(i+1))
 		self.rr_formLayoutList[i].setWidget(0, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][0])
 		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.setDataDoubleSpinBoxList[i][0].setProperty("decimals", 4)
 		self.rr_formLayoutList[i].setWidget(0, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][0])
 
 		self.setDataLabelList[i].append(QtWidgets.QLabel(self.scrollAreaWidgetContents_5))
 		self.setDataLabelList[i][1].setText("Set {} Monomer Fraction".format(i+1))
 		self.rr_formLayoutList[i].setWidget(1, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][1])
 		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.setDataDoubleSpinBoxList[i][1].setProperty("decimals", 4)
 		self.rr_formLayoutList[i].setWidget(1, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][1])
 
 		self.setDataLabelList[i].append(QtWidgets.QLabel(self.scrollAreaWidgetContents_5))
 		self.setDataLabelList[i][2].setText("Set {} Initial Monomer Fraction".format(i+1))
 		self.rr_formLayoutList[i].setWidget(2, QtWidgets.QFormLayout.LabelRole, self.setDataLabelList[i][2])
 		self.setDataDoubleSpinBoxList[i].append(QtWidgets.QDoubleSpinBox(self.scrollAreaWidgetContents_5))
+		self.setDataDoubleSpinBoxList[i][2].setProperty("decimals", 4)
 		self.rr_formLayoutList[i].setWidget(2, QtWidgets.QFormLayout.FieldRole, self.setDataDoubleSpinBoxList[i][2])
 
 		self.verticalLayout_10.addLayout(self.rr_formLayoutList[i])
@@ -170,8 +192,41 @@ def rr_setupDynamicUi(self):
 		self.lineList[i].setObjectName("line_2")
 		self.verticalLayout_10.addWidget(self.lineList[i])	
 
+	self.buttonLayout = QtWidgets.QFormLayout()
+
+	self.addButton = QtGui.QToolButton(self)
+	self.addButton.setText('+')
+	font = self.addButton.font()
+	font.setBold(True)
+	self.addButton.clicked.connect(self.addDataSet)
+
+	self.minusButton = QtGui.QToolButton(self)
+	self.minusButton.setText('−')
+	font = self.minusButton.font()
+	font.setBold(True)
+	self.minusButton.clicked.connect(self.minusDataSet)
+
+	#self.buttonLayout.addWidget(self.addButton)
+	self.buttonLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.addButton)
+	self.buttonLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.minusButton)
+	#self.buttonLayout.addWidget(self.minusButton)
+
+	self.verticalLayout_10.addLayout(self.buttonLayout)
+
 	self.spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
 	self.verticalLayout_10.addItem(self.spacerItem)
+
+def copyBounds(self):
+	if self.htmap:
+		x_range, y_range = self.rrPlotWidget.viewRange()
+		x_low, x_high = [float(limit/self.scaleX) for limit in x_range]
+		y_low, y_high = [float(limit/self.scaleY) for limit in y_range]
+		# print('x_range: ({}, {})'.format(x_low, x_high))
+		# print('y_range: ({}, {})'.format(y_low, y_high))
+		self.r1_low_doubleSpinBox.setProperty('value', x_low)
+		self.r1_high_doubleSpinBox.setProperty('value', x_high)
+		self.r2_low_doubleSpinBox.setProperty('value', y_low)
+		self.r2_high_doubleSpinBox.setProperty('value', y_high)
 
 def clearLayout(layout):
   while layout.count():
@@ -192,13 +247,13 @@ def clearLayoutItems(self, layout):
 
 
 def displayMessage(self, type, text):
-	msg = QMessageBox()
+	msg = QtWidgets.QMessageBox()
 
 	if type == "Error":
-		msg.setIcon(QMessageBox.Warning)
+		msg.setIcon(QtWidgets.QMessageBox.Warning)
 		msg.setWindowTitle("Error")
 	msg.setText(text)
-	msg.setStandardButtons(QMessageBox.Ok)
+	msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
 	msg.exec_()
 
 def get_numMonomer(str):

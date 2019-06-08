@@ -1,53 +1,119 @@
-import xlwt
-import xlrd
 import math
-import matplotlib.pyplot as plt
-import pandas as pd
+import random
 import numpy as np
-import seaborn as sns; sns.set()
-import csv
 import scipy.stats
+import pyqtgraph as pg
+from PyQt5.QtGui import *
 
-StR1 = 0.0
-EndR1 = 1.50
-StR2 = 0.0
-EndR2 = 1.50
-DR = 0.011
+from modules.graph import plot_rr
+from modules.parse import parseRR_Inputs, rr_testAssertions
+from modules.generateUI import displayMessage
 
-"""Creating a list with all combinations of reactivty ratios, leaving a spot for the sum of squares"""
-r1=StR1
-r2=StR2
-Steps1=0
-Steps2=0
-while r1 < EndR1:
-    Steps1 +=1
-    r1 += DR
-r1=StR1
-SS = []
-while r2 < EndR2:
-    Steps2+=1
-    r1 = StR1
-    while r1 < EndR1:
-        r1 += DR
-        SS.append([r1,r2,0])
-    r2 += DR
 
-r1=StR1
-r2=StR2
-Steps1=0
-Steps2=0
-SeaRow = []
-SeaColumn=[]
+def run_compute(self):
 
-while r1 < EndR1:
-	#Fix the rounding: so number on plots wont overlap
-    SeaColumn.append(str(round(r1,3)))
-    Steps1 +=1
-    r1 += DR
-while r2 < EndR2:
-    SeaRow.append(str(round(r2,3)))
-    Steps2 +=1
-    r2 += DR
+    parseRR_Inputs(self)
+
+    inputsValid = rr_testAssertions(self)
+
+    if not inputsValid:
+        return
+
+    self.statusbar.showMessage("Computing...")
+
+    try:
+        compute_rr(self, self.rr1_low, self.rr1_high, self.rr2_low, self.rr2_high, self.stepDensity, self.data)
+
+    except Exception:
+        displayMessage(self, "Error", "An error occured during the simulation. Please adjust the program inputs.    ")
+        return
+
+    if self.abort_rr: 
+        self.statusbar.showMessage("Aborted.", 5000)
+    else:
+        self.statusbar.showMessage("Done.", 5000)
+
+def compute_rr(self, rr1_low, rr1_high, rr2_low, rr2_high, stepDensity, data):
+    """
+    Input: lower and upper bounds for each reactivity ratio, increment, and a list of data sets.
+    Each data set is a list of 3 elements: [Conversion, Monomer Fraction at Conversion, Initial Monomer Fraction]
+
+    Output: returns a list of reactivity raios [r1, r2]
+    """
+
+    #create a matrix containing all combinations of reactivity ratios
+    #count how many values of each reactivity ratio to test
+    combinationsMatrix, rr1_counts, rr2_counts = create_rr_combinations(rr1_low, rr1_high, rr2_low, rr2_high, stepDensity)
+
+    #find the greatest reactivity ratios tested (for plotting)
+    rr1_max, rr2_max = combinationsMatrix[-1][-1]
+
+    # print("rr1_low: ", rr1_low)
+    # print("rr2_low: ", rr2_low)
+    # print("rr1_max: ", rr1_max)
+    # print("rr2_max: ", rr2_max)
+
+    #initiate an empty matrix of zeros to hold least squares distance
+    ssMatrix = [[0 for x in range(len(combinationsMatrix[0]))] for y in range(len(combinationsMatrix))] 
+
+    #run the calculation for each set of data, updating ssMatrix every time
+    num_sets = len(data)
+    for i in range(num_sets):
+        p = data[i][0]
+        f = data[i][1]
+        fZero = data[i][2]
+        SSR(self, p,f,fZero, combinationsMatrix, ssMatrix)
+        if self.abort_rr:
+            return
+        if i > 1:
+            best_rr, best_ss =  get_best_rr(combinationsMatrix, ssMatrix)   
+            contourMatrix = getContourData(i+1, ssMatrix, best_ss, rr1_counts, rr2_counts)
+            plot_rr(self, contourMatrix, rr1_counts, rr2_counts, rr1_max, rr2_max)
+
+
+    # # #find the best reactivty ratio pair based on least squares distance
+    # best_rr, best_ss =  get_best_rr(combinationsMatrix, ssMatrix)
+
+    # # #create a countour matrix of probabulity curves based on results
+    # contourMatrix = getContourData(num_sets, ssMatrix, best_ss, rr1_counts, rr2_counts)
+
+    # # #plot the contour matrix as a heatmap
+    # plot_rr(self, contourMatrix, rr1_counts, rr2_counts, rr1_max, rr2_max)
+
+    r1, r2 = best_rr
+    self.r1_doubleSpinBox.setProperty("value", r1)
+    self.r2_doubleSpinBox.setProperty("value", r2)
+
+    return best_rr
+
+
+def create_rr_combinations(rr1_low, rr1_high, rr2_low, rr2_high, stepDensity):
+    """
+    Creating a list with all combinations of reactivty ratios, leaving a spot for the sum of squares
+    """
+    incr = 1/stepDensity + 0.0000001
+    combinationsMatrix = []
+    rr1_counts = 0
+    rr2_counts = 0
+    rr1 = rr1_low
+    rr2 = rr2_low
+    index = 0
+    while rr1 < rr1_high:
+        combinationsMatrix.append([])
+        rr2 = rr2_low
+        while rr2 < rr2_high:
+            if rr1_counts == 0:
+                rr2_counts += 1
+            rr2 += incr
+            combinationsMatrix[index].append([rr1, rr2])
+        index += 1
+
+        rr1 += incr
+        rr1_counts += 1
+
+    return [combinationsMatrix, rr1_counts, rr2_counts]
+
+
 
 
 "Equation 2"
@@ -181,82 +247,58 @@ def ModelCompConv(r1,r2,p,f,fZero):
     return ModelCompConv
 
 
-points = 0
 
 #p: experiemental conversion
 #f: fraction of monomer at given conversion p
 #fZero: initial fraction of monomers
-def SSR(p,f,fZero):
-    global points
-    points +=1
-    for x in range(len(SS)):
-        pHat = ModelCompConv(SS[x][0], SS[x][1], p, f, fZero)
-        fHat = ModelComp(SS[x][0], SS[x][1], pHat, fZero)
-        SS[x][2] = SS[x][2]+ Distance2(fHat, pHat, f, p)
-    print ("Ok")
-    
+def SSR(self, p,f,fZero, combinationsMatrix, ssMatrix):
+    for i in range(len(combinationsMatrix)):
+        for j in range(len(combinationsMatrix[i])):
+            combination = combinationsMatrix[i][j]
+            pHat = ModelCompConv(combination[0], combination[1], p, f, fZero)
+            fHat = ModelComp(combination[0], combination[1], pHat, fZero)
+            ssMatrix[i][j] += Distance2(fHat, pHat, f, p)
+
+            #*** Processing Application Events, no impact on calculation ***
+            if self.abort_rr:
+                return
+            QApplication.processEvents()
 
 
-#Run on 3 sets of data
-SSR(0.318, 0.763,0.75) 
-SSR(0.266, 0.520,0.50)
-SSR(0.681, 0.273,0.25)
+def get_best_rr(combinationsMatrix, ssMatrix):
+    lst = np.array(ssMatrix)
+    x,y = np.unravel_index(lst.argmin(), lst.shape)
+    best_ss = ssMatrix[x][y]
+    best_rr = combinationsMatrix[x][y]
 
-print(points)
+    # best_ss, index = min((val, index) for (index, val) in enumerate(ssMatrix))
+    # best_rr = combinationsMatrix[index]
 
-
-RRlist =[]
-for x in range(len(SS)):
-    RRlist.append(SS[x][2])
-Best = (SS[RRlist.index(min(RRlist))])
-print (Best)
-
-#find probability countours
-F95 = 1 + 2 / (points - 2) * scipy.stats.f.ppf(0.05, 2, points - 2)
-F90 = 1 + 2 / (points - 2) * scipy.stats.f.ppf(0.1, 2, points - 2)
-F70 = 1 + 2 / (points - 2) * scipy.stats.f.ppf(0.3, 2, points - 2)
-F50 = 1 + 2 / (points - 2) * scipy.stats.f.ppf(0.5, 2, points - 2)
+    return [best_rr, best_ss]
 
 
-#assign value to each point given prob contour
-for x in range(len(SS)):
-    if SS[x][2] == Best[2]:
-        SS[x][2]= Best[2] 
-    elif SS[x][2]/F95 < Best[2]:
-        SS[x][2]=1
-    elif SS[x][2]/F90 < Best[2]:
-        SS[x][2]=2
-    elif SS[x][2]/F70 < Best[2]:
-        SS[x][2]=3
-    elif SS[x][2]/F50 < Best[2]:
-        SS[x][2]=4
-    else:
-        SS[x][2]=5
+def getContourData(num_sets, ssMatrix, best_ss, steps1, steps2):
 
+    contourMatrix = np.array([[0 for x in range(len(ssMatrix[0]))] for y in range(len(ssMatrix))] )
+    #find probability contours
+    F95 = 1 + 2 / (num_sets - 2) * scipy.stats.f.ppf(0.05, 2, num_sets - 2)
+    F90 = 1 + 2 / (num_sets - 2) * scipy.stats.f.ppf(0.1, 2, num_sets - 2)
+    F70 = 1 + 2 / (num_sets - 2) * scipy.stats.f.ppf(0.3, 2, num_sets - 2)
+    F50 = 1 + 2 / (num_sets - 2) * scipy.stats.f.ppf(0.5, 2, num_sets - 2)
 
-"""Setting the range for the for loop for the plotting in the spreadsheet based on the range of reactivity ratios"""
-"""Plots out the list of lists with the sum of squares with the reactivity ratios as the coordinates"""
-plotMatrix = [[0 for x in range(Steps2)] for y in range(Steps1)] 
-for x in range (Steps2):
-    for y in range (Steps1):
-        plotMatrix[x][y] +=  SS[(y)+(x*Steps1)][2]
+    for i in range(len(ssMatrix)):
+        for j in range(len(ssMatrix[0])):
+            if ssMatrix[i][j] == best_ss:
+                contourMatrix[i][j] += (best_ss)
+            elif ssMatrix[i][j]/F95 < best_ss:
+                contourMatrix[i][j] += 1
+            elif ssMatrix[i][j]/F90 < best_ss:
+                contourMatrix[i][j] += 2
+            elif ssMatrix[i][j]/F70 < best_ss:
+                contourMatrix[i][j] += 3
+            elif ssMatrix[i][j]/F50 < best_ss:
+                contourMatrix[i][j] += 4
+            else:
+                contourMatrix[i][j] += 5
 
-
-plt.figure(figsize=(20,17))
-ax = sns.heatmap(plotMatrix,xticklabels=SeaColumn, yticklabels = SeaRow, cbar=True, cmap="YlGnBu_r")
-ax.set(xlabel='R1', ylabel='R2')
-ax.set_xlabel('R1')    
-ax.xaxis.set_label_position('top') 
-ax.xaxis.tick_top()
-
-for label in ax.xaxis.get_ticklabels()[::2]:
-    label.set_visible(False)
-for label in ax.yaxis.get_ticklabels()[::2]:
-    label.set_visible(False)
-plt.xticks(rotation=90)
-
-
-
-plt.show(ax)
-print(Best)
-
+    return contourMatrix

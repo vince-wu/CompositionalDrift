@@ -26,7 +26,7 @@
       <item>
        <widget class="QTabWidget" name="tabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -657,9 +657,30 @@
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_2">
               <item>
-               <widget class="QPushButton" name="Calculate">
+               <widget class="QPushButton" name="runButton">
                 <property name="text">
                  <string>Run</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="stopPushButton">
+                <property name="text">
+                 <string>Stop</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="copyPushButton">
+                <property name="text">
+                 <string>Copy Bounds</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="rrLoadButton">
+                <property name="text">
+                 <string>Load</string>
                 </property>
                </widget>
               </item>
@@ -683,7 +704,7 @@
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_7">
                 <item>
-                 <widget class="QGraphicsView" name="graphicsView"/>
+                 <widget class="QTextBrowser" name="rr_textBrowser"/>
                 </item>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_3">
@@ -701,7 +722,7 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>869</width>
+                     <width>856</width>
                      <height>88</height>
                     </rect>
                    </property>
@@ -719,6 +740,9 @@
                         </item>
                         <item row="0" column="1">
                          <widget class="QSpinBox" name="numSetsSpinBox">
+                          <property name="maximum">
+                           <number>1000000000</number>
+                          </property>
                           <property name="value">
                            <number>3</number>
                           </property>
@@ -727,12 +751,19 @@
                         <item row="1" column="0">
                          <widget class="QLabel" name="label_16">
                           <property name="text">
-                           <string>Increment</string>
+                           <string>Step Density</string>
                           </property>
                          </widget>
                         </item>
                         <item row="1" column="1">
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+                         <widget class="QSpinBox" name="densitySpinBox">
+                          <property name="maximum">
+                           <number>1000000000</number>
+                          </property>
+                          <property name="value">
+                           <number>100</number>
+                          </property>
+                         </widget>
                         </item>
                         <item row="2" column="0">
                          <widget class="QLabel" name="label_17">
@@ -742,7 +773,18 @@
                          </widget>
                         </item>
                         <item row="2" column="1">
-                         <widget class="QComboBox" name="comboBox"/>
+                         <widget class="QComboBox" name="rr_animateComboBox">
+                          <item>
+                           <property name="text">
+                            <string>On</string>
+                           </property>
+                          </item>
+                          <item>
+                           <property name="text">
+                            <string>Off</string>
+                           </property>
+                          </item>
+                         </widget>
                         </item>
                        </layout>
                       </item>
@@ -756,7 +798,14 @@
                          </widget>
                         </item>
                         <item row="0" column="1">
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox_5"/>
+                         <widget class="QDoubleSpinBox" name="r1_low_doubleSpinBox">
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                          <property name="value">
+                           <double>0.600000000000000</double>
+                          </property>
+                         </widget>
                         </item>
                         <item row="1" column="0">
                          <widget class="QLabel" name="label_22">
@@ -766,31 +815,86 @@
                          </widget>
                         </item>
                         <item row="1" column="1">
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox_6"/>
+                         <widget class="QDoubleSpinBox" name="r1_high_doubleSpinBox">
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                          <property name="value">
+                           <double>1.200000000000000</double>
+                          </property>
+                         </widget>
                         </item>
-                       </layout>
-                      </item>
-                      <item>
-                       <layout class="QFormLayout" name="formLayout_12">
-                        <item row="0" column="0">
+                        <item row="2" column="0">
                          <widget class="QLabel" name="label_28">
                           <property name="text">
                            <string>RR2 Lower Bound</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="1" column="0">
+                        <item row="2" column="1">
+                         <widget class="QDoubleSpinBox" name="r2_low_doubleSpinBox">
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                          <property name="value">
+                           <double>0.600000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="3" column="0">
                          <widget class="QLabel" name="label_29">
                           <property name="text">
                            <string>RR2 Upper Bound</string>
                           </property>
                          </widget>
                         </item>
-                        <item row="0" column="1">
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox_12"/>
+                        <item row="3" column="1">
+                         <widget class="QDoubleSpinBox" name="r2_high_doubleSpinBox">
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                          <property name="value">
+                           <double>1.200000000000000</double>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
+                      </item>
+                      <item>
+                       <layout class="QFormLayout" name="formLayout_12">
+                        <item row="1" column="0">
+                         <widget class="QLabel" name="label_19">
+                          <property name="text">
+                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;r&lt;span style=&quot; vertical-align:sub;&quot;&gt;1 &lt;/span&gt;Prediction&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          </property>
+                         </widget>
                         </item>
                         <item row="1" column="1">
-                         <widget class="QDoubleSpinBox" name="doubleSpinBox_13"/>
+                         <widget class="QDoubleSpinBox" name="r1_doubleSpinBox">
+                          <property name="readOnly">
+                           <bool>true</bool>
+                          </property>
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="0">
+                         <widget class="QLabel" name="label_20">
+                          <property name="text">
+                           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;r&lt;span style=&quot; vertical-align:sub;&quot;&gt;2&lt;/span&gt; Prediction&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="2" column="1">
+                         <widget class="QDoubleSpinBox" name="r2_doubleSpinBox">
+                          <property name="readOnly">
+                           <bool>true</bool>
+                          </property>
+                          <property name="decimals">
+                           <number>4</number>
+                          </property>
+                         </widget>
                         </item>
                        </layout>
                       </item>
@@ -818,7 +922,15 @@
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_10">
                   <item>
-                   <layout class="QVBoxLayout" name="verticalLayout_10"/>
+                   <layout class="QVBoxLayout" name="verticalLayout_10">
+                    <item>
+                     <widget class="Line" name="line_2">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                   </item>
                  </layout>
                 </widget>
