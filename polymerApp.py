@@ -39,7 +39,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 		self.connectEvents()
 
 	def setVars(self):
-		self.display_beta_content = True
+		self.display_beta_content = False
 		self.version = "2.0.1"
 		self.simulated = False
 		self.simulation_running = False
