@@ -306,9 +306,8 @@ def run_simulation(self):
 	#For plotting purposes: counter to keep track of how many monomers are added before a collective data point for 
 	#monomerOccurrence is calculated and added to monomerOccurrenceList
 	counter = 0
-
-
-	for i in range(monomers_to_consume):
+	i = 0;
+	while i < monomers_to_consume:
 
 		#If process is interrupted, stop the simulation
 		if self.interrupt:
@@ -324,81 +323,102 @@ def run_simulation(self):
 		"the weight chance of the monomer to be added to the chain , defined as the product of the relevant rate "
 		"constant 'k' times the number of monomers left unreacted 'f'"
 
-		#A variable keeping track of monomer choices and weights
-		choices = []
+		#A varaible to keep track of number of monomers to add. This is usually 1; however if the Chain Transfer % is less than 100, there
+		#is a chance that more than one monomer is added.
+		num_monomers_to_add = 1
 
-		for monomerID in range(1, self.numMonomers + 1):
-			#Retrieveing coefficient based on previous and current monomer
+		#percentage that an extra monomer will be added
+		fudge_factor = 1 - self.chainTransferPercentage/100
 
-			#retrieve the relevant rate constant k
-			k = polymer.rateConstant(monomerID)
+		#calculate how many monomers to add
+		while True:
+			#Randomly determine if another monomer will be added
+			if random.random() >= fudge_factor:
+				break
+			#If number of monomers added exceeds total monomers left to consume, stop
+			elif num_monomers_to_add >= monomers_to_consume - num_monomers_to_add - i:
+				break
+			else:
+				num_monomers_to_add += 1
 
-			# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
-			chance = monomerAmounts[monomerID - 1] * k
-			#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
-			#Adds a two element list to choices containing monomer and weight
-			choices.append([monomerID, chance])
-
-		#print ("currPolymerLength: ", currPolymerLength)
-		#print("choices2: ", choices)
-
-		"Using weighted_choice, select next monomer to be appended to the growing chain"
-		try:
-			nextMonomer = weighted_choice(choices)
-
-		#If all weights are zero due to coefficients all being zero, then sort by relative amounts of monomer instead
-		except AssertionError:
-			monomerID = 1
+		for j in range(num_monomers_to_add):
+			#A variable keeping track of monomer choices and weights
 			choices = []
-			while monomerID <= self.numMonomers:
-				choices.append([monomerID, monomerAmounts[monomerID - 1]])
-				monomerID += 1
-			nextMonomer = weighted_choice(choices)
 
-		"Attach next monomer to polymer chain"
-		polymer.append(nextMonomer)
+			for monomerID in range(1, self.numMonomers + 1):
+				#Retrieveing coefficient based on previous and current monomer
 
-		"Remove the selected monomer from the pool to reflect the monomer being used up in the reaction"
-		"If Hold Composition is checked, then the simulation will not use up any monomers, and end when the expected number of"
-		"mononomers are consumed instead"
+				#retrieve the relevant rate constant k
+				k = polymer.rateConstant(monomerID)
 
-		if not self.holdComposition:
-			monomerAmounts[nextMonomer - 1] -= 1
-		#print("monomerAmounts: ", monomerAmounts)
+				# weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
+				chance = monomerAmounts[monomerID - 1] * k
+				#print(monomerID, " amount of monomer remaining: ", monomerAmounts[monomerID - 1]);
+				#Adds a two element list to choices containing monomer and weight
+				choices.append([monomerID, chance])
 
+			#print ("currPolymerLength: ", currPolymerLength)
+			#print("choices2: ", choices)
 
-		"***For Plotting Purposes Only (no affect on simulation)***"
+			"Using weighted_choice, select next monomer to be appended to the growing chain"
+			try:
+				nextMonomer = weighted_choice(choices)
 
-		#Keep track of exactly how much of each monomer is used in the total initition step by incrementing counters
-		#for each monomer, represented as a list the size of self.numMonomers. Once the batch limit (numPolymers) is
-		#reached, a data point which represents normalized monomer occurrences can be calculated
-		monomerOccurrence_propagation[nextMonomer - 1] += 1
+			#If all weights are zero due to coefficients all being zero, then sort by relative amounts of monomer instead
+			except AssertionError:
+				monomerID = 1
+				choices = []
+				while monomerID <= self.numMonomers:
+					choices.append([monomerID, monomerAmounts[monomerID - 1]])
+					monomerID += 1
+				nextMonomer = weighted_choice(choices)
 
-		counter += 1
+			"Attach next monomer to polymer chain"
+			polymer.append(nextMonomer)
 
-		#When the amount of growth cycles reaches numPolymers:
+			"Remove the selected monomer from the pool to reflect the monomer being used up in the reaction"
+			"If Hold Composition is checked, then the simulation will not use up any monomers, and end when the expected number of"
+			"mononomers are consumed instead"
 
-		#(1) calculate the normalized monomer occurences in the batch of data from monomerOccurrence_propagation 
-		# and add the data point to monomerOccurrenceList, which will eventually be plotted
-		
-		#(2)Calculate a data point which represents the percentage of the monomer remaining in the pool for each monomer,
-		#and add that data point to monomerRemainingList, which will eventually be plotted
-
-		if counter == self.numPolymers:
+			if not self.holdComposition:
+				monomerAmounts[nextMonomer - 1] -= 1
+			"Increment counter for monomers used"
+			i += 1
 			#print("monomerAmounts: ", monomerAmounts)
 
-			#(1)
-			update_monomerOccurrenceList(monomerOccurrence_propagation) 
 
-			#(2)
-			update_monomerRemainingList(monomerAmounts, originalMonomerAmounts)
+			"***For Plotting Purposes Only (no affect on simulation)***"
 
-			#Reset necessary counters and lists
-			monomerOccurrence_propagation = [0]*self.numMonomers
-			counter = 0
-			if self.animate:
-				plotData(self)
-				draw_polymers(self)
+			#Keep track of exactly how much of each monomer is used in the total initition step by incrementing counters
+			#for each monomer, represented as a list the size of self.numMonomers. Once the batch limit (numPolymers) is
+			#reached, a data point which represents normalized monomer occurrences can be calculated
+			monomerOccurrence_propagation[nextMonomer - 1] += 1
+
+			counter += 1
+
+			#When the amount of growth cycles reaches numPolymers:
+
+			#(1) calculate the normalized monomer occurences in the batch of data from monomerOccurrence_propagation 
+			# and add the data point to monomerOccurrenceList, which will eventually be plotted
+			
+			#(2)Calculate a data point which represents the percentage of the monomer remaining in the pool for each monomer,
+			#and add that data point to monomerRemainingList, which will eventually be plotted
+
+			if counter == self.numPolymers:
+				#print("monomerAmounts: ", monomerAmounts)
+
+				#(1)
+				update_monomerOccurrenceList(monomerOccurrence_propagation) 
+
+				#(2)
+				update_monomerRemainingList(monomerAmounts, originalMonomerAmounts)
+
+				#Reset necessary counters and lists
+				monomerOccurrence_propagation = [0]*self.numMonomers
+				counter = 0
+				if self.animate:
+					plotData(self)
+					draw_polymers(self)
 
 
 	"***Plotting***"

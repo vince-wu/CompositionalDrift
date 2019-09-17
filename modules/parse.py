@@ -5,6 +5,7 @@ from modules.generateUI import displayMessage
 def parseUI_Inputs(self):
 	self.model = self.modelComboBox.currentText()
 	self.numMonomers = get_numMonomer(self.systemComboBox.currentText())
+	self.chainTransferPercentage = self.transferSpinBox.value()
 	self.holdComposition = getHoldComposition(self)
 	self.rrList = getReactivityRatios(self)
 	self.rrLoadList = getLoadReactivityRatios(self)

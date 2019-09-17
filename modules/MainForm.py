@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'MainForm.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.2
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -225,11 +225,19 @@ class Ui_MainWindow(object):
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.modelComboBox)
         self.label_2 = QtWidgets.QLabel(self.inputLayout)
         self.label_2.setObjectName("label_2")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_2)
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_2)
         self.holdCheckBox = QtWidgets.QCheckBox(self.inputLayout)
         self.holdCheckBox.setText("")
         self.holdCheckBox.setObjectName("holdCheckBox")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.holdCheckBox)
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.holdCheckBox)
+        self.label_23 = QtWidgets.QLabel(self.inputLayout)
+        self.label_23.setObjectName("label_23")
+        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_23)
+        self.transferSpinBox = QtWidgets.QDoubleSpinBox(self.inputLayout)
+        self.transferSpinBox.setMaximum(100.0)
+        self.transferSpinBox.setProperty("value", 100.0)
+        self.transferSpinBox.setObjectName("transferSpinBox")
+        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.transferSpinBox)
         self.horizontalLayout.addLayout(self.formLayout_2)
         self.formLayout_4 = QtWidgets.QFormLayout()
         self.formLayout_4.setObjectName("formLayout_4")
@@ -313,7 +321,7 @@ class Ui_MainWindow(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scrollArea_3.setObjectName("scrollArea_3")
         self.scrollAreaWidgetContents_2 = QtWidgets.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 856, 88))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 869, 88))
         self.scrollAreaWidgetContents_2.setObjectName("scrollAreaWidgetContents_2")
         self.horizontalLayout_9 = QtWidgets.QHBoxLayout(self.scrollAreaWidgetContents_2)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
@@ -441,7 +449,7 @@ class Ui_MainWindow(object):
         self.label_15.setBuddy(self.poolSpinBox)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         self.systemComboBox.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -495,6 +503,7 @@ class Ui_MainWindow(object):
         self.modelComboBox.setItemText(1, _translate("MainWindow", "Penultimate"))
         self.label_2.setToolTip(_translate("MainWindow", "If checked, monomers will never be used up"))
         self.label_2.setText(_translate("MainWindow", "Hold Composition"))
+        self.label_23.setText(_translate("MainWindow", "Chain Transfer %"))
         self.label_12.setToolTip(_translate("MainWindow", "Average polymer length"))
         self.label_12.setText(_translate("MainWindow", "Average DP"))
         self.label_13.setToolTip(_translate("MainWindow", "Reaction conversion"))
