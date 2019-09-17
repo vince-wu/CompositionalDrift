@@ -99,7 +99,8 @@ def theta_polymer(polymer_individual):
 	thetatheta=[]
 	theta= sum(polymer_individual)/len(polymer_individual)
 	for pos in range(len(polymer_individual)-1):
-	    thetatheta.append(polymer_individual[pos]*polymer_individual[pos+1])
+		thetatheta.append(polymer_individual[pos]*polymer_individual[pos+1])
+	
 	return [sum(thetatheta)/len(thetatheta),theta*theta]
 
 def theta_population(polymer_population):
@@ -110,9 +111,10 @@ def theta_population(polymer_population):
 	thetatheta = []
 	theta = []
 	for i in range(len(polymer_population)):
-		theta_polymer_list = theta_polymer(polymer_population[i])
-		thetatheta.append(theta_polymer_list[0])
-		theta.append(theta_polymer_list[1])
+		if len(polymer_population[i]) > 1:
+			theta_polymer_list = theta_polymer(polymer_population[i])
+			thetatheta.append(theta_polymer_list[0])
+			theta.append(theta_polymer_list[1])
 	return [sum(thetatheta)/len(thetatheta),sum(theta)/len(theta)]
 
 def convert_poly_array(self):
