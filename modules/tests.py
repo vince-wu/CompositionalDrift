@@ -14,13 +14,21 @@ def generate_random_reaction(num_monomer_species=None, model="Mayo-Lewis", max_m
     avg_DP = np.random.randint(1, 500)
     rr1 = np.random.uniform(0, 10)
     rr2 = np.random.uniform(0, 10)
-    reactivity_ratios = np.random.rand(num_monomer_species, num_monomer_species-1)
+    if model == "Mayo-Lewis":
+        reactivity_ratios = np.random.rand(num_monomer_species, num_monomer_species-1)
+    elif model == "Penultimate":
+        rate_constants = np.random.rand(num_monomer_species, num_monomer_species, num_monomer_species)
+    else:
+        raise ValueError("did not recognize model")
     conversion = np.random.rand()
     monomer_amounts = np.random.randint(low=100, high=max_monomer_amounts, size=num_monomer_species)
     chain_transfer_probability = np.random.rand()
     reaction = Reaction(num_monomer_species, model)
     reaction.set_monomer_amounts(monomer_amounts)
-    reaction.set_reactivity_ratios(reactivity_ratios)
+    if model == "Mayo-Lewis":
+        reaction.set_reactivity_ratios(reactivity_ratios)
+    elif model == "Penultimate":
+        reaction.set_rate_constants(rate_constants)
     reaction.set_average_DP(avg_DP)
     reaction.set_monomer_amounts(monomer_amounts)
     reaction.set_conversion(conversion)
@@ -62,8 +70,12 @@ def test_initiation(TestCase, reaction):
 
     # Test that all polymers have exactly one monomer
     for polymer in reaction.polymer_list:
-        TestCase.assertEqual(len(polymer), 1, "\nNot all polymer lengths after initiation are equal to 1.\n \
-            Reaction: {}\n Polymer: {}".format(reaction, polymer))
+        if reaction.model == "Mayo-Lewis":
+            TestCase.assertEqual(len(polymer), 1, "\nNot all polymer lengths after initiation are equal to 1.\n \
+                Reaction: {}\n Polymer: {}".format(reaction, polymer))
+        elif reaction.model == "Penultimate":
+            TestCase.assertGreaterEqual(len(polymer), 1, "\nNot all polymer lengths after initiation are equal to 1.\n \
+                Reaction: {}\n Polymer: {}".format(reaction, polymer))
 
     # # Test that the distribution of initial monomers is close to expected
     # pdist = reaction.initiation_distribution()
@@ -106,7 +118,9 @@ class Test2MonomerMayoLewis(unittest.TestCase):
     "Test the Mayo-Lewis model for two monomer species"
     def setUp(self):
         self.num_short_tests = 10
-        self.num_long_tests = 0
+        self.num_long_tests = 10
+        self.num_edge_tests = 10
+
     def test_initiation_general_cases(self):
         "Blanket test for errors in the initiation step"
         for i in range(self.num_short_tests):
@@ -129,8 +143,27 @@ class Test2MonomerMayoLewis(unittest.TestCase):
                 test_complete_reaction(self, reaction)
         return
     
-    def test_initiation_edge_cases(self):
+    def test_penultimate_initiation(self):
         for i in range(self.num_short_tests):
+            with self.subTest(i=i):
+                reaction = generate_random_reaction(model="Penultimate")
+                test_initiation(self, reaction)
+
+    def test_penultimate_single_propagation(self):
+        for i in range(self.num_short_tests):
+            with self.subTest(i=i):
+                reaction = generate_random_reaction(model="Penultimate")
+                test_single_propagation(self, reaction)
+        return
+    def test_penultimate_complete_reaction(self):
+        for i in range(self.num_long_tests):
+            with self.subTest(i=i):
+                reaction = generate_random_reaction(model="Penultimate", max_monomer_amounts=1000)
+                test_complete_reaction(self, reaction)
+        return
+        
+    def test_initiation_edge_cases(self):
+        for i in range(self.num_edge_tests):
             with self.subTest(i=i):
                 for generator in test_cases.edge_case_reaction_generators:
                     reaction = generator()
