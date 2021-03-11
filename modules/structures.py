@@ -232,6 +232,7 @@ class Reaction():
                 The polymer to add the monomer to. The polymer object should be part of self.polymer_list, else errors may occur
         RETURNS: N/A
         """
+        assert self.curr_monomer_amounts[monomer] > 0, "There are no remaining monomer {} species left in the pool".format(monomer)
         polymer.append(monomer)
         if not self.hold_composition:
             self.curr_monomer_amounts[monomer] -= 1
@@ -277,8 +278,8 @@ class Reaction():
             "Case for 2-monomer system: use the Mayo Lewis Equation"
             k1 = self.rate_constants[0][1]
             k2 = self.rate_constants[1][0]
-            f1 = self.init_monomer_amounts[0]
-            f2 = self.init_monomer_amounts[1]
+            f1 = self.curr_monomer_amounts[0]
+            f2 = self.curr_monomer_amounts[1]
             total_f = f1+f2
             f1 = f1/total_f
             f2 = f2/total_f
@@ -301,9 +302,9 @@ class Reaction():
 
         elif self.num_monomer_species == 3 and self.model == "Mayo-Lewis":
             "Case for 3-monomer system: use an altered Mayo Lewis Equation"
-            m1 = self.init_monomer_amounts[0]
-            m2 = self.init_monomer_amounts[1]
-            m3 = self.init_monomer_amounts[2]
+            m1 = self.curr_monomer_amounts[0]
+            m2 = self.curr_monomer_amounts[1]
+            m3 = self.curr_monomer_amounts[2]
             F = m1 + m2 + m3
             f1 = m1/F
             f2 = m2/F
@@ -317,8 +318,8 @@ class Reaction():
             r31 = self.rate_constants[2][0]
             r32 = self.rate_constants[2][1]
             r33 = self.rate_constants[2][2]
-            # case for infinite reactivity ratio, just use starting monomer ratios as weights
-            if any([r == math.inf for r in [r11, r12, r13, r21, r22, r23, r31, r32, r33]]):
+            # case for infinite reactivity ratio or no monomer species remaining, just use starting monomer ratios as weights
+            if any([r == math.inf for r in [r11, r12, r13, r21, r22, r23, r31, r32, r33]]) or any([m == 0 for m in [m1, m2, m3]]):
                 init_probability_dist = [f1, f2 ,f3]
             else:
                 R1 = r11 + r12 + r13
@@ -382,9 +383,9 @@ class Reaction():
                         penultimate_monomer = 0
                     rr = self.rate_constants[penultimate_monomer][polymer.last_monomer()-1][i]
                     # weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
-                    weight = monomerAmounts[i] * rr
+                    weight = self.curr_monomer_amounts[i] * rr
                     #adds a two element list to choices containing monomer and weight
-                    np.append(probability_dist, weight)
+                    probability_dist = np.append(probability_dist, weight)
                 # normalize probability distribution
                 probability_dist = probability_dist/sum(probability_dist)
                 #Using weighted_choice, selects next monomer
