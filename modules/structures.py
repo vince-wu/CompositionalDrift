@@ -1,8 +1,9 @@
+import modules.errors
 import numpy as np
 import random
 import math
-import errors
 import numbers
+import time
 
 class Polymer(list):
     def __init__(self, polymer_list, model, rate_constants):
@@ -94,7 +95,7 @@ class Reaction():
             raise ValueError("Each monomer amount needs to be a nonegative integer")
 
         self.init_monomer_amounts = monomer_amounts.copy()
-        self.curr_monomer_amounts = monomer_amounts
+        self.curr_monomer_amounts = monomer_amounts.copy()
         self.init_pool_size = sum(self.init_monomer_amounts)
         self.curr_pool_size = sum(monomer_amounts)
         if self.average_DP:
@@ -232,8 +233,11 @@ class Reaction():
                 The polymer to add the monomer to. The polymer object should be part of self.polymer_list, else errors may occur
         RETURNS: N/A
         """
+
         assert self.curr_monomer_amounts[monomer] > 0, "There are no remaining monomer {} species left in the pool".format(monomer)
+
         polymer.append(monomer)
+        # print("done appending the monomer. time taken: {} seconds".format(time.time()-starts))
         if not self.hold_composition:
             self.curr_monomer_amounts[monomer] -= 1
             self.curr_pool_size -= 1
@@ -345,7 +349,6 @@ class Reaction():
                      on the reactivity ratios. By the end of this step, all polymers will have either one (model=Mayo Lewis) or
                      two (model=Penultimate) monomers in their chain
         PARAMETERS: N/A
-        RETURNS: N/A
         """
         self.validate_parameters()
         # For both Mayo-Lewis and Penultimate models, initiate the first monomer 
@@ -391,7 +394,8 @@ class Reaction():
                 #Using weighted_choice, selects next monomer
                 second_monomer = np.random.choice(range(self.num_monomer_species), p=probability_dist)
                 #Attach the monomer to the polymer
-                self.add_monomer(second_monomer, polymer)    
+                self.add_monomer(second_monomer, polymer) 
+
     
     def run_single_propagation(self):
         """
@@ -402,9 +406,13 @@ class Reaction():
                      This method also changes the state of the Reaction object, by updating attributes such as curr_monomer_amounts and 
                      curr_polymer_array
         PARAMETERS: N/A
-        RETURNS: Polymer object 
-                The polymer chain that was grown. 
+        RETURNS: polymer
+                polymer: Polymer object
+                    The updated polymer chain that was grown
         """
+        # print("start ")
+        seconds = time.time()
+        start  = time.time()
         # Randomly choose a polymer chain to grow.
         polymer = random.choice(self.polymer_list)
 
@@ -417,9 +425,9 @@ class Reaction():
         num_monomers_to_add = 1
 
         # change that an extra monomer will be added in this single propagation step
-        fudge_factor = 1 - self.chain_transfer_probability/100
-
+        fudge_factor = 1 - self.chain_transfer_probability
         # calculate how many monomers to add (usually just 1, but with nonzero chain transfer percentage this can be more than one)
+
         while True:
             # If number of monomers added exceeds total monomers left to consume do not increase number of monomers to add
             # curr_pool_size is not used here because if composition of pool is maintained, curr_pool_size would never decrease
@@ -431,33 +439,38 @@ class Reaction():
             # keep adding another monomer, until the random selector stops
             else:
                 num_monomers_to_add += 1
+                
+        # print("for loop start " , time.time()-start)
 
-        # the probability for each monomer to be selected as the next monomer to be added
-        growth_probability_dist = np.array([])
         for i in range(num_monomers_to_add):
+            # the probability for each monomer to be selected as the next monomer to be added
+            growth_probability_dist = []
             # A list representing the probability distribution of each monomer species being added to the polymer chain
             for monomer in range(self.num_monomer_species):
                 # Retrieve relevant rate constant k based on previous and current monomer
                 k = polymer.rate_constant(monomer)
                 # weight chance calulations for monomer attaching: coefficient*(amount of monomer remaining)
                 weight = self.curr_monomer_amounts[monomer] * k
-                np.append(growth_probability_dist, weight)
+                growth_probability_dist.append(weight)
+            # print("end for loop " , time.time()-start)
+            # print(growth_probability_dist)
+            # If all weights are zero due to coefficients all being zero, then sort by relative amounts of monomer instead
+            if sum(growth_probability_dist) == 0:
+                growth_probability_dist = np.array([self.curr_monomer_amounts[monomer] for monomer in range(self.num_monomer_species)])
+            # print("finish probabilty dist" , time.time()-start)
+            # normalize the probabilty distribution
+            growth_probability_dist = np.array(growth_probability_dist)/sum(growth_probability_dist)
 
-        # If all weights are zero due to coefficients all being zero, then sort by relative amounts of monomer instead
-        if sum(growth_probability_dist) == 0:
-            growth_probability_dist = np.array([self.curr_monomer_amounts[i] for i in range(self.num_monomer_species)])
-        
-        # normalize the probabilty distribution
-        growth_probability_dist = growth_probability_dist/sum(growth_probability_dist)
 
-        # select next monomer to be appended to the growing chain based on the probability distribution
-        next_monomer = np.random.choice(range(self.num_monomer_species), p=growth_probability_dist)
-
-        # Attach next monomer to polymer chain
-        self.add_monomer(next_monomer, polymer)
-
-        # return the new polymer
+            # select next monomer to be appended to the growing chain based on the probability distribution
+            next_monomer = np.random.choice(range(self.num_monomer_species), p=growth_probability_dist)
+            # next_monomer = weighted_choice(range(self.num_monomer_species), growth_probability_dist)
+            # Attach next monomer to polymer chain
+            # print("adding monomer" , time.time()-start)
+            self.add_monomer(next_monomer, polymer)
+            # print("finished ", time.time()-start)
         return polymer
+
     
     def run_complete_propagation(self):
         """
@@ -502,6 +515,16 @@ Monomers consumed: {}
         self.curr_monomer_amounts, self.init_pool_size, self.curr_pool_size, self.monomer_species_consumed)
         return repr
 
+def weighted_choice(choices, weights):
+    total = sum(weights)
+    r = random.uniform(0, total)
+    upto = 0
+    for c, w in zip(choices, weights):
+        if upto + w >= r:
+        	return c
+        upto += w
+    assert False, "Shouldn't get here"
+
 if __name__ == '__main__':
     polymer = Polymer([1,1,1,0,0,1,1,0], "Mayo-Lewis", [0.1,2])
     num_species = 2
@@ -523,3 +546,4 @@ if __name__ == '__main__':
     reaction.run_initiatation()
     reaction.run_single_propagation()
     print(reaction)
+

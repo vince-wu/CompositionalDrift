@@ -35,14 +35,14 @@ def draw_polymers(self):
 		#Get the index to start drawing at
 		index_to_start = self.polymer_animated_tracker[i]
 		#get the polymer to draw
-		polymer = self.polymerArray[i].asArray()
+		polymer = self.polymerArray[i]
 		#get which monomers to draw
 		monomers_to_draw = polymer[index_to_start:]
 		#index to keep track of x location
 		j = index_to_start
 		#draw the monomers
 		for monomerID in monomers_to_draw:
-			brush = QBrush(pg.mkColor((monomerID-1, self.numMonomers)))
+			brush = QBrush(pg.mkColor((monomerID, self.numMonomers)))
 			#brush = QBrush(QtCore.Qt.red)
 			self.scene.addRect(j*self.size, i*self.size, self.size, self.size, pen, brush)
 			j += 1

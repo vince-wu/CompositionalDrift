@@ -27,9 +27,7 @@ def getSingleRunLengthData(polymerArray, monomerID):
 	#initializing array to be returned
 	histogramData = []
 	#count through all polymers
-	for polymerObj in polymerArray: 
-		#get the polymer in list form
-		polymer = polymerObj.asArray()
+	for polymer in polymerArray: 
 		polymerLength = len(polymer)
 		#constant to keep track of polymer index, to know when to stop counting
 		polymerIndex = 1
@@ -69,24 +67,23 @@ def getSingleRunLengthData(polymerArray, monomerID):
 	return histogramData
 
 def getMonomersUsed(polymerArray):
-	monomersUsed = sum([polymer.len() for polymer in polymerArray])
+	monomersUsed = sum([len(polymer) for polymer in polymerArray])
 	return monomersUsed
 
 "***Monomer composition analysis***"
 #Returns a list of the percent compostion of each monomer, in monomerID order
 def getComposition(self, polymerArray):
 	compositionList = [0] * self.numMonomers
-	for monomerID in range(1, self.numMonomers + 1):
-		for polymerObj in polymerArray:
-			polymer	= polymerObj.asArray()
+	for monomerID in range(self.numMonomers):
+		for polymer in polymerArray:
 			for monomer in polymer:
 				if monomer == monomerID:
-					compositionList[monomerID - 1] += 1
+					compositionList[monomerID] += 1
 	totalMonomers = sum(compositionList)
 	#print("precomp: ", compositionList)
 	#print("totalMonomers: ", totalMonomers)
-	for monomerID in range(1, self.numMonomers + 1):
-		compositionList[monomerID - 1] = int(compositionList[monomerID - 1] / totalMonomers * 1000)/10
+	for monomerID in range(self.numMonomers):
+		compositionList[monomerID] = int(compositionList[monomerID] / totalMonomers * 1000)/10
 	#print("compositionList: ", compositionList)
 	return compositionList
 
@@ -123,7 +120,7 @@ def convert_poly_array(self):
 	"""
 	polyList = []
 	for polymer in self.polymerArray:
-		polyList.append([float(-1) if x == 2 else float(x) for x in polymer.asArray()])
+		polyList.append([float(-1) if x == 2 else float(x) for x in polymer])
 
 	return polyList
 
@@ -145,8 +142,7 @@ def calculate_theta(self):
 def DP_Distribution(self):
 	#Get the DP Distribution
 	DP_Distribution = []
-	for polymerObj in self.polymerArray:
-		polymer = polymerObj.asArray()
+	for polymer in self.polymerArray:
 		DP_Distribution.append(len(polymer))
 
 	#Process data into a plottable form
@@ -160,8 +156,7 @@ def DP_Distribution(self):
 "***Analysis for Total Mass***"
 def totalMass(self):
 	totalMass = 0
-	for polymerObj in self.polymerArray:
-		polymer = polymerObj.asArray()
+	for polymer in self.polymerArray:
 		totalMass += len(polymer)
 	return totalMass
 
@@ -176,8 +171,7 @@ def numberAverageDP(self):
 "***Analysis for Weight Average***"
 def weightAverageDP(self, numberAverageDP):
 	weightAverageDP = 0
-	for polymerObj in self.polymerArray:
-		polymer = polymerObj.asArray()
+	for polymer in self.polymerArray:
 		M = len(polymer)
 		weightAverageDP += M*M
 	weightAverageDP = weightAverageDP / numberAverageDP / self.numPolymers

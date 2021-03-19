@@ -59,7 +59,8 @@ def plot_line_scatter(self, xList, yList, xLabel, yLabel, lgd_offset):
 
 	if self.show_legend:
 		self.lgd = self.graphWindow.addLegend(offset=lgd_offset)
-		compositionList = analysis.getComposition(self, self.polymerArray)
+		# compositionList = analysis.getComposition(self, self.polymerArray)
+		monomer_dist = self.reaction.monomer_distribution()
 
 	for i in range(self.numMonomers):
 
@@ -72,7 +73,7 @@ def plot_line_scatter(self, xList, yList, xLabel, yLabel, lgd_offset):
 		plt = self.graphWindow.plot(x, y, pen=(i,self.numMonomers))
 
 		if self.show_legend:
-			self.lgd.addItem(plt, "Monomer {} ({}% of polymer)".format(i+1, compositionList[i]))
+			self.lgd.addItem(plt, "Monomer {} ({}% of polymer)".format(i+1, monomer_dist[i]))
 
 
 	#Force the plot to update
@@ -89,7 +90,7 @@ def plotMonomerOccurrence(self):
 
 	for i in range(self.numMonomers):
 		#extract the plotting data point for a single monomer
-		single_monomerOccurrenceData = self.monomerOccurrenceList[i]
+		single_monomerOccurrenceData = self.monomer_species_occurrences[i]
 
 		#calculate the conversion index (x-axis array) 
 		conversionIndex = range(len(single_monomerOccurrenceData))
@@ -98,7 +99,7 @@ def plotMonomerOccurrence(self):
 		#at the data point. Dividing the latter by the former will give the conversion index
 		conversionIndex = [(i+1)*self.numPolymers/self.adjustedPoolSize*100 for i in conversionIndex]
 
-		xList.append(conversionIndex)
+		xList.append(self.conversion_index)
 		yList.append(single_monomerOccurrenceData)
 
 	plot_line_scatter(self, xList, yList, xLabel, yLabel, lgd_offset)
@@ -112,10 +113,10 @@ def plotMonomerUsage(self):
 	xLabel = "Conversion"
 	yLabel = "Normalized Monomer Occurrence"
 	lgd_offset = (-10,10)
-	
+
 	for i in range(self.numMonomers):
 		#extract the plotting data point for a single monomer
-		single_monomerRemainingData = self.monomerRemainingList[i]
+		single_monomerRemainingData = self.monomer_species_remaining[i]
 
 
 		#calculate the conversion index (x-axis array) 
@@ -123,10 +124,11 @@ def plotMonomerUsage(self):
 
 		#adjustedPoolSize is the full size of the monomer pool, and i*numPolymers is how many monomers used cumulatively
 		#at the data point. Dividing the latter by the former will give the conversion index
-		conversionIndex = [i*self.numPolymers/self.adjustedPoolSize*100 for i in conversionIndex]
+		conversionIndex = [(i+1)*self.numPolymers/self.adjustedPoolSize*100 for i in conversionIndex]
 
-		xList.append(conversionIndex)
+		xList.append(self.conversion_index)
 		yList.append(single_monomerRemainingData)
+
 
 	plot_line_scatter(self, xList, yList, xLabel, yLabel, lgd_offset)
 
@@ -141,17 +143,17 @@ def plotRunLength(self, monomerID):
 
 	self.graphWindow.enableAutoRange('xy', True)
 	#Use cached data if available
-	if not self.simulation_running and self.cached_runLengthData[monomerID-1] != 0:
-		x, y = self.cached_runLengthData[monomerID-1]
+	if not self.simulation_running and self.cached_runLengthData[monomerID] != 0:
+		x, y = self.cached_runLengthData[monomerID]
 
 	else:
 		x, y = analysis.getRunLengthHistData(self, monomerID)
 		#caching data
-		self.cached_runLengthData[monomerID-1] = [x,y]
+		self.cached_runLengthData[monomerID] = [x,y]
 
 	if len(y) == 0:
 		return
-	plt = self.graphWindow.plot(x, y, stepMode=True, fillLevel=0, brush=(monomerID-1, self.numMonomers))
+	plt = self.graphWindow.plot(x, y, stepMode=True, fillLevel=0, brush=(monomerID, self.numMonomers))
 
 	#Force the plot to update
 	QApplication.processEvents()
@@ -191,7 +193,7 @@ def updateValues(self):
 	if self.numMonomers != 2:
 		self.lambdaDoubleSpinBox.setProperty("value", -2)
 
-	elif self.numMonomers == 2 and min([polymer.len() for polymer in self.polymerArray]) > 1:
+	elif self.numMonomers == 2 and min([len(polymer) for polymer in self.polymerArray]) > 1:
 		lambdaValue = analysis.calculate_theta(self)
 		self.lambdaDoubleSpinBox.setProperty("value", lambdaValue)
 

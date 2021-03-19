@@ -9,13 +9,13 @@ def parseUI_Inputs(self):
 	self.holdComposition = getHoldComposition(self)
 	self.rrList = getReactivityRatios(self)
 	self.rrLoadList = getLoadReactivityRatios(self)
-	self.rateConstantList = getRateConstants(self)
+	self.rateConstantList = getRateConstants(self) # used in propagation step
 	self.monomerRatios = getMonomerRatios(self)
 	self.averageDP = self.dpSpinBox.value()
 	self.percentConversion = self.conversionDoubleSpinBox.value()
 	self.poolSize = self.poolSpinBox.value()
 	self.graphType = self.graphComboBox.currentText()
-	self.animate = get_animate_status(self.animateComboBox)
+	self.animate = get_animate_status(self)
 	self.numRows = self.rowsSpinBox.value()	
 	self.runLengthMonomer = self.runLengthSpinBox.value()
 	self.cached_runLengthData = [0]*self.numMonomers
@@ -165,8 +165,8 @@ def get_numMonomer(str):
 	else:
 		return int(str[0])
 
-def get_animate_status(comboBox):
-	value = comboBox.currentText()
+def get_animate_status(self):
+	value = self.animateComboBox.currentText()
 	if value == "On":
 		return True
 	elif value == "Off":

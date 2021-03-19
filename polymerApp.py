@@ -97,7 +97,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 			plotData(self)
 
 	def on_runLengthComboBox_changed(self, value):
-		self.runLengthMonomer = value
+		self.runLengthMonomer = value -1
 		if self.simulated and self.graphType == "Run Length":
 			plotData(self)
 
